@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{582BF0B2-8722-4393-A7AB-D854C1B22634}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoblio.Studio", "src\Hoblio.Studio\Hoblio.Studio.csproj", "{5806F55D-0A94-49D9-91EF-31278014061A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoblio.Cli", "src\Hoblio.Cli\Hoblio.Cli.csproj", "{ED56AE92-5772-4FBA-9E0C-EBD3CE25C82E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C1366582-3856-4D56-B4F7-AF8D5831CA96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoblio.Model.Tests", "tests\Hoblio.Model.Tests\Hoblio.Model.Tests.csproj", "{1A224294-F520-48A1-AC50-CCBBD5121DFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoblio.Runtime.Tests", "tests\Hoblio.Runtime.Tests\Hoblio.Runtime.Tests.csproj", "{FC16EAC5-F8DB-41D9-A4DD-61759C5C4FAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoblio.TestSupport", "tests\Hoblio.TestSupport\Hoblio.TestSupport.csproj", "{D357047C-6C58-430A-92C3-8E3C7EDB9F3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5806F55D-0A94-49D9-91EF-31278014061A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5806F55D-0A94-49D9-91EF-31278014061A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5806F55D-0A94-49D9-91EF-31278014061A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5806F55D-0A94-49D9-91EF-31278014061A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED56AE92-5772-4FBA-9E0C-EBD3CE25C82E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED56AE92-5772-4FBA-9E0C-EBD3CE25C82E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED56AE92-5772-4FBA-9E0C-EBD3CE25C82E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED56AE92-5772-4FBA-9E0C-EBD3CE25C82E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A224294-F520-48A1-AC50-CCBBD5121DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A224294-F520-48A1-AC50-CCBBD5121DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A224294-F520-48A1-AC50-CCBBD5121DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A224294-F520-48A1-AC50-CCBBD5121DFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC16EAC5-F8DB-41D9-A4DD-61759C5C4FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC16EAC5-F8DB-41D9-A4DD-61759C5C4FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC16EAC5-F8DB-41D9-A4DD-61759C5C4FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC16EAC5-F8DB-41D9-A4DD-61759C5C4FAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D357047C-6C58-430A-92C3-8E3C7EDB9F3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D357047C-6C58-430A-92C3-8E3C7EDB9F3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D357047C-6C58-430A-92C3-8E3C7EDB9F3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D357047C-6C58-430A-92C3-8E3C7EDB9F3B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5806F55D-0A94-49D9-91EF-31278014061A} = {582BF0B2-8722-4393-A7AB-D854C1B22634}
+		{ED56AE92-5772-4FBA-9E0C-EBD3CE25C82E} = {582BF0B2-8722-4393-A7AB-D854C1B22634}
+		{1A224294-F520-48A1-AC50-CCBBD5121DFE} = {C1366582-3856-4D56-B4F7-AF8D5831CA96}
+		{FC16EAC5-F8DB-41D9-A4DD-61759C5C4FAC} = {C1366582-3856-4D56-B4F7-AF8D5831CA96}
+		{D357047C-6C58-430A-92C3-8E3C7EDB9F3B} = {C1366582-3856-4D56-B4F7-AF8D5831CA96}
+	EndGlobalSection
+EndGlobal

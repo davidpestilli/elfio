@@ -1,0 +1,89 @@
+﻿<Window x:Class="Hoblio.Studio.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:nodify="clr-namespace:Nodify;assembly=Nodify"
+        xmlns:local="clr-namespace:Hoblio.Studio"
+        Title="{Binding Title}"
+        Width="1400" Height="900"
+        Closing="Window_Closing">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="180"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="320"/>
+    </Grid.ColumnDefinitions>
+
+    <ToolBar Grid.ColumnSpan="2">
+      <Button Content="Novo" Command="{Binding NewProjectCommand}" Margin="2,0"/>
+      <Button Content="Abrir…" Command="{Binding OpenProjectCommand}" Margin="2,0"/>
+      <Button Content="Salvar" Command="{Binding SaveProjectCommand}" Margin="2,0"/>
+      <Separator/>
+      <Button Content="Validar" Command="{Binding ValidateCommand}" Margin="2,0"/>
+      <Button Content="Executar" Command="{Binding RunCommand}" Margin="2,0"/>
+      <Button Content="Parar" Command="{Binding StopRunCommand}" Margin="2,0"/>
+      <Separator/>
+      <ComboBox Width="140" ItemsSource="{Binding PaletteItems}" SelectedItem="{Binding PaletteSelection}"/>
+      <Button Content="Adicionar nó" Command="{Binding AddNodeCommand}" Margin="4,0"/>
+      <Button Content="Desfazer" Command="{Binding UndoCommand}" Margin="2,0"/>
+      <Button Content="Refazer" Command="{Binding RedoCommand}" Margin="2,0"/>
+      <Button Content="Limpar fluxo" Command="{Binding ClearFlowCommand}" Margin="2,0"/>
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+      <TextBlock Text="{Binding ProjectPath}" VerticalAlignment="Center" Margin="12,0,0,0" Opacity="0.6"/>
+    </ToolBar>
+
+    <nodify:NodifyEditor Grid.Row="1"
+                         ItemsSource="{Binding Nodes}"
+                         Connections="{Binding Connections}"
+                         Background="#1e1e1e">
+      <nodify:NodifyEditor.ConnectionTemplate>
+        <DataTemplate>
+          <nodify:LineConnection Source="{Binding Source}" Target="{Binding Target}" />
+        </DataTemplate>
+      </nodify:NodifyEditor.ConnectionTemplate>
+      <nodify:NodifyEditor.ItemContainerStyle>
+        <Style TargetType="{x:Type nodify:ItemContainer}">
+          <Setter Property="Location" Value="{Binding Location, Mode=TwoWay}"/>
+        </Style>
+      </nodify:NodifyEditor.ItemContainerStyle>
+      <nodify:NodifyEditor.ItemTemplate>
+        <DataTemplate>
+          <Border Background="#2d2d30" BorderThickness="1" CornerRadius="4" Padding="8" MinWidth="140">
+            <Border.Style>
+              <Style TargetType="Border">
+                <Setter Property="BorderBrush" Value="#569cd6"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsActive}" Value="True">
+                    <Setter Property="BorderBrush" Value="#ce9178"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Border.Style>
+            <StackPanel>
+              <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="#dcdcdc"/>
+              <TextBlock Text="{Binding Summary}" FontSize="11" Foreground="#9cdcfe" Margin="0,4,0,0"/>
+              <TextBlock Text="{Binding Id}" FontSize="10" Foreground="#808080" Margin="0,2,0,0"/>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </nodify:NodifyEditor.ItemTemplate>
+    </nodify:NodifyEditor>
+
+    <local:PropertiesPanel Grid.Row="1" Grid.Column="1" DataContext="{Binding}"/>
+
+    <DockPanel Grid.Row="2" Grid.ColumnSpan="2" Background="#1e1e1e">
+      <CheckBox DockPanel.Dock="Top" Content="Mostrar JSON" IsChecked="{Binding ShowLogJson}" Foreground="#ccc" Margin="8,4"/>
+      <ListBox ItemsSource="{Binding LogLines}" Foreground="#dcdcdc" Background="#1e1e1e" BorderThickness="0">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Human}" FontFamily="Consolas" FontSize="12"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+  </Grid>
+</Window>

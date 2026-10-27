@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Hoblio.Studio</RootNamespace>
+    <ApplicationIcon />
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hoblio.Runtime\Hoblio.Runtime.csproj" />
+    <ProjectReference Include="..\Hoblio.Serde\Hoblio.Serde.csproj" />
+    <ProjectReference Include="..\Hoblio.Model\Hoblio.Model.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Nodify" Version="6.1.0" />
+  </ItemGroup>
+</Project>

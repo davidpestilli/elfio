@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Hoblio.Runtime</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hoblio.Model\Hoblio.Model.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PuppeteerSharp" Version="25.15.0" />
+  </ItemGroup>
+</Project>

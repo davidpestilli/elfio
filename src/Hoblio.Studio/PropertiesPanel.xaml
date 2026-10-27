@@ -1,0 +1,103 @@
+<UserControl x:Class="Hoblio.Studio.PropertiesPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#252526">
+  <DockPanel>
+    <TextBlock DockPanel.Dock="Top" Text="Propriedades" Foreground="#ccc" Margin="8" FontWeight="SemiBold"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="8">
+        <TextBlock Text="Nó selecionado" Foreground="#aaa"/>
+        <ComboBox ItemsSource="{Binding Nodes}" DisplayMemberPath="Id" SelectedValuePath="Id"
+                  SelectedValue="{Binding SelectedNodeId}" Margin="0,4,0,4"/>
+        <TextBlock Text="{Binding SelectedNodeKind}" Foreground="#808080" FontSize="11" Margin="0,0,0,8"/>
+        <Button Content="Excluir nó" Command="{Binding DeleteNodeCommand}" Margin="0,0,0,12"/>
+
+        <TextBlock Text="Rótulo" Foreground="#aaa"/>
+        <TextBox Text="{Binding NodeLabelEdit, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Tipo de ação" Foreground="#aaa"/>
+        <ComboBox ItemsSource="{Binding ActionTypeOptions}" SelectedItem="{Binding ActionType}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="{Binding GenericField1Label}" Foreground="#aaa"/>
+        <TextBox Text="{Binding GenericField1, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+        <TextBlock Text="{Binding GenericField2Label}" Foreground="#aaa"/>
+        <TextBox Text="{Binding GenericField2, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+        <TextBlock Text="{Binding GenericField3Label}" Foreground="#aaa"/>
+        <TextBox Text="{Binding GenericField3, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="If / condição" Foreground="#569cd6" FontWeight="SemiBold" Margin="0,4,0,4"/>
+        <TextBlock Text="Esquerda" Foreground="#aaa"/>
+        <TextBox Text="{Binding IfLeft, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <TextBlock Text="Operador" Foreground="#aaa"/>
+        <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding IfOperator}" Margin="0,4,0,4"/>
+        <TextBlock Text="Direita" Foreground="#aaa"/>
+        <TextBox Text="{Binding IfRight, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <CheckBox Content="Ignorar maiúsculas" IsChecked="{Binding IfIgnoreCase}" Foreground="#ccc" Margin="0,4,0,12"/>
+
+        <TextBlock Text="For each" Foreground="#569cd6" FontWeight="SemiBold"/>
+        <TextBlock Text="Lista" Foreground="#aaa"/>
+        <TextBox Text="{Binding ForEachListVariable, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <TextBlock Text="Item" Foreground="#aaa"/>
+        <TextBox Text="{Binding ForEachItemVariable, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="While" Foreground="#569cd6" FontWeight="SemiBold"/>
+        <TextBox Text="{Binding WhileLeft, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding WhileOperator}" Margin="0,4,0,4"/>
+        <TextBox Text="{Binding WhileRight, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Repeat" Foreground="#569cd6" FontWeight="SemiBold"/>
+        <TextBlock Text="Vezes" Foreground="#aaa"/>
+        <TextBox Text="{Binding RepeatTimes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <TextBlock Text="Índice" Foreground="#aaa"/>
+        <TextBox Text="{Binding RepeatIndexVariable, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Tratamento de erro (ação)" Foreground="#569cd6" FontWeight="SemiBold"/>
+        <TextBlock Text="Retries" Foreground="#aaa"/>
+        <TextBox Text="{Binding RetryCountText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <TextBlock Text="Delay ms" Foreground="#aaa"/>
+        <TextBox Text="{Binding RetryDelayText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <CheckBox Content="Continuar em falha" IsChecked="{Binding OnFailureContinue}" Foreground="#ccc" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Variáveis produzidas (fluxo)" Foreground="#aaa"/>
+        <TextBox Text="{Binding ProducerOverview, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                 Height="72" TextWrapping="Wrap" FontFamily="Consolas" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Última execução (nó)" Foreground="#aaa"/>
+        <TextBox Text="{Binding LastRunVariablesText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                 Height="56" TextWrapping="Wrap" FontFamily="Consolas" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Aresta selecionada" Foreground="#aaa"/>
+        <ComboBox ItemsSource="{Binding Connections}" SelectedItem="{Binding SelectedConnection}" Margin="0,4,0,4">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock>
+                <Run Text="{Binding Source.Id}"/>
+                <Run Text=" → "/>
+                <Run Text="{Binding Target.Id}"/>
+              </TextBlock>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Text="Porta" Foreground="#aaa"/>
+        <ComboBox SelectedValue="{Binding SelectedEdgePort}" SelectedValuePath="Content" Margin="0,4,0,4">
+          <ComboBoxItem Content="main"/>
+          <ComboBoxItem Content="then"/>
+          <ComboBoxItem Content="else"/>
+          <ComboBoxItem Content="body"/>
+          <ComboBoxItem Content="after"/>
+        </ComboBox>
+        <Button Content="Remover aresta" Command="{Binding RemoveEdgeCommand}" Margin="0,4,0,12"/>
+
+        <TextBlock Text="Nova aresta" Foreground="#aaa"/>
+        <TextBox Text="{Binding NewEdgeFromId, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <TextBox Text="{Binding NewEdgeToId, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
+        <TextBox Text="{Binding NewEdgePort, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+        <Button Content="Adicionar aresta" Command="{Binding AddEdgeCommand}" Margin="0,0,0,12"/>
+
+        <TextBlock Text="Variáveis do projeto (JSON)" Foreground="#aaa"/>
+        <TextBox Text="{Binding VariablesJson, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"
+                 Height="120" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Consolas"/>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

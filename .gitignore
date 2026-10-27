@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+reports/
+.hoblio/
+**/.hoblio/
+examples/**/output/
+!examples/**/output/.gitkeep
+!examples/**/output/.gitignore
