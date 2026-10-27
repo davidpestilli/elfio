@@ -60,7 +60,15 @@ public static class ActionExecutor
 
     static string Delay(ulong ms)
     {
-        Thread.Sleep((int)ms);
+        var remaining = (int)Math.Min(ms, int.MaxValue);
+        while (remaining > 0)
+        {
+            if (RunCancel.IsRequested)
+                throw new OperationCanceledException("run cancelled by user");
+            var step = Math.Min(remaining, 100);
+            Thread.Sleep(step);
+            remaining -= step;
+        }
         return $"delay: {ms}ms";
     }
 

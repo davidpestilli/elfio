@@ -28,15 +28,24 @@ public static class FlowExecutor
         public string IndexVar { get; } = indexVar;
     }
 
-    public static RunOutcome RunProject(FlowProject project, string? projectRoot = null, Action<RunEvent>? onEvent = null)
+    public static RunOutcome RunProject(
+        FlowProject project,
+        string? projectRoot = null,
+        Action<RunEvent>? onEvent = null,
+        CancellationToken cancellationToken = default)
     {
         GraphValidator.ValidateProject(project);
         RunCancel.Reset();
         using var browser = new BrowserContext();
-        return RunInner(project, projectRoot, browser, onEvent ?? (_ => { }));
+        return RunInner(project, projectRoot, browser, onEvent ?? (_ => { }), cancellationToken);
     }
 
-    static RunOutcome RunInner(FlowProject project, string? projectRoot, BrowserContext browser, Action<RunEvent> onEvent)
+    static RunOutcome RunInner(
+        FlowProject project,
+        string? projectRoot,
+        BrowserContext browser,
+        Action<RunEvent> onEvent,
+        CancellationToken cancellationToken)
     {
         var events = new List<RunEvent>();
         void Emit(RunEvent e)
@@ -57,8 +66,8 @@ public static class FlowExecutor
 
         while (true)
         {
-            if (RunCancel.IsRequested)
-                throw new InvalidOperationException("run cancelled by user");
+            if (RunCancel.IsRequested || cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException("run cancelled by user");
 
             visits++;
             if (visits > MaxNodeVisits)
@@ -288,7 +297,7 @@ public static class FlowExecutor
             }
             catch (Exception ex) when (policy.ContinuesOnFailure())
             {
-                return $"failed (continued): {RunErrors.FormatChain(ex)}";
+                return $"failed (continued): {RunErrors.ContinueSummary(ex)}";
             }
             catch (Exception ex)
             {

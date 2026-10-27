@@ -97,6 +97,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(CanRun));
             OnPropertyChanged(nameof(CanStop));
+            RunCommand.RaiseCanExecuteChanged();
+            StopRunCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -422,6 +424,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
 
         try
         {
+            var token = _runCts.Token;
             await Task.Run(() =>
             {
                 FlowExecutor.RunProject(project, dir, evt =>
@@ -434,8 +437,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                         if (evt is RunEvent.ActionExecuted)
                             Status = "Executando…";
                     }, DispatcherPriority.Background);
-                });
-            }, _runCts.Token);
+                }, token);
+            }, token);
             Status = "Execução concluída";
         }
         catch (OperationCanceledException)
@@ -474,7 +477,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             Label = id,
             Action = action,
             Control = control,
-            Ui = new NodeUi { X = 200, Y = 200 },
+            Ui = ComputePalettePlacement(),
         };
         _project.Flow.Nodes.Add(node);
         var attachFrom = SelectedNodeId ?? _project.Flow.Start;
@@ -482,6 +485,14 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         RebuildCanvas();
         SelectedNodeId = id;
         MarkDirty();
+    }
+
+    NodeUi ComputePalettePlacement()
+    {
+        var n = _project.Flow.Nodes.Count;
+        var col = n % 4;
+        var row = n / 4;
+        return new NodeUi { X = 80 + col * 180, Y = 60 + row * 120 };
     }
 
     static (NodeKind kind, ActionKind? action, ControlKind? control) CreateNodeFromPalette(string key)

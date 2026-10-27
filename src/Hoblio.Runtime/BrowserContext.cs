@@ -162,17 +162,28 @@ public sealed class BrowserContext : IDisposable
 
     static async Task WaitForNavigationAsync(IPage page, int timeoutMs)
     {
+        if (await PageIsStableAsync(page))
+            return;
+
         try
         {
             await page.WaitForNavigationAsync(new NavigationOptions
             {
                 Timeout = Math.Max(1, timeoutMs),
-                WaitUntil = new[] { WaitUntilNavigation.Networkidle2 },
+                WaitUntil = [WaitUntilNavigation.Load, WaitUntilNavigation.DOMContentLoaded],
             });
         }
         catch (TimeoutException ex)
         {
+            if (await PageIsStableAsync(page))
+                return;
             throw new TimeoutException($"timeout ({timeoutMs}ms) waiting for navigation", ex);
         }
+    }
+
+    static async Task<bool> PageIsStableAsync(IPage page)
+    {
+        var state = await page.EvaluateFunctionAsync<string>("() => document.readyState");
+        return state is "complete" or "interactive";
     }
 }

@@ -50,7 +50,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Run log panel | ✓ | ✓ (lista + toggle JSON) |
 | Waypoint edges | ✓ | ○ pendente |
 | Variáveis de projeto | ✓ | ✓ (editor JSON) |
-| Stop / cancelar run | ✓ | ✓ |
+| Stop / cancelar run | ✓ | ✓ (delay cooperativo + RunCancel) |
 | Desfazer / refazer / limpar fluxo | ✓ | ✓ |
 | Destaque nó em execução | ✓ | ✓ |
 | Aviso não salvo | ✓ | ✓ |

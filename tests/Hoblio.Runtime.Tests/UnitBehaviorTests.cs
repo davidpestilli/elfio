@@ -93,6 +93,26 @@ public class UnitBehaviorTests
     }
 
     [Fact]
+    public void File_write_uses_utf8_without_bom()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), $"elfio-file-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        try
+        {
+            const string content = "Hello\n";
+            var summary = FileActions.FileWrite("out.txt", content, dir);
+            var bytes = File.ReadAllBytes(Path.Combine(dir, "out.txt"));
+            Assert.Equal(6, bytes.Length);
+            Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF);
+            Assert.Contains("6 bytes", summary);
+        }
+        finally
+        {
+            Directory.Delete(dir, true);
+        }
+    }
+
+    [Fact]
     public void Format_chain_matches_anyhow_style()
     {
         var inner = new InvalidOperationException("expected a number, got `abc`");

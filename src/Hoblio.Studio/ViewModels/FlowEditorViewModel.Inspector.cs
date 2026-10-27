@@ -249,8 +249,13 @@ public sealed partial class FlowEditorViewModel
         if (SelectedConnection is null)
             return;
         PushHistory();
-        _project.Flow.Edges.RemoveAll(e =>
-            e.From == SelectedConnection.Source.Id && e.To == SelectedConnection.Target.Id);
+        var from = SelectedConnection.Source.Id;
+        var to = SelectedConnection.Target.Id;
+        var port = SelectedConnection.Port.AsString();
+        var idx = _project.Flow.Edges.FindIndex(e =>
+            e.From == from && e.To == to && string.Equals(e.Port, port, StringComparison.OrdinalIgnoreCase));
+        if (idx >= 0)
+            _project.Flow.Edges.RemoveAt(idx);
         SelectedConnection = null;
         RebuildCanvas();
         MarkDirty();
