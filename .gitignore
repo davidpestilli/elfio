@@ -5,6 +5,6 @@ obj/
 reports/
 .hoblio/
 **/.hoblio/
-examples/**/output/
+examples/**/output/*
 !examples/**/output/.gitkeep
 !examples/**/output/.gitignore
