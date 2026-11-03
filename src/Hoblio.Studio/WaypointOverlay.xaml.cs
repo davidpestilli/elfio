@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Hoblio.Studio.ViewModels;
+using Nodify;
 
 namespace Hoblio.Studio;
 
@@ -11,7 +12,9 @@ public partial class WaypointOverlay
 {
     FlowEditorViewModel? _vm;
     FlowConnectionViewModel? _connection;
+    NodifyEditor? _editor;
     int _dragIndex = -1;
+    bool _dragHistoryPushed;
 
     public WaypointOverlay()
     {
@@ -20,20 +23,56 @@ public partial class WaypointOverlay
         Loaded += (_, _) => HookVm();
     }
 
+    public void AttachEditor(NodifyEditor editor)
+    {
+        if (_editor is not null)
+            _editor.ViewportUpdated -= OnViewportUpdated;
+        _editor = editor;
+        _editor.ViewportUpdated += OnViewportUpdated;
+        SyncViewportTransform();
+    }
+
+    void OnViewportUpdated(object? sender, EventArgs e)
+    {
+        SyncViewportTransform();
+        Redraw();
+    }
+
+    void SyncViewportTransform()
+    {
+        if (_editor is null)
+            return;
+        Root.RenderTransform = _editor.ViewportTransform;
+    }
+
     void HookVm()
     {
         if (DataContext is not FlowEditorViewModel vm)
             return;
+        if (ReferenceEquals(_vm, vm))
+            return;
+        if (_vm is not null)
+            _vm.PropertyChanged -= OnVmPropertyChanged;
         _vm = vm;
-        vm.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName is nameof(FlowEditorViewModel.SelectedConnection)
-                or nameof(FlowEditorViewModel.IsEditing)
-                or nameof(FlowEditorViewModel.Connections))
-                Redraw();
-        };
+        vm.PropertyChanged += OnVmPropertyChanged;
+        if (_connection is not null)
+            _connection.GeometryChanged -= OnConnectionGeometryChanged;
         Redraw();
     }
+
+    void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(FlowEditorViewModel.SelectedConnection)
+            or nameof(FlowEditorViewModel.IsEditing)
+            or nameof(FlowEditorViewModel.Connections))
+        {
+            if (_connection is not null)
+                _connection.GeometryChanged -= OnConnectionGeometryChanged;
+            Redraw();
+        }
+    }
+
+    void OnConnectionGeometryChanged(object? sender, EventArgs e) => Redraw();
 
     /// <summary>Deixa cliques passarem para o Nodify exceto sobre handles de waypoint.</summary>
     protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
@@ -55,10 +94,24 @@ public partial class WaypointOverlay
     {
         Root.Children.Clear();
         _dragIndex = -1;
+        _dragHistoryPushed = false;
         if (_vm is null || !_vm.IsEditing || _vm.SelectedConnection is not { } conn)
+        {
+            _connection = null;
             return;
-        _connection = conn;
-        var points = conn.GetPolylinePoints();
+        }
+
+        if (!ReferenceEquals(_connection, conn))
+        {
+            if (_connection is not null)
+                _connection.GeometryChanged -= OnConnectionGeometryChanged;
+            _connection = conn;
+            conn.GeometryChanged += OnConnectionGeometryChanged;
+        }
+
+        if (conn.HasManualWaypoints)
+            DrawWaypointPath(conn);
+
         for (var i = 0; i < conn.Waypoints.Count; i++)
         {
             var idx = i;
@@ -73,6 +126,11 @@ public partial class WaypointOverlay
                     return;
                 }
                 _dragIndex = idx;
+                if (!_dragHistoryPushed)
+                {
+                    _vm?.BeginWaypointDrag();
+                    _dragHistoryPushed = true;
+                }
                 thumb.CaptureMouse();
                 e.Handled = true;
             };
@@ -87,18 +145,17 @@ public partial class WaypointOverlay
             };
             Root.Children.Add(thumb);
         }
-        if (conn.Waypoints.Count > 0)
-            DrawWaypointPath(conn);
 
-        for (var seg = 0; seg < points.Count - 1; seg++)
+        var handles = conn.HandlePoints;
+        for (var seg = 0; seg < handles.Count - 1; seg++)
         {
             var segment = seg;
-            var a = points[seg];
-            var b = points[seg + 1];
+            var a = handles[seg];
+            var b = handles[seg + 1];
             var plus = CreateInsertButton(new Point((a.X + b.X) / 2, (a.Y + b.Y) / 2));
-            plus.IsHitTestVisible = true;
-            plus.Click += (_, _) =>
+            plus.MouseLeftButtonDown += (_, e) =>
             {
+                e.Handled = true;
                 _vm?.InsertWaypoint(conn, segment);
                 Redraw();
             };
@@ -134,37 +191,62 @@ public partial class WaypointOverlay
     {
         var el = new Ellipse
         {
-            Width = 12,
-            Height = 12,
+            Width = 11,
+            Height = 11,
             Fill = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB)),
             Stroke = Brushes.White,
             StrokeThickness = 2,
-            Cursor = Cursors.SizeAll,
+            Cursor = Cursors.Hand,
             IsHitTestVisible = true,
+            ToolTip = "Arraste para ajustar · duplo clique para remover",
+            Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Color.FromRgb(0x0F, 0x17, 0x2A),
+                Opacity = 0.35,
+                BlurRadius = 3,
+                ShadowDepth = 1,
+            },
         };
-        Canvas.SetLeft(el, p.X - 6);
-        Canvas.SetTop(el, p.Y - 6);
+        Canvas.SetLeft(el, p.X - 5.5);
+        Canvas.SetTop(el, p.Y - 5.5);
         return el;
     }
 
-    static Button CreateInsertButton(Point p)
+    static Grid CreateInsertButton(Point p)
     {
-        var btn = new Button
+        var label = new TextBlock
         {
-            Content = "+",
-            Width = 16,
-            Height = 16,
-            Padding = new Thickness(0),
+            Text = "+",
             FontSize = 10,
             FontWeight = FontWeights.Bold,
-            Background = Brushes.White,
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB)),
-            BorderThickness = new Thickness(1),
-            Cursor = Cursors.Hand,
-            ToolTip = "Inserir ponto de passagem",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB)),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, -1, 0, 0),
+            IsHitTestVisible = false,
         };
-        Canvas.SetLeft(btn, p.X - 8);
-        Canvas.SetTop(btn, p.Y - 8);
-        return btn;
+        var ring = new Ellipse
+        {
+            Width = 14,
+            Height = 14,
+            Fill = Brushes.White,
+            Stroke = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB)),
+            StrokeThickness = 1,
+            StrokeDashArray = new DoubleCollection { 2, 2 },
+            IsHitTestVisible = false,
+        };
+        var grid = new Grid
+        {
+            Width = 14,
+            Height = 14,
+            IsHitTestVisible = true,
+            Cursor = Cursors.Hand,
+            ToolTip = "Clique para criar um ponto de passagem",
+        };
+        grid.Children.Add(ring);
+        grid.Children.Add(label);
+        Canvas.SetLeft(grid, p.X - 7);
+        Canvas.SetTop(grid, p.Y - 7);
+        return grid;
     }
 }

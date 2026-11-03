@@ -50,7 +50,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Modo Exibição / Edição | ✓ | ✓ |
 | PropertiesPanel completo | ✓ | ✓ (formulário por tipo de ação, if/loop, run_flow, erro, última exec.) |
 | Run log panel | ✓ | ✓ (lista + toggle JSON + copiar log) |
-| Waypoint edges (arrastar / + / duplo clique) | ✓ | ✓ |
+| Waypoint edges (arrastar / + / duplo clique / viewport) | ✓ | ✓ |
 | Subflows embutidos / abas | ✓ | ✓ |
 | `run_flow` (runtime + Studio) | ✓ | ✓ (painel: flow_id/path, scope, share_browser, inputs/outputs, abrir subfluxo) |
 | Renomear subfluxo + patch `run_flow` | ✓ | ✓ (UI inline + `SubflowDocumentOpsTests`) |
@@ -69,8 +69,6 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | Item | Notas |
 |------|--------|
 | Ramo On error dedicado no grafo | Fora de escopo nos dois stacks |
-| Waypoints UX fina | Básico no Nodify; React Flow tem mais polish |
-
 ## Testes espelhados do Rust
 
 | Teste Rust (`hoblio-runtime`) | Teste C# |
@@ -82,8 +80,8 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | `action.rs` (5 JSON roundtrips) | `ActionKindTests` (5 facts) |
 | `expr` / `variables` / `lists` / `adjust_var` unit | `UnitBehaviorTests` (+3) |
 
-Contagem atual: **43** testes automatizados (`dotnet test` na solution).
+Contagem atual: **45** testes automatizados (`dotnet test` na solution).
 
-Verificação local: `.\scripts\verify-parity.ps1` (Release build + 43 testes + validate nos 9 demos + probe browser).
+Verificação local: `.\scripts\verify-parity.ps1` (Release build + 45 testes + validate nos 9 demos + probe browser).
 
 Scripts Grok: `scripts/eval-flow-control.ps1` e `scripts/eval-rpa-abc.ps1` (C#); comparativo cross-stack: `eval-grok-cross-stack.ps1` (ver [guia-construcao.md](guia-construcao.md)).

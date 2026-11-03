@@ -217,7 +217,7 @@
             </DataTemplate>
           </nodify:NodifyEditor.ItemTemplate>
         </nodify:NodifyEditor>
-        <local:WaypointOverlay DataContext="{Binding}" Panel.ZIndex="1"/>
+        <local:WaypointOverlay x:Name="WaypointLayer" DataContext="{Binding}" Panel.ZIndex="10"/>
       </Grid>
     </Grid>
 

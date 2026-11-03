@@ -283,6 +283,12 @@ public sealed partial class FlowEditorViewModel
             c.IsSelected = ReferenceEquals(c, connection);
     }
 
+    public void BeginWaypointDrag()
+    {
+        if (CanEditDiagram)
+            PushHistory();
+    }
+
     public void MoveWaypoint(FlowConnectionViewModel connection, int index, Point point)
     {
         if (!CanEditDiagram || index < 0 || index >= connection.Waypoints.Count)
@@ -306,7 +312,7 @@ public sealed partial class FlowEditorViewModel
     {
         if (!CanEditDiagram)
             return;
-        var points = connection.GetPolylinePoints();
+        var points = connection.HandlePoints;
         if (segmentIndex < 0 || segmentIndex >= points.Count - 1)
             return;
         PushHistory();

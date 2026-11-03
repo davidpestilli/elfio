@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     void HookFlowEditor()
     {
         ConfigureNodeGestures();
+        WaypointLayer.AttachEditor(FlowEditor);
         FlowEditor.SelectionChanged += (_, _) =>
             _vm.ApplyCanvasSelection(_vm.DiagramSelectedItems);
     }

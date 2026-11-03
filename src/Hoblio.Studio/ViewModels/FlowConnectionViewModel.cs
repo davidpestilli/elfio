@@ -71,15 +71,30 @@ public sealed class FlowConnectionViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Source, manual waypoints, target — same anchor list as React Flow <c>WaypointEdge</c>.</summary>
+    public IReadOnlyList<Point> HandlePoints
+    {
+        get
+        {
+            var list = new List<Point> { SourcePoint };
+            list.AddRange(Waypoints);
+            list.Add(TargetPoint);
+            return list;
+        }
+    }
+
+    public bool HasManualWaypoints => Waypoints.Count > 0;
+
+    /// <summary>Polyline used for arrows and segment midpoints when waypoints exist; otherwise smooth-step samples.</summary>
     public IReadOnlyList<Point> GetPolylinePoints()
     {
+        if (HasManualWaypoints)
+            return HandlePoints.ToList();
+
         var geom = RouteGeometry;
         if (geom is PathGeometry pg && pg.Figures.Count > 0)
             return FlattenFigure(pg.Figures[0]).ToList();
-        var list = new List<Point> { SourcePoint };
-        list.AddRange(Waypoints);
-        list.Add(TargetPoint);
-        return list;
+        return HandlePoints.ToList();
     }
 
     static IEnumerable<Point> FlattenFigure(PathFigure figure)

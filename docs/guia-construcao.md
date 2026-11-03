@@ -76,7 +76,6 @@ Relatório: `reports/eval-cross-stack-2026-10-27-v2/` (local, não versionado).
 | Área | Item |
 |------|------|
 | **Studio** | Ramo **On error** dedicado no grafo (fora de escopo no Rust também) — ver [PARITY.md](PARITY.md) |
-| **Studio** | Waypoints: UX fina vs React Flow (`WaypointEdge`); edição básica (+ waypoint, arrastar) já existe |
 | **CLI** | **StrictSummaryLines** — contagem de linhas Rust ≠ C# (tracing duplicado no Rust); informativo |
 
 ### Fechado recentemente
@@ -87,6 +86,7 @@ Relatório: `reports/eval-cross-stack-2026-10-27-v2/` (local, não versionado).
 | **Runtime / Studio** | `http_get` com campo opcional `variable` (corpo da resposta) |
 | **CLI** | `failed (continued)` usa resumo em uma linha (`Caused by:` com `\|` no log de ação) |
 | **Harness** | `scripts/eval-flow-control.ps1` e `scripts/eval-rpa-abc.ps1` (C#, IDs `GROK_EVAL` alinhados ao Rust) |
+| **Studio** | Waypoints alinhados ao `WaypointEdge` (React Flow): viewport, + por segmento lógico, halo de seleção |
 
 ## Projetos de fluxo
 

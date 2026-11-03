@@ -14,9 +14,12 @@
           MouseLeftButtonDown="OnConnectionClick"/>
     <Path Data="{Binding RouteGeometry}"
           Stroke="#2563EB"
-          StrokeThickness="10"
-          Opacity="0.12"
+          StrokeThickness="8"
+          Opacity="0.3"
           Fill="Transparent"
+          StrokeLineJoin="Round"
+          StrokeStartLineCap="Round"
+          StrokeEndLineCap="Round"
           Visibility="{Binding IsSelected, Converter={StaticResource BoolVis}}"
           IsHitTestVisible="False"/>
     <Polygon Points="{Binding ArrowHeadPoints}"

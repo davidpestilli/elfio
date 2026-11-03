@@ -43,9 +43,13 @@ Interface inspirada no **Hoblio Studio (Rust)** e no fluxo de trabalho do **Powe
 
 ## Waypoints (tracado de conexão)
 
-1. Clique na **linha da conexão** no diagrama (modo Edição).
-2. Arraste os **pontos azuis**; **duplo clique** remove; botões **+** nos segmentos inserem pontos.
-3. **+ Waypoint** na barra ainda adiciona um ponto no meio (atalho).
-4. Salve — persiste em `edge.ui.waypoints`.
+Comportamento alinhado ao **WaypointEdge** do Studio Rust (React Flow):
+
+1. Clique na **linha da conexão** (modo Edição) — halo azul grosso indica seleção.
+2. Sem waypoints manuais, a rota é **smooth-step**; aparece um **+** no meio do trecho lógico origem→destino (como no Rust).
+3. Com waypoints, a rota vira **polilinha** reta entre origem, pontos e destino; **+** em cada segmento lógico.
+4. Arraste os **pontos azuis** (duplo clique remove); handles acompanham **zoom/pan** do canvas.
+5. **+ Waypoint** na barra insere um ponto no meio origem→destino (atalho).
+6. Salve — persiste em `edge.ui.waypoints`.
 
 Paridade com o Studio Rust: [PARITY.md](PARITY.md).
