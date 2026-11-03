@@ -142,7 +142,11 @@ public static class FlowVariableRename
             Amount = a.Amount is null ? null : ReplaceTemplates(a.Amount, oldName, newName),
         },
         RunFlowAction a => RenameRunFlow(a, oldName, newName),
-        HttpGetAction a => new HttpGetAction { Url = ReplaceTemplates(a.Url, oldName, newName) },
+        HttpGetAction a => new HttpGetAction
+        {
+            Url = ReplaceTemplates(a.Url, oldName, newName),
+            Variable = ReplaceVarName(a.Variable, oldName, newName),
+        },
         _ => action,
     };
 

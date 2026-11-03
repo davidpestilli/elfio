@@ -11,6 +11,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | EdgePort + `resolved_port` | ✓ | ✓ | validate + demos |
 | ErrorHandling retry/continue | ✓ | ✓ | resilience-demo |
 | validate_graph + validate_project | ✓ | ✓ | unit + validate CLI |
+| `{ref}` templates (refs conhecidas) | ○ | ✓ | `TemplateReferenceValidator` + testes |
 | load/save project folder | ✓ | ✓ | ProjectLoader |
 
 ## Runtime
@@ -21,7 +22,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Set/increase/decrease variable | ✓ | ✓ | variables-loops-demo |
 | File read/write/append | ✓ | ✓ | files-lists-demo |
 | List append/clear | ✓ | ✓ | files-lists-demo |
-| HTTP GET | ✓ | ✓ | web-demo-flow (manual) |
+| HTTP GET | ✓ | ✓ | web-demo-flow (manual); C# opcional `variable` no JSON |
 | If / ForEach / While / Repeat | ✓ | ✓ | DemoFlowTests |
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
 | Browser CDP (navigate, click, fill, wait, get_text) | ✓ | ✓ | browser-demo-flow (manual + Chrome) |
@@ -67,9 +68,8 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 
 | Item | Notas |
 |------|--------|
-| Validação estática de `{refs}` desconhecidas | Fora de escopo (Rust também) |
-| Ramo On error dedicado no grafo | Fora de escopo |
-| `http_get` sem variável de saída no model | Igual nos dois stacks |
+| Ramo On error dedicado no grafo | Fora de escopo nos dois stacks |
+| Waypoints UX fina | Básico no Nodify; React Flow tem mais polish |
 
 ## Testes espelhados do Rust
 
@@ -82,8 +82,8 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | `action.rs` (5 JSON roundtrips) | `ActionKindTests` (5 facts) |
 | `expr` / `variables` / `lists` / `adjust_var` unit | `UnitBehaviorTests` (+3) |
 
-Contagem atual: **40** testes automatizados (`dotnet test` na solution).
+Contagem atual: **43** testes automatizados (`dotnet test` na solution).
 
-Verificação local: `.\scripts\verify-parity.ps1` (Release build + 40 testes + validate nos 9 demos + probe browser).
+Verificação local: `.\scripts\verify-parity.ps1` (Release build + 43 testes + validate nos 9 demos + probe browser).
 
-Scripts Rust `eval-flow-control.ps1` / `eval-rpa-abc.ps1`: espelho parcial via `verify-parity.ps1` e `eval-grok-cross-stack.ps1` (ver [guia-construcao.md](guia-construcao.md)).
+Scripts Grok: `scripts/eval-flow-control.ps1` e `scripts/eval-rpa-abc.ps1` (C#); comparativo cross-stack: `eval-grok-cross-stack.ps1` (ver [guia-construcao.md](guia-construcao.md)).

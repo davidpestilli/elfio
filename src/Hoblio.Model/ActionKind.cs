@@ -134,7 +134,13 @@ public sealed class HttpGetAction : ActionKind
 {
     public override string Type => "http_get";
     public required string Url { get; init; }
-    public override IEnumerable<string> ProducedVariables() => [];
+    public string? Variable { get; init; }
+
+    public override IEnumerable<string> ProducedVariables()
+    {
+        if (!string.IsNullOrWhiteSpace(Variable))
+            yield return Variable.Trim();
+    }
 }
 
 public sealed class ShowMessageAction : ActionKind

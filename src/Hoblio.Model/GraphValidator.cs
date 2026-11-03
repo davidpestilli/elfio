@@ -24,6 +24,7 @@ public enum ValidationErrorKind
     DuplicateVariableProducer,
     SetVariableNameMissing,
     InvalidRetryCount,
+    UnknownTemplateReference,
 }
 
 public sealed class ValidationException(ValidationErrorKind kind, string message) : Exception(message)
@@ -42,6 +43,7 @@ public static class GraphValidator
         ValidateLoopControls(project.Flow);
         ValidateVariableProducers(project.Flow);
         ValidateErrorHandling(project.Flow);
+        TemplateReferenceValidator.Validate(project);
     }
 
     public static void ValidateGraph(FlowGraph graph)

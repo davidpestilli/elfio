@@ -36,6 +36,13 @@ Harness comparativo Rust ↔ C# (opcional, requer repo Rust):
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\eval-grok-cross-stack.ps1
 ```
 
+Espelhos C# dos roteiros Grok (flow-control e entregas A/B/C):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\eval-flow-control.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\eval-rpa-abc.ps1
+```
+
 Roteiro Grok v2 (L1/L2/L3): [avaliacao/protocolos/eval-grok-roteiro-v2.md](avaliacao/protocolos/eval-grok-roteiro-v2.md).
 
 ## Avaliação Grok (27/10/2026, v2)
@@ -68,12 +75,18 @@ Relatório: `reports/eval-cross-stack-2026-10-27-v2/` (local, não versionado).
 
 | Área | Item |
 |------|------|
-| **Studio** | Validação estática de `{refs}` desconhecidas; ramo On error no grafo (fora de escopo Rust também) — ver [PARITY.md](PARITY.md) |
-| **Studio** | Waypoints: UX alinhada ao React Flow (`WaypointEdge`); edição básica (+ waypoint, arrastar) já existe |
-| **Harness** | `eval-flow-control.ps1` / `eval-rpa-abc.ps1` (Rust) sem espelho completo no C# — usar `verify-parity.ps1` + `eval-grok-cross-stack.ps1` |
+| **Studio** | Ramo **On error** dedicado no grafo (fora de escopo no Rust também) — ver [PARITY.md](PARITY.md) |
+| **Studio** | Waypoints: UX fina vs React Flow (`WaypointEdge`); edição básica (+ waypoint, arrastar) já existe |
 | **CLI** | **StrictSummaryLines** — contagem de linhas Rust ≠ C# (tracing duplicado no Rust); informativo |
-| **CLI** | **`failed (continued)`** — cadeia `Caused by:`; alinhar texto 1:1 ao Rust se necessário |
-| **Runtime** | `http_get` sem variável de saída no model (igual Rust) |
+
+### Fechado recentemente
+
+| Área | Item |
+|------|------|
+| **Modelo / CLI** | `validate` rejeita `{refs}` desconhecidas (`TemplateReferenceValidator`) |
+| **Runtime / Studio** | `http_get` com campo opcional `variable` (corpo da resposta) |
+| **CLI** | `failed (continued)` usa resumo em uma linha (`Caused by:` com `\|` no log de ação) |
+| **Harness** | `scripts/eval-flow-control.ps1` e `scripts/eval-rpa-abc.ps1` (C#, IDs `GROK_EVAL` alinhados ao Rust) |
 
 ## Projetos de fluxo
 

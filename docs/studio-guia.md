@@ -19,8 +19,8 @@ Interface inspirada no **Hoblio Studio (Rust)** e no fluxo de trabalho do **Powe
 3. **Clique** na paleta para adicionar nós. **Ligue** arrastando do conector de saída (direita) para o de entrada (esquerda). **Desligue** com Alt+clique no conector ou **Delete** com a linha selecionada. Em **Conexões** (painel direito) dá para mudar porta, destino ou criar arestas por id.
 4. **Canvas:** arraste em área vazia para **selecionar vários nós** (retângulo azul); **Ctrl+clique** soma/remove da seleção; arraste um nó selecionado para **mover o grupo**. **Ctrl+C / Ctrl+X / Ctrl+V** copia, recorta ou cola a seleção (inclui arestas entre nós selecionados). Ligue nós pelos **conectores** ou use **Nova ligação** no painel (sem nó selecionado); clique numa ligação para editar **To** / **Port** ou remover. Campos de texto com variáveis `{nome}` têm lista de inserção rápida abaixo do campo. **Espaço+arrastar**, **botão do meio** ou **botão direito** movem o viewport (pan). **Ctrl+roda** faz zoom.
 5. **Arestas:** roteamento **smooth-step** (como React Flow / Studio Rust) — cantos arredondados, saída à direita e entrada à esquerda; waypoints manuais usam polilinha reta.
-4. Ajuste **Propriedades** (tipo, parâmetros, condições de loop).
-5. **Validar** → **Executar** → acompanhe o **log** (**Copiar log** / toggle JSON); use **Parar** para cancelar.
+6. Ajuste **Propriedades** (tipo, parâmetros, condições de loop). Em **HttpGet**, o campo **Variable** (opcional) guarda o corpo da resposta na execução.
+7. **Validar** (CLI/Studio) também detecta `{refs}` desconhecidas no grafo → **Executar** → acompanhe o **log** (**Copiar log** / toggle JSON); use **Parar** para cancelar.
 
 ## Modos Exibição / Edição
 

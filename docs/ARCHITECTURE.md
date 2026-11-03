@@ -4,7 +4,7 @@
 
 | Rust | C# | Responsabilidade |
 |------|-----|------------------|
-| `hoblio-model` | `Hoblio.Model` | `FlowGraph`, `ActionKind`, `ControlKind`, `GraphValidator` |
+| `hoblio-model` | `Hoblio.Model` | `FlowGraph`, `ActionKind`, `ControlKind`, `GraphValidator`, `TemplateReferenceValidator` |
 | `hoblio-serde` | `Hoblio.Serde` | `ProjectLoader.LoadProject` / `SaveProject` |
 | `hoblio-runtime` | `Hoblio.Runtime` | `FlowExecutor`, `ActionExecutor`, browser, arquivos, expressões |
 | `hoblio-log` | (parcial) | CLI `--jsonl` → `.hoblio/run.jsonl` |
@@ -31,4 +31,6 @@ JSON usa `snake_case` e discriminated unions (`type` em ações e controles), es
 
 Editor WPF + Nodify: canvas, palette agrupada, subfluxos/`manifest.flows`, painel de propriedades por tipo de ação, variáveis de projeto, `run_flow`, clipboard (Ctrl+C/X/V), waypoints e ligações no painel. Checklist detalhado em [PARITY.md](PARITY.md); uso em [studio-guia.md](studio-guia.md).
 
-**Fora de escopo (Rust também):** validação estática de `{refs}` desconhecidas; ramo **On error** dedicado no grafo além de retry/continue no nó.
+**Validação:** `GraphValidator.ValidateProject` inclui checagem de `{refs}` em templates contra variáveis de projeto e produtores do fluxo. **Fora de escopo (Rust também):** ramo **On error** dedicado no grafo além de retry/continue no nó.
+
+**Extensão C#:** `http_get` aceita campo JSON opcional `variable` para gravar o corpo da resposta (Studio expõe o campo no painel).

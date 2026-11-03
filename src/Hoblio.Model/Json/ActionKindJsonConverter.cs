@@ -84,6 +84,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
             "http_get" => new HttpGetAction
             {
                 Url = root.GetProperty("url").GetString() ?? "",
+                Variable = GetString(root, "variable"),
             },
             "show_message" => new ShowMessageAction
             {
@@ -188,6 +189,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 break;
             case HttpGetAction a:
                 writer.WriteString("url", a.Url);
+                WriteOptionalString(writer, "variable", a.Variable);
                 break;
             case ShowMessageAction a:
                 writer.WriteString("title", a.Title);

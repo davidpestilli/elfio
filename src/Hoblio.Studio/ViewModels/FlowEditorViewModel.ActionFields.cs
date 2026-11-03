@@ -77,7 +77,22 @@ public sealed partial class FlowEditorViewModel
     public string ListAppendVariable { get => A<ListAppendAction>()?.ListVariable ?? ""; set => SetAction(A<ListAppendAction>() is { } a ? new ListAppendAction { ListVariable = value, Item = a.Item } : null); }
     public string ListAppendItem { get => A<ListAppendAction>()?.Item ?? ""; set => SetAction(A<ListAppendAction>() is { } a ? new ListAppendAction { ListVariable = a.ListVariable, Item = value } : null); }
 
-    public string HttpGetUrl { get => A<HttpGetAction>()?.Url ?? ""; set => SetAction(new HttpGetAction { Url = value }); }
+    public string HttpGetUrl
+    {
+        get => A<HttpGetAction>()?.Url ?? "";
+        set => SetAction(A<HttpGetAction>() is { } a ? new HttpGetAction { Url = value, Variable = a.Variable } : new HttpGetAction { Url = value });
+    }
+
+    public string HttpGetVariable
+    {
+        get => A<HttpGetAction>()?.Variable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<HttpGetAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node, () => node.Action = new HttpGetAction { Url = a.Url, Variable = value }, a.Variable, value);
+        }
+    }
 
     public string ShowMessageTitle { get => A<ShowMessageAction>()?.Title ?? ""; set => SetAction(A<ShowMessageAction>() is { } a ? new ShowMessageAction { Title = value, Text = a.Text, TimeoutSeconds = a.TimeoutSeconds } : null); }
     public string ShowMessageText { get => A<ShowMessageAction>()?.Text ?? ""; set => SetAction(A<ShowMessageAction>() is { } a ? new ShowMessageAction { Title = a.Title, Text = value, TimeoutSeconds = a.TimeoutSeconds } : null); }
@@ -363,7 +378,7 @@ public sealed partial class FlowEditorViewModel
         {
             nameof(FileWritePath), nameof(FileWriteContent), nameof(FileAppendPath), nameof(FileAppendContent),
             nameof(FileReadPath), nameof(FileReadVariable), nameof(ListClearVariable), nameof(ListAppendVariable),
-            nameof(ListAppendItem), nameof(HttpGetUrl), nameof(ShowMessageTitle), nameof(ShowMessageText),
+            nameof(ListAppendItem), nameof(HttpGetUrl), nameof(HttpGetVariable), nameof(ShowMessageTitle), nameof(ShowMessageText),
             nameof(ShowMessageTimeoutText), nameof(UserInputTitle), nameof(UserInputMessage), nameof(UserInputDefault),
             nameof(UserInputKindMode), nameof(UserInputTopmost), nameof(UserInputVariable), nameof(ButtonPressedVariable),
             nameof(BrowserNavigateUrl), nameof(BrowserNavigateWaitMsText), nameof(BrowserNavigateShowOnScreen),

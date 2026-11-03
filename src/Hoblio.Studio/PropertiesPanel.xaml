@@ -231,6 +231,8 @@
             <StackPanel Visibility="{Binding ShowActionHttpGet, Converter={StaticResource BoolVis}}">
               <TextBlock Text="URL" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding HttpGetUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variable (optional, stores response body)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpGetVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
             </StackPanel>
             <StackPanel Visibility="{Binding ShowActionShowMessage, Converter={StaticResource BoolVis}}">
               <TextBlock Text="Title" Style="{StaticResource FieldLabel}"/>

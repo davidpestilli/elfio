@@ -35,5 +35,5 @@ public static class RunErrors
 
     /// <summary>Single-line friendly summary for on_failure continue logs.</summary>
     public static string ContinueSummary(Exception ex) =>
-        ex is HoblioRunException ? FormatChain(ex) : ex.Message;
+        CliMessage(ex).ReplaceLineEndings(" | ").Trim();
 }

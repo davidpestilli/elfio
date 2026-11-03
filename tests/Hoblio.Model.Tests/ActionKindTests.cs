@@ -90,4 +90,13 @@ public class ActionKindTests
         Roundtrip(action);
         Assert.Equal(["flag"], action.ProducedVariables().ToArray());
     }
+
+    [Fact]
+    public void Http_get_optional_variable_roundtrip()
+    {
+        Roundtrip(new HttpGetAction { Url = "https://example.com" });
+        var withVar = new HttpGetAction { Url = "https://example.com", Variable = "body" };
+        Roundtrip(withVar);
+        Assert.Equal(["body"], withVar.ProducedVariables().ToArray());
+    }
 }

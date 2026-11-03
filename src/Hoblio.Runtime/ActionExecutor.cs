@@ -32,7 +32,7 @@ public static class ActionExecutor
             ListAppendAction la => ListActions.ListAppend(vars, la.ListVariable, la.Item),
             ListClearAction lc => ListActions.ListClear(vars, lc.ListVariable),
             DelayAction d => Delay(d.Milliseconds),
-            HttpGetAction h => HttpGet(h.Url),
+            HttpGetAction h => HttpGet(h, vars),
             BrowserNavigateAction n => browser.Navigate(n.Url, n.WaitMs, n.ShowOnScreen, n.StartMaximized),
             BrowserClickAction c => browser.Click(c.Selector, c.TimeoutMs, c.WaitForNavigation ?? false, c.WaitSelectorAfter, c.WaitAfterTimeoutMs),
             BrowserWaitNavigationAction w => browser.WaitNavigation(w.TimeoutMs),
@@ -75,13 +75,17 @@ public static class ActionExecutor
         return $"delay: {ms}ms";
     }
 
-    static string HttpGet(string url)
+    static string HttpGet(HttpGetAction action, RunVariables vars)
     {
+        var url = RunVariables.Interpolate(action.Url, vars);
         using var response = Http.GetAsync(url).GetAwaiter().GetResult();
         var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        if (!string.IsNullOrWhiteSpace(action.Variable))
+            vars[action.Variable.Trim()] = body;
         var preview = body.Length > 120 ? body[..120] : body;
         var ellipsis = body.Length > 120 ? "…" : "";
-        return $"http_get: {url} -> {(int)response.StatusCode} ({body.Length} bytes): {preview}{ellipsis}";
+        var storeNote = string.IsNullOrWhiteSpace(action.Variable) ? "" : $" → {action.Variable.Trim()}";
+        return $"http_get: {url} -> {(int)response.StatusCode} ({body.Length} bytes){storeNote}: {preview}{ellipsis}";
     }
 
     static string ShowMessage(ShowMessageAction sm, RunVariables vars)
