@@ -1,102 +1,387 @@
 <UserControl x:Class="Hoblio.Studio.PropertiesPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Background="#252526">
+             xmlns:local="clr-namespace:Hoblio.Studio"
+             Background="{StaticResource Brush.PanelBg}">
   <DockPanel>
-    <TextBlock DockPanel.Dock="Top" Text="Propriedades" Foreground="#ccc" Margin="8" FontWeight="SemiBold"/>
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <StackPanel Margin="8">
-        <TextBlock Text="Nó selecionado" Foreground="#aaa"/>
-        <ComboBox ItemsSource="{Binding Nodes}" DisplayMemberPath="Id" SelectedValuePath="Id"
-                  SelectedValue="{Binding SelectedNodeId}" Margin="0,4,0,4"/>
-        <TextBlock Text="{Binding SelectedNodeKind}" Foreground="#808080" FontSize="11" Margin="0,0,0,8"/>
-        <Button Content="Excluir nó" Command="{Binding DeleteNodeCommand}" Margin="0,0,0,12"/>
+    <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Brush.PanelBorder}" BorderThickness="0,0,0,1" Padding="12,10">
+      <TextBlock Text="Properties" FontSize="15" FontWeight="SemiBold" Foreground="#111827"/>
+    </Border>
 
-        <TextBlock Text="Rótulo" Foreground="#aaa"/>
-        <TextBox Text="{Binding NodeLabelEdit, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+      <StackPanel>
+        <!-- Canvas focus (Rust: no node selected) -->
+        <StackPanel Visibility="{Binding ShowCanvasProperties, Converter={StaticResource BoolVis}}">
+          <StackPanel Visibility="{Binding ShowActiveSubflowManage, Converter={StaticResource BoolVis}}" Margin="0,0,0,16">
+            <TextBlock Text="Embedded subflow" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding ActiveSubflowDefinedHint, Mode=OneWay}" TextWrapping="Wrap"
+                       Foreground="#64748B" FontSize="11" Margin="0,4,0,8"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+              <TextBlock Text="Id" VerticalAlignment="Center" Width="24"/>
+              <TextBox Text="{Binding ActiveSubflowRenameDraft, UpdateSourceTrigger=PropertyChanged}" Width="140" Margin="0,0,8,0"/>
+              <Button Content="Rename" Command="{Binding ApplyActiveSubflowRenameCommand}" Padding="8,4" Margin="0,0,4,0"/>
+              <Button Content="Delete" Command="{Binding DeleteActiveSubflowCommand}" Padding="8,4"/>
+            </StackPanel>
+            <TextBlock Text="{Binding ActiveSubflowRenameError}" Foreground="#DC2626" FontSize="11"/>
+          </StackPanel>
 
-        <TextBlock Text="Tipo de ação" Foreground="#aaa"/>
-        <ComboBox ItemsSource="{Binding ActionTypeOptions}" SelectedItem="{Binding ActionType}" Margin="0,4,0,12"/>
+          <StackPanel Visibility="{Binding ShowEmbeddedSubflowsList, Converter={StaticResource BoolVis}}" Margin="0,0,0,16">
+            <TextBlock Text="Embedded subflows" FontWeight="SemiBold" Margin="0,0,0,8"/>
+            <ItemsControl ItemsSource="{Binding EmbeddedSubflowRows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
+                    <StackPanel>
+                      <StackPanel Orientation="Horizontal">
+                        <Button Content="Open" Command="{Binding OpenCommand}" CommandParameter="{Binding Id}" Padding="8,4" Margin="0,0,8,0"/>
+                        <TextBlock Text="Id" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBox Text="{Binding RenameDraft, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0"/>
+                        <Button Content="Rename" Command="{Binding ApplyRenameCommand}" Padding="8,4" Margin="0,0,4,0"/>
+                        <Button Content="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding Id}" Padding="8,4"/>
+                      </StackPanel>
+                      <TextBlock Text="{Binding RenameError}" Foreground="#DC2626" FontSize="11" Margin="0,4,0,0"/>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
 
-        <TextBlock Text="{Binding GenericField1Label}" Foreground="#aaa"/>
-        <TextBox Text="{Binding GenericField1, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-        <TextBlock Text="{Binding GenericField2Label}" Foreground="#aaa"/>
-        <TextBox Text="{Binding GenericField2, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-        <TextBlock Text="{Binding GenericField3Label}" Foreground="#aaa"/>
-        <TextBox Text="{Binding GenericField3, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+          <TextBlock Text="{Binding VariablesSectionTitle}" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding VariablesSectionHint}" TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,4,0,12"/>
 
-        <TextBlock Text="If / condição" Foreground="#569cd6" FontWeight="SemiBold" Margin="0,4,0,4"/>
-        <TextBlock Text="Esquerda" Foreground="#aaa"/>
-        <TextBox Text="{Binding IfLeft, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <TextBlock Text="Operador" Foreground="#aaa"/>
-        <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding IfOperator}" Margin="0,4,0,4"/>
-        <TextBlock Text="Direita" Foreground="#aaa"/>
-        <TextBox Text="{Binding IfRight, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <CheckBox Content="Ignorar maiúsculas" IsChecked="{Binding IfIgnoreCase}" Foreground="#ccc" Margin="0,4,0,12"/>
+          <TextBlock Text="Flow variables" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock Text="Names assigned during the run by actions and loops (read-only index)."
+                     TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,8"/>
+          <ItemsControl ItemsSource="{Binding FlowVariableProducers}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                  <TextBlock Text="{Binding Name}" FontFamily="Consolas" FontWeight="SemiBold" MinWidth="100"/>
+                  <TextBlock Foreground="#64748B" FontSize="11">
+                    <Run Text="{Binding Source}"/>
+                    <Run Text=" · "/>
+                    <Button Content="{Binding NodeLabel}" Padding="0" BorderThickness="0" Background="Transparent"
+                            Foreground="#2563EB" Cursor="Hand" HorizontalAlignment="Left"
+                            Command="{Binding DataContext.SelectFlowProducerNodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding NodeId}"/>
+                  </TextBlock>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Text="No producers yet — use BrowserGetText or Set variable."
+                     Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                     Visibility="{Binding ShowEmptyFlowProducers, Converter={StaticResource BoolVis}}"/>
 
-        <TextBlock Text="For each" Foreground="#569cd6" FontWeight="SemiBold"/>
-        <TextBlock Text="Lista" Foreground="#aaa"/>
-        <TextBox Text="{Binding ForEachListVariable, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <TextBlock Text="Item" Foreground="#aaa"/>
-        <TextBox Text="{Binding ForEachItemVariable, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+          <StackPanel Margin="0,0,0,16" IsEnabled="{Binding IsEditing}">
+            <TextBlock Text="Nova ligação" FontWeight="SemiBold" Margin="0,0,0,8"/>
+            <TextBlock Text="From (node id)" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding NewEdgeFromId, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="To (node id)" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding NewEdgeToId, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="Port" Style="{StaticResource FieldLabel}"/>
+            <ComboBox Text="{Binding NewEdgePort, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Margin="0,0,0,10">
+              <ComboBoxItem Content="main"/>
+              <ComboBoxItem Content="then"/>
+              <ComboBoxItem Content="else"/>
+              <ComboBoxItem Content="body"/>
+              <ComboBoxItem Content="after"/>
+            </ComboBox>
+            <Button Content="Add connection" Command="{Binding AddEdgeCommand}" Padding="8,4" HorizontalAlignment="Left"/>
+          </StackPanel>
 
-        <TextBlock Text="While" Foreground="#569cd6" FontWeight="SemiBold"/>
-        <TextBox Text="{Binding WhileLeft, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding WhileOperator}" Margin="0,4,0,4"/>
-        <TextBox Text="{Binding WhileRight, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+          <local:ProjectVariablesPanel DataContext="{Binding}"/>
+        </StackPanel>
 
-        <TextBlock Text="Repeat" Foreground="#569cd6" FontWeight="SemiBold"/>
-        <TextBlock Text="Vezes" Foreground="#aaa"/>
-        <TextBox Text="{Binding RepeatTimes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <TextBlock Text="Índice" Foreground="#aaa"/>
-        <TextBox Text="{Binding RepeatIndexVariable, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+        <!-- Node selected (Rust: Properties) -->
+        <StackPanel Visibility="{Binding ShowNodeProperties, Converter={StaticResource BoolVis}}"
+                    IsEnabled="{Binding IsEditing}">
+          <TextBlock Text="{Binding SubflowContextBannerText}" TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,10"
+                     Visibility="{Binding ShowSubflowContextBanner, Converter={StaticResource BoolVis}}"/>
 
-        <TextBlock Text="Tratamento de erro (ação)" Foreground="#569cd6" FontWeight="SemiBold"/>
-        <TextBlock Text="Retries" Foreground="#aaa"/>
-        <TextBox Text="{Binding RetryCountText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <TextBlock Text="Delay ms" Foreground="#aaa"/>
-        <TextBox Text="{Binding RetryDelayText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <CheckBox Content="Continuar em falha" IsChecked="{Binding OnFailureContinue}" Foreground="#ccc" Margin="0,4,0,12"/>
+          <TextBlock Text="Id" Style="{StaticResource FieldLabel}"/>
+          <TextBox Text="{Binding SelectedNodeId, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}" Foreground="#6B7280"/>
+          <TextBlock Text="Kind" Style="{StaticResource FieldLabel}"/>
+          <TextBox Text="{Binding SelectedNodeKindDisplay, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}" Foreground="#6B7280"/>
+          <TextBlock Text="Label" Style="{StaticResource FieldLabel}"/>
+          <TextBox Text="{Binding NodeLabelEdit, UpdateSourceTrigger=PropertyChanged}"
+                   IsReadOnly="{Binding IsStartNodeSelected}" Style="{StaticResource FieldBox}"/>
+          <TextBlock Text="{Binding ProducerRenameError}" Foreground="#DC2626" FontSize="11" Margin="0,0,0,8"
+                     Visibility="{Binding HasProducerRenameError, Converter={StaticResource BoolVis}}"/>
 
-        <TextBlock Text="Variáveis produzidas (fluxo)" Foreground="#aaa"/>
-        <TextBox Text="{Binding ProducerOverview, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
-                 Height="72" TextWrapping="Wrap" FontFamily="Consolas" Margin="0,4,0,12"/>
+          <Button Content="Delete node" Style="{StaticResource DangerPanelButton}" Margin="0,10,0,12"
+                  Command="{Binding DeleteNodeCommand}"
+                  Visibility="{Binding ShowDeleteNodeButton, Converter={StaticResource BoolVis}}"/>
 
-        <TextBlock Text="Última execução (nó)" Foreground="#aaa"/>
-        <TextBox Text="{Binding LastRunVariablesText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
-                 Height="56" TextWrapping="Wrap" FontFamily="Consolas" Margin="0,4,0,12"/>
+          <StackPanel Visibility="{Binding ShowIfSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="Left" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding IfLeft, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="Operator" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding IfOperator}" Margin="0,0,0,10"/>
+            <TextBlock Text="Right" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding IfRight, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <local:TemplateVariableChips FieldKey="IfLeft" DataContext="{Binding}"/>
+            <local:TemplateVariableChips FieldKey="IfRight" DataContext="{Binding}"/>
+            <CheckBox Content="Ignore case (text operators only)" IsChecked="{Binding IfIgnoreCase}" Margin="0,0,0,8"/>
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Connect saída then (→) e else (↓)."/>
+          </StackPanel>
 
-        <TextBlock Text="Aresta selecionada" Foreground="#aaa"/>
-        <ComboBox ItemsSource="{Binding Connections}" SelectedItem="{Binding SelectedConnection}" Margin="0,4,0,4">
-          <ComboBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock>
-                <Run Text="{Binding Source.Id}"/>
-                <Run Text=" → "/>
-                <Run Text="{Binding Target.Id}"/>
-              </TextBlock>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <TextBlock Text="Porta" Foreground="#aaa"/>
-        <ComboBox SelectedValue="{Binding SelectedEdgePort}" SelectedValuePath="Content" Margin="0,4,0,4">
-          <ComboBoxItem Content="main"/>
-          <ComboBoxItem Content="then"/>
-          <ComboBoxItem Content="else"/>
-          <ComboBoxItem Content="body"/>
-          <ComboBoxItem Content="after"/>
-        </ComboBox>
-        <Button Content="Remover aresta" Command="{Binding RemoveEdgeCommand}" Margin="0,4,0,12"/>
+          <StackPanel Visibility="{Binding ShowWhileSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="Left" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding WhileLeft, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="Operator" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding WhileOperator}" Margin="0,0,0,10"/>
+            <TextBlock Text="Right" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding WhileRight, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <local:TemplateVariableChips FieldKey="WhileLeft" DataContext="{Binding}"/>
+            <local:TemplateVariableChips FieldKey="WhileRight" DataContext="{Binding}"/>
+            <CheckBox Content="Ignore case (text operators only)" IsChecked="{Binding WhileIgnoreCase}" Margin="0,0,0,8"/>
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Re-evaluates each time the body returns. Body (→) must connect back to While; after (↓) when the condition is false."/>
+          </StackPanel>
 
-        <TextBlock Text="Nova aresta" Foreground="#aaa"/>
-        <TextBox Text="{Binding NewEdgeFromId, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <TextBox Text="{Binding NewEdgeToId, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4"/>
-        <TextBox Text="{Binding NewEdgePort, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-        <Button Content="Adicionar aresta" Command="{Binding AddEdgeCommand}" Margin="0,0,0,12"/>
+          <StackPanel Visibility="{Binding ShowRepeatSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="Times" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding RepeatTimes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            <TextBlock Text="Index variable (0-based)" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding RepeatIndexVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Body (→) returns to Repeat; after (↓) when all iterations finish."/>
+          </StackPanel>
 
-        <TextBlock Text="Variáveis do projeto (JSON)" Foreground="#aaa"/>
-        <TextBox Text="{Binding VariablesJson, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"
-                 Height="120" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Consolas"/>
+          <StackPanel Visibility="{Binding ShowForEachSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="List variable" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding ProjectListNames}"
+                      Text="{Binding ForEachListVariable, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="Item variable" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding ForEachItemVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Body (→) must return to For each; after (↓) runs when the loop finishes."/>
+          </StackPanel>
+
+          <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                     Visibility="{Binding ShowNextExitLoopHint, Converter={StaticResource BoolVis}}"
+                     Text="Coloque dentro do corpo de For each, While ou Repeat; uma saída main."/>
+
+          <StackPanel Visibility="{Binding ShowActionSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="Action type" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding ActionTypeOptions}" SelectedItem="{Binding ActionType}" Margin="0,0,0,6"/>
+            <TextBlock Text="{Binding CurrentActionSummary, Mode=OneWay, StringFormat=Current: {0}}"
+                       Foreground="#64748B" FontSize="11" Margin="0,0,0,10"/>
+
+            <StackPanel Visibility="{Binding ShowActionNoOp, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="No operation (placeholder)." Foreground="#64748B" FontSize="11"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowLogFields, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Message" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LogMessageEdit, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"
+                       MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LogMessage" DataContext="{Binding}"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowActionFileWrite, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Path (relative to project folder)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding FileWritePath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Content" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding FileWriteContent, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="FileWriteContent" DataContext="{Binding}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionFileAppend, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Path (relative to project folder)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding FileAppendPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Content" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding FileAppendContent, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="FileAppendContent" DataContext="{Binding}"/>
+              <TextBlock Text="Appends without overwriting the existing file." Foreground="#64748B" FontSize="11"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionFileRead, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Path" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding FileReadPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Output variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding FileReadVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionListClear, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="List variable" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding ProjectListNames}"
+                        Text="{Binding ListClearVariable, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,10"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionListAppend, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="List variable" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding ProjectListNames}"
+                        Text="{Binding ListAppendVariable, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,10"/>
+              <TextBlock Text="Item" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding ListAppendItem, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,10"/>
+              <local:TemplateVariableChips FieldKey="ListAppendItem" DataContext="{Binding}"/>
+              <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11"
+                         Text="Creates the list at [] on first append. For each can iterate it later in the same run."/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionHttpGet, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="URL" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpGetUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionShowMessage, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Title" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ShowMessageTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Text" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ShowMessageText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="ShowMessageText" DataContext="{Binding}"/>
+              <TextBlock Text="Timeout (seconds, empty = until Fechar)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ShowMessageTimeoutText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionShowGetUserInput, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Dialog title" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding UserInputTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Message" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding UserInputMessage, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="UserInputMessage" DataContext="{Binding}"/>
+              <TextBlock Text="Default value" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding UserInputDefault, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Input type" Style="{StaticResource FieldLabel}"/>
+              <ComboBox SelectedValue="{Binding UserInputKindMode}" SelectedValuePath="Content" Margin="0,0,0,10">
+                <ComboBoxItem Content="single_line"/>
+                <ComboBoxItem Content="multi_line"/>
+              </ComboBox>
+              <CheckBox Content="Keep dialog always on top" IsChecked="{Binding UserInputTopmost}" Margin="0,0,0,10"/>
+              <TextBlock Text="UserInput variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding UserInputVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="ButtonPressed variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ButtonPressedVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,8,0,0"
+                         Text="Blocks the flow until OK/Cancel (Windows). The dialog runs only during Run."/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionSetVariable, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Output variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SetVariableName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Value" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SetVariableValue, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="SetVariableValue" DataContext="{Binding}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionAdjustVariable, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding AdjustVariableName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Amount (optional, default 1)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding AdjustVariableAmountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionBrowserNavigate, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="URL" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding BrowserNavigateUrl, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,10"/>
+              <local:TemplateVariableChips FieldKey="BrowserNavigateUrl" DataContext="{Binding}"/>
+              <TextBlock Text="Wait (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding BrowserNavigateWaitMsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Abrir o navegador na tela" IsChecked="{Binding BrowserNavigateShowOnScreen}" Margin="0,0,0,6"/>
+              <CheckBox Content="Maximizar janela" IsChecked="{Binding BrowserNavigateStartMaximized}" Margin="0,0,0,6"
+                        Visibility="{Binding ShowBrowserNavigateMaximizeOption, Converter={StaticResource BoolVis}}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionBrowserWaitNav, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Timeout (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding BrowserWaitNavTimeoutText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionDelay, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Milliseconds" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding DelayMillisecondsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionBrowserDom, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="CSS selector" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding BrowserSelector, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Timeout (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding BrowserTimeoutMsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Wait for navigation after click" IsChecked="{Binding BrowserClickWaitForNavigation}" Margin="0,0,0,6"
+                        Visibility="{Binding ShowActionBrowserClick, Converter={StaticResource BoolVis}}"/>
+              <StackPanel Visibility="{Binding ShowActionBrowserClick, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Wait selector after click (optional)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding BrowserClickWaitSelectorAfter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBlock Text="Wait after timeout (ms)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding BrowserClickWaitAfterTimeoutText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowActionBrowserFillExtra, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Text" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding BrowserFillText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="BrowserFillText" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowActionBrowserGetTextExtra, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Output variable" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding BrowserGetTextVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowRunFlowSection, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Flow id (manifest.flows)" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding RunFlowTargetIds}"
+                        Text="{Binding RunFlowId, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,10"/>
+              <TextBlock Text="Path (relative to project, if no flow id)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding RunFlowPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variable scope" Style="{StaticResource FieldLabel}"/>
+              <ComboBox SelectedValue="{Binding RunFlowScopeMode}" SelectedValuePath="Content" Margin="0,0,0,10">
+                <ComboBoxItem Content="inherit"/>
+                <ComboBoxItem Content="isolated"/>
+              </ComboBox>
+              <CheckBox Content="Share browser session" IsChecked="{Binding RunFlowShareBrowser}" Margin="0,0,0,10"/>
+              <TextBlock Text="Inputs (one per line: var=template)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding RunFlowInputsText, UpdateSourceTrigger=PropertyChanged}"
+                       AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}" FontFamily="Consolas"/>
+              <local:TemplateVariableChips FieldKey="RunFlowInputsText" DataContext="{Binding}"/>
+              <TextBlock Text="Outputs (comma-separated variable names for logs)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding RunFlowOutputsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <Button Content="Edit subflow" Margin="0,10,0,0"
+                      Command="{Binding OpenSelectedRunFlowSubflowCommand}"
+                      Visibility="{Binding ShowRunFlowOpenSubflow, Converter={StaticResource BoolVis}}"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowLastRunValues, Converter={StaticResource BoolVis}}" Margin="0,12,0,0">
+              <TextBlock Text="Last run values" FontWeight="SemiBold" Margin="0,0,0,6"/>
+              <TextBox Text="{Binding LastRunVariablesText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                       MinHeight="56" TextWrapping="Wrap" FontFamily="Consolas" Background="#F9FAFB"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowOnErrorSection, Converter={StaticResource BoolVis}}" Margin="0,16,0,0">
+              <TextBlock Text="On error" FontWeight="SemiBold" Margin="0,0,0,8"/>
+              <TextBlock Text="Retry count (extra attempts)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding RetryCountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Retry delay (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding RetryDelayText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="If still failing" Style="{StaticResource FieldLabel}"/>
+              <ComboBox SelectedValue="{Binding OnFailureMode}" SelectedValuePath="Content" Margin="0,0,0,4">
+                <ComboBoxItem Content="stop"/>
+                <ComboBoxItem Content="continue"/>
+              </ComboBox>
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Visibility="{Binding ShowConnectionProperties, Converter={StaticResource BoolVis}}"
+                    Margin="0,16,0,0" IsEnabled="{Binding IsEditing}">
+          <TextBlock Text="Ligação selecionada" FontWeight="SemiBold" Margin="0,0,0,8"/>
+          <TextBlock Text="From" Style="{StaticResource FieldLabel}"/>
+          <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding SelectedEdgeSourceId, UpdateSourceTrigger=PropertyChanged}"
+                    IsEditable="True" Margin="0,0,0,10"/>
+          <TextBlock Text="To" Style="{StaticResource FieldLabel}"/>
+          <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding SelectedEdgeTargetId, UpdateSourceTrigger=PropertyChanged}"
+                    IsEditable="True" Margin="0,0,0,10"/>
+          <TextBlock Text="Port" Style="{StaticResource FieldLabel}"/>
+          <ComboBox Text="{Binding SelectedEdgePort, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Margin="0,0,0,10">
+            <ComboBoxItem Content="main"/>
+            <ComboBoxItem Content="then"/>
+            <ComboBoxItem Content="else"/>
+            <ComboBoxItem Content="body"/>
+            <ComboBoxItem Content="after"/>
+          </ComboBox>
+          <Button Content="Remove connection" Command="{Binding RemoveEdgeCommand}" Style="{StaticResource DangerPanelButton}"/>
+        </StackPanel>
       </StackPanel>
     </ScrollViewer>
   </DockPanel>

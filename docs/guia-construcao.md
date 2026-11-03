@@ -22,10 +22,17 @@ dotnet build
 dotnet test
 ```
 
-Paridade com exemplos locais:
+Paridade com exemplos (`examples/` neste repo, ou `HOBLIO_EXAMPLES_ROOT`, ou clone irmão `E:\Projetos\hoblio\examples`):
 
 ```powershell
 .\scripts\verify-parity.ps1
+```
+
+O script faz `dotnet build -c Release`, `dotnet test`, `hoblio validate` nos demos listados em [PARITY.md](PARITY.md) e o teste filtrado `Browser_navigate_local_html` com `HOBLIO_BROWSER_TEST=1`.
+
+Harness comparativo Rust ↔ C# (opcional, requer repo Rust):
+
+```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\eval-grok-cross-stack.ps1
 ```
 
@@ -59,9 +66,14 @@ Relatório: `reports/eval-cross-stack-2026-10-27-v2/` (local, não versionado).
 
 ### Pendências conhecidas
 
-- **S12 Waypoints** — paridade com `WaypointEdge` (React Flow); não implementado.
-- **StrictSummaryLines** — contagem de linhas Rust ≠ C# (tracing duplicado no Rust); informativo apenas.
-- **`failed (continued)`** — mensagem com cadeia `Caused by:`; alinhar texto 1:1 ao Rust se necessário.
+| Área | Item |
+|------|------|
+| **Studio** | Validação estática de `{refs}` desconhecidas; ramo On error no grafo (fora de escopo Rust também) — ver [PARITY.md](PARITY.md) |
+| **Studio** | Waypoints: UX alinhada ao React Flow (`WaypointEdge`); edição básica (+ waypoint, arrastar) já existe |
+| **Harness** | `eval-flow-control.ps1` / `eval-rpa-abc.ps1` (Rust) sem espelho completo no C# — usar `verify-parity.ps1` + `eval-grok-cross-stack.ps1` |
+| **CLI** | **StrictSummaryLines** — contagem de linhas Rust ≠ C# (tracing duplicado no Rust); informativo |
+| **CLI** | **`failed (continued)`** — cadeia `Caused by:`; alinhar texto 1:1 ao Rust se necessário |
+| **Runtime** | `http_get` sem variável de saída no model (igual Rust) |
 
 ## Projetos de fluxo
 

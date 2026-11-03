@@ -9,7 +9,7 @@ public static class ActionDefaults
         "log", "no_op", "browser_navigate", "browser_click", "browser_wait_navigation",
         "browser_fill", "browser_wait_for", "browser_get_text", "set_variable",
         "increase_variable", "decrease_variable", "file_write", "file_append", "file_read",
-        "list_append", "list_clear", "delay", "http_get", "show_message", "show_get_user_input",
+        "list_append", "list_clear", "delay", "http_get",         "show_message", "show_get_user_input", "run_flow",
     ];
 
     public static ActionKind Create(string type, IReadOnlySet<string>? takenNames = null)
@@ -71,6 +71,11 @@ public static class ActionDefaults
                 DefaultValue = "",
                 UserInputVariable = NextName("UserInput", takenNames) ?? "UserInput",
                 ButtonPressedVariable = NextName("ButtonPressed", takenNames) ?? "ButtonPressed",
+            },
+            "run_flow" => new RunFlowAction
+            {
+                FlowId = "child_flow",
+                Outputs = [NextName("RunOut", takenNames) ?? "RunOut1"],
             },
             _ => new LogAction { Message = "Hello" },
         };

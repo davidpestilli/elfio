@@ -17,6 +17,8 @@ public sealed class RunLogLine
             RunEvent.NodeExit e => $"node_exit · {e.NodeId}",
             RunEvent.ActionExecuted e => $"action_executed · {e.NodeId} · {e.Summary}",
             RunEvent.RunFinished e => $"run_finished · last={e.LastNode}",
+            RunEvent.FlowStarted e => $"flow_started · {e.FlowRef}",
+            RunEvent.FlowFinished e => $"flow_finished · {e.FlowRef} → {e.EndNodeId}",
             _ => json,
         };
         return new RunLogLine { Human = human, Json = json };

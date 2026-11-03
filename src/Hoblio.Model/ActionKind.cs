@@ -192,3 +192,25 @@ public sealed class DecreaseVariableAction : ActionKind
     public string? Amount { get; init; }
     public override IEnumerable<string> ProducedVariables() => [];
 }
+
+public sealed class RunFlowAction : ActionKind
+{
+    public override string Type => "run_flow";
+    public string? FlowId { get; init; }
+    public string? Path { get; init; }
+    public Dictionary<string, string>? Inputs { get; init; }
+    public List<string>? Outputs { get; init; }
+    public bool? ShareBrowser { get; init; }
+    public RunFlowVariableScope? VariableScope { get; init; }
+
+    public override IEnumerable<string> ProducedVariables()
+    {
+        if (Outputs is null)
+            yield break;
+        foreach (var name in Outputs)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+                yield return name;
+        }
+    }
+}

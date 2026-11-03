@@ -14,4 +14,14 @@ public sealed class FlowManifest
     public required string Name { get; init; }
     public required string Version { get; init; }
     public string? Description { get; init; }
+    public string? EntryFlow { get; init; }
+    public Dictionary<string, ManifestFlowEntry>? Flows { get; init; }
+}
+
+public sealed class ManifestFlowEntry
+{
+    public required string Path { get; init; }
+    public List<string>? Inputs { get; init; }
+    public List<string>? Outputs { get; init; }
+    public string? Description { get; init; }
 }

@@ -29,4 +29,6 @@ JSON usa `snake_case` e discriminated unions (`type` em ações e controles), es
 
 ## Studio
 
-Fase inicial do port: **visualização e edição de layout** (posição `ui`), toolbar abrir/salvar/validar/executar. Painel de propriedades rico (como `PropertiesPanel.tsx`) fica listado em [PARITY.md](PARITY.md) como pendência de UX.
+Editor WPF + Nodify: canvas, palette agrupada, subfluxos/`manifest.flows`, painel de propriedades por tipo de ação, variáveis de projeto, `run_flow`, clipboard (Ctrl+C/X/V), waypoints e ligações no painel. Checklist detalhado em [PARITY.md](PARITY.md); uso em [studio-guia.md](studio-guia.md).
+
+**Fora de escopo (Rust também):** validação estática de `{refs}` desconhecidas; ramo **On error** dedicado no grafo além de retry/continue no nó.

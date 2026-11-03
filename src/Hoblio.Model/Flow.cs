@@ -7,6 +7,7 @@ public sealed class FlowGraph
     public required string Start { get; set; }
     public required List<Node> Nodes { get; set; }
     public required List<Edge> Edges { get; set; }
+    public Dictionary<string, SubflowBundle>? Subflows { get; set; }
 }
 
 public sealed class Node

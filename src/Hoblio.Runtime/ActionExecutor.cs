@@ -13,6 +13,9 @@ public static class ActionExecutor
         RunVariables vars,
         string? projectRoot)
     {
+        if (action is RunFlowAction)
+            throw new InvalidOperationException("run_flow is executed by the graph runner, not execute_action");
+
         return action switch
         {
             LogAction log => $"log: {RunVariables.Interpolate(log.Message, vars)}",

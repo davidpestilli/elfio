@@ -37,6 +37,12 @@ public enum EdgePort
     After,
 }
 
+public enum RunFlowVariableScope
+{
+    Inherit,
+    Isolated,
+}
+
 public enum CompareOperator
 {
     Eq,

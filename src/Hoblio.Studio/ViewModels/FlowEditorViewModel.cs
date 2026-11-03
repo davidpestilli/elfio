@@ -44,6 +44,35 @@ public sealed class FlowNodeViewModel : INotifyPropertyChanged
         set { _isActive = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive))); }
     }
 
+    public bool HasInput => Kind is not NodeKind.Start;
+    public bool HasOutput => Kind is not NodeKind.End;
+
+    public FlowConnectorViewModel? Input { get; private set; }
+    public FlowConnectorViewModel? Output { get; private set; }
+    public ObservableCollection<FlowConnectorViewModel> InputConnectors { get; } = [];
+    public ObservableCollection<FlowConnectorViewModel> OutputConnectors { get; } = [];
+
+    public void AttachConnectors()
+    {
+        InputConnectors.Clear();
+        OutputConnectors.Clear();
+        if (HasInput)
+        {
+            Input = new FlowConnectorViewModel { Node = this, IsInput = true };
+            InputConnectors.Add(Input);
+        }
+        else
+            Input = null;
+
+        if (HasOutput)
+        {
+            Output = new FlowConnectorViewModel { Node = this, IsInput = false };
+            OutputConnectors.Add(Output);
+        }
+        else
+            Output = null;
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 }
 
@@ -58,14 +87,96 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
 
     public ObservableCollection<FlowNodeViewModel> Nodes { get; } = [];
     public ObservableCollection<FlowConnectionViewModel> Connections { get; } = [];
+    public ObservableCollection<string> DiagramNodeIds { get; } = [];
     public ObservableCollection<RunLogLine> LogLines { get; } = [];
-    public ObservableCollection<string> PaletteItems { get; } = BuildPalette();
+    public ObservableCollection<PaletteGroupViewModel> PaletteGroups { get; } = BuildPaletteGroups();
+    public ObservableCollection<PaletteGroupViewModel> FilteredPaletteGroups { get; } = [];
 
-    static ObservableCollection<string> BuildPalette()
+    static ObservableCollection<PaletteGroupViewModel> BuildPaletteGroups()
     {
-        var items = ActionDefaults.AllActionTypes.Select(t => "action:" + t).ToList();
-        items.AddRange(["if", "for_each", "while_loop", "repeat", "next_loop", "exit_loop"]);
-        return new ObservableCollection<string>(items);
+        var groups = new ObservableCollection<PaletteGroupViewModel>();
+        foreach (var g in ActionPaletteCatalog.Groups)
+        {
+            groups.Add(new PaletteGroupViewModel
+            {
+                Name = g.Name,
+                Items = new ObservableCollection<PaletteEntryViewModel>(
+                    g.Items.Select(e => new PaletteEntryViewModel { Key = e.Key, Title = e.Title, Hint = e.Hint })),
+            });
+        }
+        return groups;
+    }
+
+    string _paletteFilter = "";
+    public string PaletteFilter
+    {
+        get => _paletteFilter;
+        set
+        {
+            _paletteFilter = value ?? "";
+            OnPropertyChanged();
+            RebuildFilteredPalette();
+        }
+    }
+
+    bool _isEditing = true;
+    public bool IsEditing
+    {
+        get => _isEditing;
+        set
+        {
+            if (_isEditing == value)
+                return;
+            _isEditing = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsViewMode));
+            OnPropertyChanged(nameof(CanEditDiagram));
+            OnPropertyChanged(nameof(InspectorReadOnly));
+            RefreshInspectorVisibility();
+            RaiseClipboardCommands();
+        }
+    }
+
+    public bool IsViewMode
+    {
+        get => !IsEditing;
+        set
+        {
+            if (value)
+                IsEditing = false;
+            else if (!IsEditing)
+                IsEditing = true;
+        }
+    }
+    public bool CanEditDiagram => IsEditing && !IsRunning;
+
+    FlowNodeViewModel? _selectedNodeVm;
+    public FlowNodeViewModel? SelectedNode
+    {
+        get => _selectedNodeVm;
+        set
+        {
+            if (ReferenceEquals(_selectedNodeVm, value))
+                return;
+            _selectedNodeVm = value;
+            _selectedNodeId = value?.Id;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedNodeId));
+            RefreshAllInspector();
+            RefreshInspectorVisibility();
+            DeleteNodeCommand?.RaiseCanExecuteChanged();
+        }
+    }
+
+    public bool HasSelectedNode => SelectedNode is not null;
+    public bool NoSelectedNode => SelectedNode is null;
+    public bool ShowWelcomeHint => Nodes.Count <= 3 && string.IsNullOrEmpty(_projectDir);
+
+    bool _statusIsError;
+    public bool StatusIsError
+    {
+        get => _statusIsError;
+        private set { _statusIsError = value; OnPropertyChanged(); }
     }
 
     FlowProject _project = DefaultFlow.Create();
@@ -97,8 +208,10 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(CanRun));
             OnPropertyChanged(nameof(CanStop));
+            OnPropertyChanged(nameof(CanEditDiagram));
             RunCommand.RaiseCanExecuteChanged();
             StopRunCommand.RaiseCanExecuteChanged();
+            RefreshInspectorVisibility();
         }
     }
 
@@ -122,9 +235,16 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         get => _selectedNodeId;
         set
         {
+            if (_selectedNodeId == value)
+                return;
             _selectedNodeId = value;
+            _selectedNodeVm = value is null ? null : Nodes.FirstOrDefault(n => n.Id == value);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedNode));
+            OnPropertyChanged(nameof(HasSelectedNode));
+            OnPropertyChanged(nameof(NoSelectedNode));
             RefreshAllInspector();
+            RefreshInspectorVisibility();
             DeleteNodeCommand?.RaiseCanExecuteChanged();
         }
     }
@@ -138,8 +258,20 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(SelectedEdgePort));
             RemoveEdgeCommand?.RaiseCanExecuteChanged();
+            AddWaypointCommand?.RaiseCanExecuteChanged();
+            DeleteDiagramSelectionCommand?.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(SelectedEdgeTargetId));
+            OnPropertyChanged(nameof(ShowConnectionProperties));
+            OnPropertyChanged(nameof(SelectedConnectionFromId));
+            OnPropertyChanged(nameof(SelectedEdgeSourceId));
+            foreach (var c in Connections)
+                c.IsSelected = ReferenceEquals(c, value);
         }
     }
+
+    public bool ShowConnectionProperties => SelectedConnection is not null;
+
+    public string SelectedConnectionFromId => SelectedConnection?.Source.Id ?? "";
 
     public string SelectedEdgePort
     {
@@ -150,23 +282,21 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                 return;
             if (EdgePortExtensions.Parse(value) is not { } port)
                 return;
-            SelectedConnection.Port = port;
-            var edge = _project.Flow.Edges.FirstOrDefault(e =>
-                e.From == SelectedConnection.Source.Id && e.To == SelectedConnection.Target.Id);
-            if (edge is not null)
+            if (SelectedConnection.Port == port)
+                return;
+            PatchSelectedEdge((edge, idx, edges) =>
             {
-                PushHistory();
-                var idx = _project.Flow.Edges.IndexOf(edge);
-                _project.Flow.Edges[idx] = new Edge
+                SelectedConnection.Port = port;
+                edges[idx] = new Edge
                 {
+                    Id = edge.Id,
                     From = edge.From,
                     To = edge.To,
                     Port = port.AsString(),
                     Label = edge.Label,
                     Ui = edge.Ui,
                 };
-                MarkDirty();
-            }
+            });
             OnPropertyChanged();
         }
     }
@@ -181,13 +311,17 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             try
             {
                 using var doc = JsonDocument.Parse(value);
-                _project.Variables = doc.RootElement.EnumerateObject()
+                var vars = doc.RootElement.EnumerateObject()
                     .ToDictionary(p => p.Name, p => p.Value.Clone(), StringComparer.Ordinal);
+                _project.Variables = vars;
+                if (_flowFiles.ContainsKey(_activeFlowPath))
+                    CurrentFileSnapshot().Variables = new Dictionary<string, JsonElement>(vars, StringComparer.Ordinal);
+                ReloadProjectVariablesUi();
                 MarkDirty();
             }
             catch
             {
-                Status = "JSON de variáveis inválido";
+                SetStatus("JSON de variáveis inválido", isError: true);
             }
         }
     }
@@ -198,7 +332,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         set
         {
             var node = GetSelectedNode();
-            if (node is null)
+            if (node is null || node.Kind == NodeKind.Start)
                 return;
             node.Label = value;
             var vm = Nodes.FirstOrDefault(n => n.Id == node.Id);
@@ -218,13 +352,15 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             if (node?.Kind != NodeKind.Action)
                 return;
             node.Action = new LogAction { Message = value };
-            RefreshNodeSummary(node);
-            MarkDirty();
+            CommitActionEdit(node);
             OnPropertyChanged();
         }
     }
 
-    public string PaletteSelection { get; set; } = "action:log";
+    public RelayCommand<string> AddPaletteEntryCommand { get; }
+    public RelayCommand AddWaypointCommand { get; }
+    public RelayCommand ClearLogCommand { get; }
+    public RelayCommand CopyLogCommand { get; }
 
     public RelayCommand OpenProjectCommand { get; }
     public RelayCommand NewProjectCommand { get; }
@@ -245,12 +381,83 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         ValidateCommand = new RelayCommand(Validate, () => _project is not null);
         RunCommand = new RelayCommand(() => _ = RunAsync(), () => CanRun);
         StopRunCommand = new RelayCommand(StopRun, () => CanStop);
-        AddNodeCommand = new RelayCommand(AddNodeFromPalette);
-        ClearFlowCommand = new RelayCommand(ClearFlow);
-        UndoCommand = new RelayCommand(Undo, () => _undoStack.Count > 0);
-        RedoCommand = new RelayCommand(Redo, () => _redoStack.Count > 0);
+        AddNodeCommand = new RelayCommand(() => AddNodeFromPalette("action:log"));
+        AddPaletteEntryCommand = new RelayCommand<string>(key => AddNodeFromPalette(key ?? "action:log"), _ => CanEditDiagram);
+        AddWaypointCommand = new RelayCommand(AddWaypoint, () => CanEditDiagram && SelectedConnection is not null);
+        CopyLogCommand = new RelayCommand(CopyLogToClipboard, () => LogLines.Count > 0);
+        ClearLogCommand = new RelayCommand(() =>
+        {
+            LogLines.Clear();
+            CopyLogCommand.RaiseCanExecuteChanged();
+        });
+        ClearFlowCommand = new RelayCommand(ClearFlow, () => CanEditDiagram);
+        UndoCommand = new RelayCommand(Undo, () => CanEditDiagram && _undoStack.Count > 0);
+        RedoCommand = new RelayCommand(Redo, () => CanEditDiagram && _redoStack.Count > 0);
         InitInspectorCommands();
+        InitSubflowCommands();
+        InitConnectionCommands();
+        InitCanvasInteraction();
+        InitRunFlowCommands();
+        InitProjectVariablesCommands();
+        InitPropertiesPanelCommands();
+        InitClipboardCommands();
+        InitTemplateVariableCommands();
+        RebuildFilteredPalette();
         LoadProject(_project, null, resetUndo: true);
+    }
+
+    void RebuildFilteredPalette()
+    {
+        FilteredPaletteGroups.Clear();
+        var q = _paletteFilter.Trim();
+        foreach (var group in PaletteGroups)
+        {
+            var items = group.Items
+                .Where(i => q.Length == 0
+                            || i.Title.Contains(q, StringComparison.OrdinalIgnoreCase)
+                            || i.Key.Contains(q, StringComparison.OrdinalIgnoreCase)
+                            || (i.Hint?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+            if (items.Count == 0)
+                continue;
+            FilteredPaletteGroups.Add(new PaletteGroupViewModel
+            {
+                Name = group.Name,
+                Items = new ObservableCollection<PaletteEntryViewModel>(items),
+            });
+        }
+    }
+
+    void SetStatus(string message, bool isError = false)
+    {
+        Status = message;
+        StatusIsError = isError;
+    }
+
+    void RefreshInspectorVisibility()
+    {
+        OnPropertyChanged(nameof(HasSelectedNode));
+        OnPropertyChanged(nameof(NoSelectedNode));
+        OnPropertyChanged(nameof(ShowWelcomeHint));
+        OnPropertyChanged(nameof(ShowActionSection));
+        OnPropertyChanged(nameof(ShowIfSection));
+        OnPropertyChanged(nameof(ShowForEachSection));
+        OnPropertyChanged(nameof(ShowWhileSection));
+        OnPropertyChanged(nameof(ShowRepeatSection));
+        OnPropertyChanged(nameof(ShowActionErrorSection));
+        OnPropertyChanged(nameof(ShowGenericFields));
+        OnPropertyChanged(nameof(ShowGenericField2));
+        OnPropertyChanged(nameof(ShowGenericField3));
+        OnPropertyChanged(nameof(ShowRunFlowSection));
+        OnPropertyChanged(nameof(ShowRunFlowOpenSubflow));
+        OnPropertyChanged(nameof(InspectorReadOnly));
+        OpenSelectedRunFlowSubflowCommand?.RaiseCanExecuteChanged();
+        AddPaletteEntryCommand.RaiseCanExecuteChanged();
+        CreateSubflowCommand?.RaiseCanExecuteChanged();
+        ClearFlowCommand.RaiseCanExecuteChanged();
+        UndoCommand.RaiseCanExecuteChanged();
+        RedoCommand.RaiseCanExecuteChanged();
+        RefreshPropertiesPanelVisibility();
     }
 
     public bool ConfirmDiscardChanges()
@@ -293,6 +500,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         _project = project;
         ProjectPath = dir;
         _variablesJson = JsonSerializer.Serialize(project.Variables, new JsonSerializerOptions { WriteIndented = true });
+        InitFlowFileState(project, dir);
+        _paletteSpawnIndex = 0;
         RebuildCanvas();
         _savedDigest = ProjectDigest();
         IsDirty = false;
@@ -303,7 +512,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             _redoStack.Clear();
             RaiseHistoryCommands();
         }
-        Status = "Projeto carregado";
+        SetStatus("Projeto carregado");
+        OnPropertyChanged(nameof(ShowWelcomeHint));
     }
 
     void RebuildCanvas()
@@ -311,7 +521,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         Nodes.Clear();
         Connections.Clear();
         var vmById = new Dictionary<string, FlowNodeViewModel>();
-        foreach (var node in _project.Flow.Nodes)
+        var (sliceNodes, sliceEdges, _) = ActiveGraphSlice();
+        foreach (var node in sliceNodes)
         {
             var vm = new FlowNodeViewModel
             {
@@ -326,21 +537,51 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                 if (e.PropertyName == nameof(FlowNodeViewModel.Location))
                     MarkDirty();
             };
+            vm.AttachConnectors();
             vmById[node.Id] = vm;
             Nodes.Add(vm);
         }
         SetActiveHighlight();
-        foreach (var edge in _project.Flow.Edges)
+        OnPropertyChanged(nameof(ShowWelcomeHint));
+        foreach (var edge in sliceEdges)
         {
             if (!vmById.TryGetValue(edge.From, out var src) || !vmById.TryGetValue(edge.To, out var tgt))
                 continue;
-            Connections.Add(new FlowConnectionViewModel
+            var conn = new FlowConnectionViewModel
             {
                 Source = src,
                 Target = tgt,
                 Port = edge.ResolvedPort(),
-            });
+            };
+            if (edge.Ui?.Waypoints is { Count: > 0 } wps)
+            {
+                foreach (var w in wps)
+                    conn.Waypoints.Add(new Point(w.X, w.Y));
+            }
+            conn.BindAnchorUpdates();
+            Connections.Add(conn);
         }
+        UpdateConnectorStates();
+        RefreshDiagramNodeIds();
+        ScheduleConnectionAnchorSync();
+        ClearDiagramSelection();
+        RefreshRunFlowTargets();
+        ReloadProjectVariablesUi();
+        RebuildTemplateVariableNames();
+    }
+
+    void ScheduleConnectionAnchorSync()
+    {
+        Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var node in Nodes)
+            {
+                node.Input?.RefreshAnchor();
+                node.Output?.RefreshAnchor();
+            }
+            foreach (var conn in Connections)
+                conn.NotifyGeometryChanged();
+        }, DispatcherPriority.Loaded);
     }
 
     void SaveProject()
@@ -352,16 +593,18 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         }
         SyncUiToProject();
         ProjectLoader.SaveProject(_projectDir, _project);
+        SaveAllFlowFiles();
         _savedDigest = ProjectDigest();
         IsDirty = false;
         OnPropertyChanged(nameof(Title));
-        Status = "Salvo";
+        SetStatus("Salvo");
     }
 
     void SyncUiToProject()
     {
         var uiMap = Nodes.ToDictionary(n => n.Id, n => n.Location);
-        var updatedNodes = _project.Flow.Nodes.Select(node => new Node
+        var (sliceNodes, sliceEdges, start) = ActiveGraphSlice();
+        var updatedNodes = sliceNodes.Select(node => new Node
         {
             Id = node.Id,
             Kind = node.Kind,
@@ -371,17 +614,53 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             ErrorHandling = node.ErrorHandling,
             Ui = uiMap.TryGetValue(node.Id, out var loc) ? new NodeUi { X = loc.X, Y = loc.Y } : node.Ui,
         }).ToList();
-        _project = new FlowProject
+        var updatedEdges = ApplyConnectionWaypoints(sliceEdges);
+        WriteActiveGraphSlice(updatedNodes, updatedEdges);
+        if (_activeSubflowId is null)
         {
-            Manifest = _project.Manifest,
-            Flow = new FlowGraph
+            _project = new FlowProject
             {
-                Start = _project.Flow.Start,
-                Nodes = updatedNodes,
-                Edges = _project.Flow.Edges,
-            },
-            Variables = _project.Variables,
-        };
+                Manifest = _project.Manifest,
+                Flow = new FlowGraph
+                {
+                    Start = start,
+                    Nodes = updatedNodes,
+                    Edges = updatedEdges,
+                    Subflows = _project.Flow.Subflows,
+                },
+                Variables = _project.Variables,
+            };
+        }
+    }
+
+    List<Edge> ApplyConnectionWaypoints(List<Edge> edges)
+    {
+        var result = new List<Edge>(edges.Count);
+        foreach (var edge in edges)
+        {
+            var conn = Connections.FirstOrDefault(c =>
+                c.Source.Id == edge.From && c.Target.Id == edge.To && c.Port == edge.ResolvedPort());
+            if (conn is null || conn.Waypoints.Count == 0)
+            {
+                result.Add(edge);
+                continue;
+            }
+            result.Add(new Edge
+            {
+                Id = edge.Id,
+                From = edge.From,
+                To = edge.To,
+                Port = edge.Port,
+                Label = edge.Label,
+                Ui = new EdgeUi
+                {
+                    Waypoints = conn.Waypoints.Select(p => new Waypoint { X = p.X, Y = p.Y }).ToList(),
+                    SourceHandle = edge.Ui?.SourceHandle,
+                    TargetHandle = edge.Ui?.TargetHandle,
+                },
+            });
+        }
+        return result;
     }
 
     void Validate()
@@ -390,12 +669,12 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         {
             SyncUiToProject();
             GraphValidator.ValidateProject(_project);
-            Status = "Fluxo válido";
+            SetStatus("Fluxo válido");
             MessageBox.Show("Fluxo válido.", "Validação", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (ValidationException ex)
         {
-            Status = ex.Message;
+            SetStatus(ex.Message, isError: true);
             MessageBox.Show(ex.Message, "Validação", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -416,11 +695,12 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         }
 
         LogLines.Clear();
+        CopyLogCommand.RaiseCanExecuteChanged();
         IsRunning = true;
         _runCts = new CancellationTokenSource();
         var dir = _projectDir;
         var project = _project;
-        Status = "Executando…";
+        SetStatus("Executando…");
 
         try
         {
@@ -432,22 +712,23 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         LogLines.Add(RunLogLine.FromEvent(evt));
+                        CopyLogCommand.RaiseCanExecuteChanged();
                         RecordRunEvent(evt);
                         SetActiveHighlight();
                         if (evt is RunEvent.ActionExecuted)
-                            Status = "Executando…";
+                            SetStatus("Executando…");
                     }, DispatcherPriority.Background);
                 }, token);
             }, token);
-            Status = "Execução concluída";
+            SetStatus("Execução concluída");
         }
         catch (OperationCanceledException)
         {
-            Status = "Execução cancelada";
+            SetStatus("Execução cancelada");
         }
         catch (Exception ex)
         {
-            Status = RunErrors.CliMessage(ex);
+            SetStatus(RunErrors.CliMessage(ex), isError: true);
             MessageBox.Show(RunErrors.CliMessage(ex), "Execução", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
@@ -465,11 +746,40 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         _runCts?.Cancel();
     }
 
-    void AddNodeFromPalette()
+    void CopyLogToClipboard()
     {
+        if (LogLines.Count == 0)
+            return;
+        var text = string.Join(
+            Environment.NewLine,
+            LogLines.Select(l => ShowLogJson ? l.Json : l.Human));
+        Clipboard.SetText(text);
+        SetStatus($"Log copiado ({LogLines.Count} linha(s)).");
+    }
+
+    void AddNodeFromPalette(string paletteKey)
+    {
+        if (!CanEditDiagram)
+            return;
+        if (paletteKey == "ui:create_subflow")
+        {
+            CreateSubflow();
+            return;
+        }
+        if (paletteKey == "node:start")
+        {
+            AddStartNodeFromPalette();
+            return;
+        }
+        if (paletteKey == "node:end")
+        {
+            AddEndNodeFromPalette();
+            return;
+        }
         PushHistory();
         var id = $"node_{Guid.NewGuid():N}"[..12];
-        var (kind, action, control) = CreateNodeFromPalette(PaletteSelection);
+        var taken = CollectTakenNames();
+        var (kind, action, control) = CreateNodeFromPalette(paletteKey, taken);
         var node = new Node
         {
             Id = id,
@@ -477,30 +787,122 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             Label = id,
             Action = action,
             Control = control,
-            Ui = ComputePalettePlacement(),
         };
-        _project.Flow.Nodes.Add(node);
-        var attachFrom = SelectedNodeId ?? _project.Flow.Start;
-        _project.Flow.Edges.Add(new Edge { From = attachFrom, To = id, Port = "main" });
+        var (sliceNodes, sliceEdges, _) = ActiveGraphSlice();
+        node.Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId);
+        sliceNodes.Add(node);
+        WriteActiveGraphSlice(sliceNodes, sliceEdges);
+        if (_activeSubflowId is null)
+        {
+            _project.Flow.Nodes = sliceNodes;
+            _project.Flow.Edges = sliceEdges;
+        }
         RebuildCanvas();
-        SelectedNodeId = id;
+        var vm = Nodes.FirstOrDefault(n => n.Id == id);
+        SelectSingleNode(vm);
+        OnPropertyChanged(nameof(ShowWelcomeHint));
         MarkDirty();
+        SetStatus("Nó adicionado — ligue arrastando conectores no canvas ou use Nova ligação no painel.");
     }
 
-    NodeUi ComputePalettePlacement()
+    void AddStartNodeFromPalette()
     {
-        var n = _project.Flow.Nodes.Count;
-        var col = n % 4;
-        var row = n / 4;
-        return new NodeUi { X = 80 + col * 180, Y = 60 + row * 120 };
+        var (sliceNodes, sliceEdges, start) = ActiveGraphSlice();
+        if (sliceNodes.Any(n => n.Kind == NodeKind.Start))
+        {
+            SetStatus("Este fluxo já tem um nó Start.", isError: true);
+            return;
+        }
+        PushHistory();
+        var id = sliceNodes.Any(n => n.Id == "start") ? $"start_{Guid.NewGuid():N}"[..12] : "start";
+        var node = new Node
+        {
+            Id = id,
+            Kind = NodeKind.Start,
+            Label = "Start",
+            Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId),
+        };
+        sliceNodes.Add(node);
+        if (_activeSubflowId is null)
+            CurrentFileGraph().Start = id;
+        WriteActiveGraphSlice(sliceNodes, sliceEdges);
+        RebuildCanvas();
+        SelectSingleNode(Nodes.FirstOrDefault(n => n.Id == id));
+        MarkDirty();
+        SetStatus("Nó Start adicionado.");
     }
 
-    static (NodeKind kind, ActionKind? action, ControlKind? control) CreateNodeFromPalette(string key)
+    void AddEndNodeFromPalette()
+    {
+        PushHistory();
+        var (sliceNodes, sliceEdges, _) = ActiveGraphSlice();
+        var id = $"end_{Guid.NewGuid():N}"[..12];
+        var node = new Node
+        {
+            Id = id,
+            Kind = NodeKind.End,
+            Label = "End",
+            Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId),
+        };
+        sliceNodes.Add(node);
+        WriteActiveGraphSlice(sliceNodes, sliceEdges);
+        RebuildCanvas();
+        SelectSingleNode(Nodes.FirstOrDefault(n => n.Id == id));
+        MarkDirty();
+        SetStatus("Nó End adicionado.");
+    }
+
+    NodeUi ComputePalettePlacement(List<Node> sliceNodes, string? selectedNodeId)
+    {
+        const double nodeW = 180;
+        const double nodeH = 90;
+        const double stepX = nodeW + 40;
+        const double stepY = nodeH + 30;
+
+        var occupied = new List<(double X, double Y)>(sliceNodes.Count);
+        foreach (var n in sliceNodes)
+        {
+            var vm = Nodes.FirstOrDefault(v => v.Id == n.Id);
+            occupied.Add((vm?.Location.X ?? n.Ui?.X ?? 0, vm?.Location.Y ?? n.Ui?.Y ?? 0));
+        }
+
+        bool Overlaps(double x, double y) =>
+            occupied.Any(o => Math.Abs(o.X - x) < nodeW - 10 && Math.Abs(o.Y - y) < nodeH - 10);
+
+        (double x, double y) candidate;
+        if (selectedNodeId is not null && sliceNodes.Any(n => n.Id == selectedNodeId))
+        {
+            var anchor = sliceNodes.First(n => n.Id == selectedNodeId);
+            var vm = Nodes.FirstOrDefault(v => v.Id == selectedNodeId);
+            var ax = vm?.Location.X ?? anchor.Ui?.X ?? 80;
+            var ay = vm?.Location.Y ?? anchor.Ui?.Y ?? 120;
+            candidate = (ax + stepX, ay);
+            for (var i = 0; i < 24 && Overlaps(candidate.x, candidate.y); i++)
+                candidate = (candidate.x, candidate.y + stepY);
+        }
+        else
+        {
+            candidate = (200, 120);
+            for (var attempt = 0; attempt < 48; attempt++)
+            {
+                var idx = _paletteSpawnIndex++;
+                var col = idx % 4;
+                var row = idx / 4;
+                candidate = (200 + col * stepX, 120 + row * stepY);
+                if (!Overlaps(candidate.x, candidate.y))
+                    break;
+            }
+        }
+
+        return new NodeUi { X = candidate.x, Y = candidate.y };
+    }
+
+    static (NodeKind kind, ActionKind? action, ControlKind? control) CreateNodeFromPalette(string key, IReadOnlySet<string>? takenNames = null)
     {
         if (key.StartsWith("action:", StringComparison.Ordinal))
         {
             var type = key["action:".Length..];
-            return (NodeKind.Action, ActionDefaults.Create(type), null);
+            return (NodeKind.Action, ActionDefaults.Create(type, takenNames), null);
         }
         return key switch
         {
@@ -597,8 +999,26 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
 
     string ProjectDigest() => ProjectLoader.SerializeProjectToString(_project);
 
-    Node? GetSelectedNode() =>
-        _selectedNodeId is null ? null : _project.Flow.Nodes.FirstOrDefault(n => n.Id == _selectedNodeId);
+    Node? GetSelectedNode()
+    {
+        if (_selectedNodeId is null)
+            return null;
+        var (nodes, _, _) = ActiveGraphSlice();
+        return nodes.FirstOrDefault(n => n.Id == _selectedNodeId);
+    }
+
+    void AddWaypoint()
+    {
+        if (SelectedConnection is null || !CanEditDiagram)
+            return;
+        PushHistory();
+        var mid = new Point(
+            (SelectedConnection.SourcePoint.X + SelectedConnection.TargetPoint.X) / 2,
+            (SelectedConnection.SourcePoint.Y + SelectedConnection.TargetPoint.Y) / 2);
+        SelectedConnection.Waypoints.Add(mid);
+        SelectedConnection.NotifyGeometryChanged();
+        MarkDirty();
+    }
 
     void RefreshNodeSummary(Node node)
     {
@@ -629,6 +1049,17 @@ public sealed class RelayCommand(Action execute, Func<bool>? canExecute = null) 
     public bool CanExecute(object? parameter) => canExecute?.Invoke() ?? true;
 
     public void Execute(object? parameter) => execute();
+
+    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+}
+
+public sealed class RelayCommand<T>(Action<T?> execute, Func<T?, bool>? canExecute = null) : System.Windows.Input.ICommand
+{
+    public event EventHandler? CanExecuteChanged;
+
+    public bool CanExecute(object? parameter) => canExecute?.Invoke(parameter is T t ? t : default) ?? true;
+
+    public void Execute(object? parameter) => execute(parameter is T t ? t : default);
 
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }

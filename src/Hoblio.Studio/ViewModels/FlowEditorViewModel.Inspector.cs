@@ -54,6 +54,22 @@ public sealed partial class FlowEditorViewModel
 
     public string SelectedNodeKind => GetSelectedNode()?.Kind.ToString() ?? "";
 
+    public bool InspectorReadOnly => !IsEditing || IsRunning;
+
+    public bool ShowActionSection => GetSelectedNode()?.Kind == NodeKind.Action;
+    public bool ShowIfSection => GetSelectedNode()?.Kind == NodeKind.If;
+    public bool ShowForEachSection => GetSelectedNode()?.Kind == NodeKind.ForEach;
+    public bool ShowWhileSection => GetSelectedNode()?.Kind == NodeKind.WhileLoop;
+    public bool ShowRepeatSection => GetSelectedNode()?.Kind == NodeKind.Repeat;
+    public bool ShowActionErrorSection => GetSelectedNode()?.Kind == NodeKind.Action;
+
+    public bool ShowGenericFields => false;
+    public bool ShowGenericField2 => ShowGenericFields && !string.IsNullOrWhiteSpace(GenericField2Label);
+    public bool ShowGenericField3 => ShowGenericFields && !string.IsNullOrWhiteSpace(GenericField3Label);
+
+    public bool ShowRunFlowManifestPicker =>
+        GetSelectedNode()?.Action is RunFlowAction && RunFlowTargetIds.Count > 0;
+
     public string ActionType
     {
         get => GetSelectedNode()?.Action?.Type ?? "";
@@ -97,6 +113,12 @@ public sealed partial class FlowEditorViewModel
     {
         get => GetIf()?.IgnoreCase ?? false;
         set => PatchIf(c => c with { IgnoreCase = value });
+    }
+
+    public bool WhileIgnoreCase
+    {
+        get => GetWhile()?.IgnoreCase ?? false;
+        set => PatchWhile(c => c with { IgnoreCase = value });
     }
 
     public string ForEachListVariable
@@ -199,6 +221,33 @@ public sealed partial class FlowEditorViewModel
     public string NewEdgeToId { get; set; } = "";
     public string NewEdgePort { get; set; } = "main";
 
+    public string SelectedEdgeTargetId
+    {
+        get => SelectedConnection?.Target.Id ?? "";
+        set
+        {
+            if (SelectedConnection is null || string.IsNullOrWhiteSpace(value) || value == SelectedConnection.Target.Id)
+                return;
+            var newTo = value.Trim();
+            if (Nodes.All(n => n.Id != newTo))
+                return;
+            PatchSelectedEdge((edge, idx, edges) =>
+            {
+                edges[idx] = new Edge
+                {
+                    Id = edge.Id,
+                    From = edge.From,
+                    To = newTo,
+                    Port = edge.Port,
+                    Label = edge.Label,
+                    Ui = edge.Ui,
+                };
+            });
+            OnPropertyChanged();
+            SetStatus($"Destino atualizado → `{newTo}`.");
+        }
+    }
+
     public RelayCommand DeleteNodeCommand { get; private set; } = null!;
     public RelayCommand AddEdgeCommand { get; private set; } = null!;
     public RelayCommand RemoveEdgeCommand { get; private set; } = null!;
@@ -216,50 +265,30 @@ public sealed partial class FlowEditorViewModel
         return node is not null && node.Kind is not (NodeKind.Start or NodeKind.End);
     }
 
-    void DeleteSelectedNode()
-    {
-        var node = GetSelectedNode();
-        if (node is null || node.Kind is NodeKind.Start or NodeKind.End)
-            return;
-        PushHistory();
-        _project.Flow.Nodes.RemoveAll(n => n.Id == node.Id);
-        _project.Flow.Edges.RemoveAll(e => e.From == node.Id || e.To == node.Id);
-        SelectedNodeId = null;
-        RebuildCanvas();
-        MarkDirty();
-    }
+    void DeleteSelectedNode() => DeleteSelectedNodes();
 
     void AddEdge()
     {
         if (string.IsNullOrWhiteSpace(NewEdgeFromId) || string.IsNullOrWhiteSpace(NewEdgeToId))
             return;
+        var from = NewEdgeFromId.Trim();
+        var to = NewEdgeToId.Trim();
+        var port = string.IsNullOrWhiteSpace(NewEdgePort) ? "main" : NewEdgePort.Trim();
         PushHistory();
-        _project.Flow.Edges.Add(new Edge
+        PersistCanvasToActiveGraph();
+        var (nodes, edges, _) = ActiveGraphSlice();
+        if (edges.Any(e => e.From == from && e.To == to &&
+                           string.Equals(e.ResolvedPort().AsString(), port, StringComparison.OrdinalIgnoreCase)))
         {
-            From = NewEdgeFromId.Trim(),
-            To = NewEdgeToId.Trim(),
-            Port = NewEdgePort.Trim(),
-        });
-        RebuildCanvas();
-        MarkDirty();
+            SetStatus("Essa aresta já existe.");
+            return;
+        }
+        edges.Add(new Edge { From = from, To = to, Port = port });
+        CommitGraphSlice(nodes, edges);
+        SetStatus($"Aresta adicionada: {from} → {to} ({port}).");
     }
 
-    void RemoveSelectedEdge()
-    {
-        if (SelectedConnection is null)
-            return;
-        PushHistory();
-        var from = SelectedConnection.Source.Id;
-        var to = SelectedConnection.Target.Id;
-        var port = SelectedConnection.Port.AsString();
-        var idx = _project.Flow.Edges.FindIndex(e =>
-            e.From == from && e.To == to && string.Equals(e.Port, port, StringComparison.OrdinalIgnoreCase));
-        if (idx >= 0)
-            _project.Flow.Edges.RemoveAt(idx);
-        SelectedConnection = null;
-        RebuildCanvas();
-        MarkDirty();
-    }
+    void RemoveSelectedEdge() => OnRemoveConnection(SelectedConnection);
 
     void RecordRunEvent(RunEvent evt)
     {
@@ -290,6 +319,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(IfRight));
         OnPropertyChanged(nameof(IfOperator));
         OnPropertyChanged(nameof(IfIgnoreCase));
+        OnPropertyChanged(nameof(WhileIgnoreCase));
         OnPropertyChanged(nameof(ForEachListVariable));
         OnPropertyChanged(nameof(ForEachItemVariable));
         OnPropertyChanged(nameof(WhileLeft));
@@ -300,28 +330,27 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(RetryCountText));
         OnPropertyChanged(nameof(RetryDelayText));
         OnPropertyChanged(nameof(OnFailureContinue));
-        OnPropertyChanged(nameof(GenericField1));
-        OnPropertyChanged(nameof(GenericField2));
-        OnPropertyChanged(nameof(GenericField3));
-        OnPropertyChanged(nameof(GenericField1Label));
-        OnPropertyChanged(nameof(GenericField2Label));
-        OnPropertyChanged(nameof(GenericField3Label));
-        OnPropertyChanged(nameof(ProducerOverview));
         OnPropertyChanged(nameof(NodeLabelEdit));
-        OnPropertyChanged(nameof(LogMessageEdit));
+        RefreshActionFieldBindings();
         OnPropertyChanged(nameof(LastRunVariablesText));
+        OnPropertyChanged(nameof(ShowRunFlowManifestPicker));
+        OnPropertyChanged(nameof(ShowRunFlowSection));
+        OnPropertyChanged(nameof(ShowRunFlowOpenSubflow));
+        OnPropertyChanged(nameof(RunFlowId));
+        OnPropertyChanged(nameof(RunFlowPath));
+        OnPropertyChanged(nameof(RunFlowScopeMode));
+        OnPropertyChanged(nameof(RunFlowShareBrowser));
+        OnPropertyChanged(nameof(RunFlowInputsText));
+        OnPropertyChanged(nameof(RunFlowOutputsText));
+        OpenSelectedRunFlowSubflowCommand?.RaiseCanExecuteChanged();
+        RefreshInspectorVisibility();
     }
 
     HashSet<string> CollectTakenNames()
     {
-        var set = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var node in _project.Flow.Nodes)
-        {
-            if (node.Action is { } a)
-                foreach (var v in a.ProducedVariables())
-                    set.Add(v);
-        }
-        return set;
+        var (nodes, _, _) = ActiveGraphSlice();
+        var seeds = ProjectScalars.Select(s => s.Name).Where(n => !string.IsNullOrWhiteSpace(n));
+        return FlowOccupiedVariableNames.Collect(nodes, seeds);
     }
 
     IfControl? GetIf()
@@ -379,9 +408,7 @@ public sealed partial class FlowEditorViewModel
         if (node?.Control is not ForEachControlKind c)
             return;
         var next = patch(c.AsForEach());
-        node.Control = new ForEachControlKind { ListVariable = next.ListVariable, ItemVariable = next.ItemVariable };
-        MarkDirty();
-        RefreshAllInspector();
+        CommitForEachWithOptionalProducerRename(c.ItemVariable, next);
     }
 
     void PatchWhile(Func<IfControl, IfControl> patch)
@@ -407,9 +434,7 @@ public sealed partial class FlowEditorViewModel
         if (node?.Control is not RepeatControlKind c)
             return;
         var next = patch(c.AsRepeat());
-        node.Control = new RepeatControlKind { Times = next.Times, IndexVariable = next.IndexVariable };
-        MarkDirty();
-        RefreshAllInspector();
+        CommitRepeatWithOptionalProducerRename(c.IndexVariable, next);
     }
 
     void PatchErrorHandling(Action<ErrorHandling> patch)
@@ -425,6 +450,7 @@ public sealed partial class FlowEditorViewModel
 
     (string label1, string label2, string label3) GenericLabels() => GetSelectedNode()?.Action switch
     {
+        RunFlowAction => ("flow_id", "path (alternativo)", "outputs (vírgula)"),
         BrowserNavigateAction => ("URL", "wait_ms", "show_on_screen (true/false)"),
         BrowserClickAction => ("selector", "timeout_ms", "wait_for_navigation (true/false)"),
         BrowserFillAction => ("selector", "text", "timeout_ms"),
@@ -441,6 +467,13 @@ public sealed partial class FlowEditorViewModel
 
     string ReadGeneric(int index) => GetSelectedNode()?.Action switch
     {
+        RunFlowAction a => index switch
+        {
+            1 => a.FlowId ?? "",
+            2 => a.Path ?? "",
+            3 => a.Outputs is null ? "" : string.Join(", ", a.Outputs),
+            _ => "",
+        },
         BrowserNavigateAction a => index switch { 1 => a.Url, 2 => a.WaitMs?.ToString() ?? "", 3 => a.ShowOnScreen?.ToString() ?? "", _ => "" },
         BrowserClickAction a => index switch { 1 => a.Selector, 2 => a.TimeoutMs?.ToString() ?? "", 3 => a.WaitForNavigation?.ToString() ?? "", _ => "" },
         BrowserFillAction a => index switch { 1 => a.Selector, 2 => a.Text, 3 => a.TimeoutMs?.ToString() ?? "", _ => "" },
@@ -462,6 +495,17 @@ public sealed partial class FlowEditorViewModel
             return;
         node.Action = node.Action switch
         {
+            RunFlowAction a => new RunFlowAction
+            {
+                FlowId = index == 1 ? value : a.FlowId,
+                Path = index == 2 ? value : a.Path,
+                Outputs = index == 3
+                    ? value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList()
+                    : a.Outputs,
+                Inputs = a.Inputs,
+                ShareBrowser = a.ShareBrowser,
+                VariableScope = a.VariableScope,
+            },
             BrowserNavigateAction a => new BrowserNavigateAction
             {
                 Url = index == 1 ? value : a.Url,

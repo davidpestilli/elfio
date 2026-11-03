@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hoblio.Model\Hoblio.Model.csproj" />
+    <ProjectReference Include="..\Hoblio.Serde\Hoblio.Serde.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="PuppeteerSharp" Version="25.15.0" />

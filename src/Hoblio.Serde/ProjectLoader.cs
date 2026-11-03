@@ -100,6 +100,11 @@ public static class ProjectLoader
         JsonSerializer.Serialize(writer, flow.Nodes, HoblioJson.Options);
         writer.WritePropertyName("edges");
         JsonSerializer.Serialize(writer, flow.Edges, HoblioJson.Options);
+        if (flow.Subflows is { Count: > 0 })
+        {
+            writer.WritePropertyName("subflows");
+            JsonSerializer.Serialize(writer, flow.Subflows, HoblioJson.Options);
+        }
         if (variables.Count > 0)
         {
             writer.WritePropertyName("variables");
@@ -120,6 +125,26 @@ public static class ProjectLoader
         GraphValidator.ValidateProject(project);
     }
 
+    public static (FlowGraph Graph, Dictionary<string, JsonElement> Variables) LoadFlowDocument(
+        string projectDir,
+        string relativePath)
+    {
+        var full = ChildFlowResolver.ResolveProjectFlowPath(projectDir, relativePath);
+        var loaded = ChildFlowResolver.LoadFlowFile(full);
+        return (loaded.Graph, loaded.Variables);
+    }
+
+    public static void SaveFlowDocument(
+        string projectDir,
+        string relativePath,
+        FlowGraph flow,
+        Dictionary<string, JsonElement> variables)
+    {
+        var full = ChildFlowResolver.ResolveProjectFlowPath(projectDir, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        WriteFlow(full, flow, variables);
+    }
+
     static void WriteFlow(string path, FlowGraph flow, Dictionary<string, JsonElement> variables)
     {
         var flowJson = JsonSerializer.Serialize(flow, HoblioJson.Options);
@@ -133,6 +158,11 @@ public static class ProjectLoader
             doc.RootElement.GetProperty("nodes").WriteTo(writer);
             writer.WritePropertyName("edges");
             doc.RootElement.GetProperty("edges").WriteTo(writer);
+            if (doc.RootElement.TryGetProperty("subflows", out var subflowsEl))
+            {
+                writer.WritePropertyName("subflows");
+                subflowsEl.WriteTo(writer);
+            }
             if (variables.Count > 0)
             {
                 writer.WritePropertyName("variables");

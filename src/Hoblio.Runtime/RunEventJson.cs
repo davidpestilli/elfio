@@ -28,6 +28,18 @@ public static class RunEventJson
             ["kind"] = "run_finished",
             ["last_node"] = e.LastNode,
         }.ToJsonString(),
+        RunEvent.FlowStarted e => new JsonObject
+        {
+            ["kind"] = "flow_started",
+            ["flow_ref"] = e.FlowRef,
+            ["parent_node_id"] = e.ParentNodeId,
+        }.ToJsonString(),
+        RunEvent.FlowFinished e => new JsonObject
+        {
+            ["kind"] = "flow_finished",
+            ["flow_ref"] = e.FlowRef,
+            ["end_node_id"] = e.EndNodeId,
+        }.ToJsonString(),
         _ => "{}",
     };
 

@@ -1,9 +1,10 @@
 using Hoblio.Model;
 using Hoblio.Model.Json;
+using Hoblio.Serde;
 
 namespace Hoblio.Runtime;
 
-public static class FlowExecutor
+public static partial class FlowExecutor
 {
     const int MaxNodeVisits = 10_000;
 
@@ -56,13 +57,51 @@ public static class FlowExecutor
 
         Emit(new RunEvent.RunStarted(project.Manifest.Name));
 
-        var nodes = project.Flow.Nodes.ToDictionary(n => n.Id);
-        var routes = BuildRoutes(project.Flow.Edges);
         var runVars = RunVariables.SeedFromProject(project.Variables);
-        var loopFrames = new List<object>();
-
-        var current = project.Flow.Start;
+        var flowCache = new Dictionary<string, LoadedFlowFile>(StringComparer.OrdinalIgnoreCase);
         var visits = 0;
+        var endNode = ExecuteGraph(
+            project.Flow,
+            project.Flow,
+            project.Manifest.Name,
+            depth: 0,
+            project.Manifest,
+            projectRoot,
+            browser,
+            runVars,
+            [],
+            flowCache,
+            ref visits,
+            Emit,
+            cancellationToken);
+        Emit(new RunEvent.RunFinished(endNode));
+        return new RunOutcome { Events = events, LastNodeId = endNode };
+    }
+
+    static string ExecuteGraph(
+        FlowGraph graph,
+        FlowGraph resolveGraph,
+        string flowRef,
+        int depth,
+        FlowManifest manifest,
+        string? projectRoot,
+        BrowserContext browser,
+        RunVariables runVars,
+        List<object> loopFrames,
+        Dictionary<string, LoadedFlowFile> flowCache,
+        ref int visits,
+        Action<RunEvent> emit,
+        CancellationToken cancellationToken)
+    {
+        if (depth >= ChildFlowResolver.MaxRunFlowDepth)
+            throw new InvalidOperationException($"run_flow exceeds maximum depth {ChildFlowResolver.MaxRunFlowDepth}");
+
+        if (depth > 0)
+            GraphValidator.ValidateGraph(graph);
+
+        var nodes = graph.Nodes.ToDictionary(n => n.Id);
+        var routes = BuildRoutes(graph.Edges);
+        var current = graph.Start;
 
         while (true)
         {
@@ -76,7 +115,7 @@ public static class FlowExecutor
             if (!nodes.TryGetValue(current, out var node))
                 throw new InvalidOperationException($"node `{current}` missing");
 
-            Emit(new RunEvent.NodeEnter(node.Id));
+            emit(new RunEvent.NodeEnter(node.Id));
             string? routed = null;
 
             switch (node.Kind)
@@ -84,35 +123,91 @@ public static class FlowExecutor
                 case NodeKind.Start:
                     break;
                 case NodeKind.End:
-                    Emit(new RunEvent.NodeExit(node.Id));
-                    Emit(new RunEvent.RunFinished(node.Id));
-                    return new RunOutcome { Events = events, LastNodeId = node.Id };
+                    emit(new RunEvent.NodeExit(node.Id));
+                    return node.Id;
                 case NodeKind.Action:
                 {
                     if (node.Action is null)
                         throw new InvalidOperationException("action node without action");
-                    var summary = ExecuteWithPolicy(node.Action, node.ErrorHandling, browser, runVars, projectRoot);
+                    string summary;
+                    if (node.Action is RunFlowAction runFlow)
+                    {
+                        var resolved = ChildFlowResolver.Resolve(projectRoot, manifest, resolveGraph, runFlow, flowCache);
+                        var childLabel = !string.IsNullOrWhiteSpace(runFlow.FlowId)
+                            ? runFlow.FlowId.Trim()
+                            : resolved.Label;
+                        var scope = runFlow.VariableScope ?? RunFlowVariableScope.Inherit;
+                        emit(new RunEvent.FlowStarted(childLabel, node.Id));
+                        string endNode;
+                        if (scope == RunFlowVariableScope.Isolated)
+                        {
+                            var snapshot = new RunVariables();
+                            foreach (var kv in runVars)
+                                snapshot[kv.Key] = kv.Value;
+                            var childVars = new RunVariables();
+                            RunFlowSupport.ApplyIsolatedInputs(runFlow.Inputs, resolved.Variables, runVars, childVars);
+                            endNode = ExecuteGraph(
+                                resolved.Graph,
+                                resolved.Graph,
+                                childLabel,
+                                depth + 1,
+                                manifest,
+                                projectRoot,
+                                browser,
+                                childVars,
+                                [],
+                                flowCache,
+                                ref visits,
+                                emit,
+                                cancellationToken);
+                            RunFlowSupport.MergeIsolatedOutputs(runVars, snapshot, childVars, runFlow.Outputs);
+                        }
+                        else
+                        {
+                            RunFlowSupport.ApplyInheritInputs(runFlow.Inputs, resolved.Variables, runVars);
+                            endNode = ExecuteGraph(
+                                resolved.Graph,
+                                resolved.Graph,
+                                childLabel,
+                                depth + 1,
+                                manifest,
+                                projectRoot,
+                                browser,
+                                runVars,
+                                [],
+                                flowCache,
+                                ref visits,
+                                emit,
+                                cancellationToken);
+                        }
+                        emit(new RunEvent.FlowFinished(childLabel, endNode));
+                        summary = RunFlowSupport.Summary(childLabel, endNode, runFlow.Outputs, runVars);
+                    }
+                    else
+                    {
+                        summary = ExecuteWithPolicy(node.Action, node.ErrorHandling, browser, runVars, projectRoot);
+                    }
                     var variables = ActionExecutor.SnapshotVariables(node.Action, runVars);
-                    Emit(new RunEvent.ActionExecuted(node.Id, summary, variables));
+                    emit(new RunEvent.ActionExecuted(node.Id, summary, variables));
                     break;
                 }
                 case NodeKind.If:
                 {
-                    if (node.Control is not IfControlKind ifc)
+                    if (node.Control is not IfControlKind)
                         throw new InvalidOperationException("if node has wrong control kind");
-                    var cfg = ifc.AsIf();
+                    var cfg = node.Control.AsIf();
                     var pass = ExpressionEvaluator.EvalIf(cfg, runVars);
                     var port = pass ? EdgePort.Then : EdgePort.Else;
                     var summary = $"if {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}";
-                    Emit(new RunEvent.ActionExecuted(node.Id, summary, null));
+                    emit(new RunEvent.ActionExecuted(node.Id, summary, null));
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
                 case NodeKind.ForEach:
                 {
-                    if (node.Control is not ForEachControlKind fec)
+                    if (node.Control is not ForEachControlKind)
                         throw new InvalidOperationException("for_each node has wrong control kind");
-                    var cfg = fec.AsForEach();
+                    var cfg = node.Control.AsForEach();
                     var returning = loopFrames.FindLastIndex(f => f is LoopFrameForEach ff && ff.ForEachId == node.Id);
                     EdgePort port;
                     if (returning >= 0)
@@ -142,15 +237,15 @@ public static class FlowExecutor
                             port = EdgePort.Body;
                         }
                     }
-                    Emit(new RunEvent.ActionExecuted(node.Id, $"for_each `{cfg.ListVariable}` -> port {port.AsString()}", null));
+                    emit(new RunEvent.ActionExecuted(node.Id, $"for_each `{cfg.ListVariable}` -> port {port.AsString()}", null));
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
                 case NodeKind.WhileLoop:
                 {
-                    if (node.Control is not WhileControlKind wc)
+                    if (node.Control is not WhileControlKind)
                         throw new InvalidOperationException("while_loop node has wrong control kind");
-                    var cfg = wc.AsIf();
+                    var cfg = node.Control.AsIf();
                     var active = loopFrames.Any(f => f is LoopFrameWhile w && w.WhileId == node.Id);
                     var pass = ExpressionEvaluator.EvalIf(cfg, runVars);
                     EdgePort port;
@@ -167,15 +262,15 @@ public static class FlowExecutor
                     }
                     else
                         port = EdgePort.After;
-                    Emit(new RunEvent.ActionExecuted(node.Id, $"while {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}", null));
+                    emit(new RunEvent.ActionExecuted(node.Id, $"while {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}", null));
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
                 case NodeKind.Repeat:
                 {
-                    if (node.Control is not RepeatControlKind rc)
+                    if (node.Control is not RepeatControlKind)
                         throw new InvalidOperationException("repeat node has wrong control kind");
-                    var cfg = rc.AsRepeat();
+                    var cfg = node.Control.AsRepeat();
                     var returning = loopFrames.FindLastIndex(f => f is LoopFrameRepeat rr && rr.RepeatId == node.Id);
                     EdgePort port = EdgePort.After;
                     if (returning >= 0)
@@ -209,7 +304,7 @@ public static class FlowExecutor
                             port = EdgePort.Body;
                         }
                     }
-                    Emit(new RunEvent.ActionExecuted(node.Id, $"repeat `{cfg.Times}` -> port {port.AsString()}", null));
+                    emit(new RunEvent.ActionExecuted(node.Id, $"repeat `{cfg.Times}` -> port {port.AsString()}", null));
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
@@ -225,7 +320,7 @@ public static class FlowExecutor
                         LoopFrameRepeat rp => NextRepeat(rp, loopFrames, routes, runVars),
                         _ => throw new InvalidOperationException("next_loop frame mismatch"),
                     };
-                    Emit(new RunEvent.ActionExecuted(node.Id, "next_loop", null));
+                    emit(new RunEvent.ActionExecuted(node.Id, "next_loop", null));
                     break;
                 }
                 case NodeKind.ExitLoop:
@@ -242,12 +337,12 @@ public static class FlowExecutor
                         _ => throw new InvalidOperationException("exit_loop frame mismatch"),
                     };
                     routed = RouteTo(routes, loopId, EdgePort.After);
-                    Emit(new RunEvent.ActionExecuted(node.Id, "exit_loop", null));
+                    emit(new RunEvent.ActionExecuted(node.Id, "exit_loop", null));
                     break;
                 }
             }
 
-            Emit(new RunEvent.NodeExit(node.Id));
+            emit(new RunEvent.NodeExit(node.Id));
             current = routed ?? RouteTo(routes, current, EdgePort.Main);
         }
     }

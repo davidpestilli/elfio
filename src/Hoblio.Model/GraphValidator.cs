@@ -82,6 +82,16 @@ public static class GraphValidator
         if (!hasEnd)
             throw new ValidationException(ValidationErrorKind.MissingEnd, "graph has no End node");
 
+        if (graph.Subflows is not null)
+        {
+            foreach (var (name, bundle) in graph.Subflows)
+            {
+                if (!IsValidVariableName(name))
+                    throw new ValidationException(ValidationErrorKind.InvalidVariableName, $"invalid embedded subflow id `{name}`");
+                ValidateGraph(bundle.AsGraph(null));
+            }
+        }
+
         var outgoing = new Dictionary<string, List<(EdgePort Port, string To)>>();
         foreach (var edge in graph.Edges)
         {
@@ -167,6 +177,10 @@ public static class GraphValidator
                     throw new ValidationException(ValidationErrorKind.InvalidListVariable, $"for_each node `{node.Id}` has invalid list variable name ``");
                 if (action is ListClearAction { ListVariable: var lc } && string.IsNullOrWhiteSpace(lc))
                     throw new ValidationException(ValidationErrorKind.InvalidListVariable, $"for_each node `{node.Id}` has invalid list variable name ``");
+                if (action is RunFlowAction rf
+                    && string.IsNullOrWhiteSpace(rf.FlowId)
+                    && string.IsNullOrWhiteSpace(rf.Path))
+                    throw new ValidationException(ValidationErrorKind.ActionNodeMissingAction, $"node `{node.Id}` run_flow requires flow_id or path");
 
                 foreach (var name in action.ProducedVariables())
                 {

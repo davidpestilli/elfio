@@ -1,0 +1,21 @@
+<UserControl x:Class="Hoblio.Studio.TemplateVariableChips"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Visibility="{Binding ShowTemplateVariablePicker, Converter={StaticResource BoolVis}}">
+    <TextBlock Text="Inserir variável" Foreground="#64748B" FontSize="10" Margin="0,0,0,4"/>
+    <ItemsControl ItemsSource="{Binding TemplateVariableNames}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Button Content="{Binding StringFormat={}{0}}"
+                  Padding="6,2" Margin="0,0,4,4" FontSize="10" FontFamily="Consolas"
+                  Click="Chip_Click"/>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</UserControl>

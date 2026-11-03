@@ -1,0 +1,35 @@
+using Hoblio.Model;
+
+namespace Hoblio.Studio;
+
+public sealed record FlowVariableProducer(string Name, string NodeId, string NodeLabel, string Source);
+
+public static class FlowVariableProducers
+{
+    public static IReadOnlyList<FlowVariableProducer> Collect(IEnumerable<Node> nodes)
+    {
+        var list = new List<FlowVariableProducer>();
+        foreach (var node in nodes)
+        {
+            var title = string.IsNullOrWhiteSpace(node.Label) ? node.Id : node.Label.Trim();
+            if (node.Action is BrowserGetTextAction gt && !string.IsNullOrWhiteSpace(gt.Variable))
+                list.Add(new(gt.Variable.Trim(), node.Id, title, "BrowserGetText"));
+            if (node.Action is SetVariableAction sv && !string.IsNullOrWhiteSpace(sv.Variable))
+                list.Add(new(sv.Variable.Trim(), node.Id, title, "SetVariable"));
+            if (node.Action is FileReadAction fr && !string.IsNullOrWhiteSpace(fr.Variable))
+                list.Add(new(fr.Variable.Trim(), node.Id, title, "FileRead"));
+            if (node.Action is ShowGetUserInputAction ui)
+            {
+                if (!string.IsNullOrWhiteSpace(ui.UserInputVariable))
+                    list.Add(new(ui.UserInputVariable.Trim(), node.Id, title, "ShowGetUserInput (UserInput)"));
+                if (!string.IsNullOrWhiteSpace(ui.ButtonPressedVariable))
+                    list.Add(new(ui.ButtonPressedVariable.Trim(), node.Id, title, "ShowGetUserInput (ButtonPressed)"));
+            }
+            if (node.Kind == NodeKind.ForEach && node.Control is ForEachControlKind fe && !string.IsNullOrWhiteSpace(fe.ItemVariable))
+                list.Add(new(fe.ItemVariable.Trim(), node.Id, title, "for_each item"));
+            if (node.Kind == NodeKind.Repeat && node.Control is RepeatControlKind rp && !string.IsNullOrWhiteSpace(rp.IndexVariable))
+                list.Add(new(rp.IndexVariable.Trim(), node.Id, title, "repeat index"));
+        }
+        return list;
+    }
+}

@@ -46,6 +46,31 @@ public class DemoFlowTests
     }
 
     [Fact]
+    public void Flow_compose_demo_runs()
+    {
+        var path = ExamplePaths.Resolve("flow-compose-demo");
+        var project = ProjectLoader.LoadProject(path);
+        var outcome = FlowExecutor.RunProject(project, path);
+        Assert.Equal("end", outcome.LastNodeId);
+        var logs = outcome.Events.OfType<RunEvent.ActionExecuted>().Select(e => e.Summary).ToList();
+        Assert.Contains(logs, s => s.Contains("run_flow") && s.Contains("greet"));
+        Assert.Contains(logs, s => s.Contains("From child:"));
+        Assert.Contains(logs, s => s.Contains("Done flag:"));
+    }
+
+    [Fact]
+    public void Flow_compose_subflow_runs()
+    {
+        var path = ExamplePaths.Resolve("flow-compose-subflow");
+        var project = ProjectLoader.LoadProject(path);
+        var outcome = FlowExecutor.RunProject(project, path);
+        Assert.Equal("end", outcome.LastNodeId);
+        var logs = outcome.Events.OfType<RunEvent.ActionExecuted>().Select(e => e.Summary).ToList();
+        Assert.Contains(logs, s => s.Contains("run_flow") && s.Contains("greet_inline"));
+        Assert.Contains(logs, s => s.Contains("Message:"));
+    }
+
+    [Fact]
     public void Resilience_demo_runs()
     {
         var path = ExamplePaths.Resolve("resilience-demo");

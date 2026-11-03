@@ -1,12 +1,30 @@
 # Verifica build, testes e validate nos exemplos do repo Rust original.
 param(
-    [string]$ExamplesRoot = "E:\Projetos\hoblio\examples"
+    [string]$ExamplesRoot = ""
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 $Root = Split-Path -Parent $PSScriptRoot
 $dotnet = "C:\Program Files\dotnet\dotnet.exe"
+
+if ([string]::IsNullOrWhiteSpace($ExamplesRoot)) {
+    $envRoot = $env:HOBLIO_EXAMPLES_ROOT
+    if (-not [string]::IsNullOrWhiteSpace($envRoot) -and (Test-Path $envRoot)) {
+        $ExamplesRoot = $envRoot
+    }
+    elseif (Test-Path (Join-Path $Root "examples\demo-flow")) {
+        $ExamplesRoot = Join-Path $Root "examples"
+    }
+    elseif (Test-Path "E:\Projetos\hoblio\examples\demo-flow") {
+        $ExamplesRoot = "E:\Projetos\hoblio\examples"
+    }
+    else {
+        $ExamplesRoot = Join-Path $Root "examples"
+    }
+}
+
+Write-Host "Examples root: $ExamplesRoot"
 
 Push-Location $Root
 try {
@@ -25,6 +43,8 @@ try {
         "variables-loops-demo",
         "files-lists-demo",
         "resilience-demo",
+        "flow-compose-subflow",
+        "flow-compose-demo",
         "web-demo-flow",
         "browser-demo-flow"
     )
@@ -36,7 +56,11 @@ try {
             $report += "SKIP validate $name (missing)"
             continue
         }
-        $code = cmd /c "`"$cli`" validate `"$dir`" >nul 2>&1 & exit /b %ERRORLEVEL%"
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        & $cli validate $dir 1>$null 2>$null
+        $code = $LASTEXITCODE
+        $ErrorActionPreference = $prevEap
         if ($code -ne 0) {
             $report += "FAIL validate $name"
         } else {

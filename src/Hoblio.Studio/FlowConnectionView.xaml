@@ -1,0 +1,28 @@
+<UserControl x:Class="Hoblio.Studio.FlowConnectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Hoblio.Studio.ViewModels">
+  <Canvas>
+    <Path Data="{Binding RouteGeometry}"
+          Stroke="#2563EB"
+          StrokeThickness="2"
+          Fill="Transparent"
+          StrokeLineJoin="Round"
+          StrokeStartLineCap="Round"
+          StrokeEndLineCap="Round"
+          Cursor="Hand"
+          MouseLeftButtonDown="OnConnectionClick"/>
+    <Path Data="{Binding RouteGeometry}"
+          Stroke="#2563EB"
+          StrokeThickness="10"
+          Opacity="0.12"
+          Fill="Transparent"
+          Visibility="{Binding IsSelected, Converter={StaticResource BoolVis}}"
+          IsHitTestVisible="False"/>
+    <Polygon Points="{Binding ArrowHeadPoints}"
+             Fill="#2563EB"
+             Stroke="#2563EB"
+             StrokeThickness="1"
+             IsHitTestVisible="False"/>
+  </Canvas>
+</UserControl>

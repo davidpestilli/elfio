@@ -118,6 +118,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 Variable = root.GetProperty("variable").GetString() ?? "",
                 Amount = GetString(root, "amount"),
             },
+            "run_flow" => ReadRunFlow(root),
             _ => throw new JsonException($"unknown action type `{type}`"),
         };
     }
@@ -219,8 +220,70 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 writer.WriteString("variable", a.Variable);
                 WriteOptionalString(writer, "amount", a.Amount);
                 break;
+            case RunFlowAction a:
+                WriteOptionalString(writer, "flow_id", a.FlowId);
+                WriteOptionalString(writer, "path", a.Path);
+                if (a.Inputs is { Count: > 0 })
+                {
+                    writer.WritePropertyName("inputs");
+                    writer.WriteStartObject();
+                    foreach (var (k, v) in a.Inputs)
+                        writer.WriteString(k, v);
+                    writer.WriteEndObject();
+                }
+                if (a.Outputs is { Count: > 0 })
+                {
+                    writer.WritePropertyName("outputs");
+                    writer.WriteStartArray();
+                    foreach (var o in a.Outputs)
+                        writer.WriteStringValue(o);
+                    writer.WriteEndArray();
+                }
+                WriteOptionalBool(writer, "share_browser", a.ShareBrowser);
+                if (a.VariableScope is { } scope)
+                    writer.WriteString("variable_scope", scope == RunFlowVariableScope.Isolated ? "isolated" : "inherit");
+                break;
         }
         writer.WriteEndObject();
+    }
+
+    static RunFlowAction ReadRunFlow(JsonElement root)
+    {
+        Dictionary<string, string>? inputs = null;
+        if (root.TryGetProperty("inputs", out var inputsEl) && inputsEl.ValueKind == JsonValueKind.Object)
+        {
+            inputs = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var prop in inputsEl.EnumerateObject())
+                inputs[prop.Name] = prop.Value.GetString() ?? "";
+        }
+        List<string>? outputs = null;
+        if (root.TryGetProperty("outputs", out var outputsEl) && outputsEl.ValueKind == JsonValueKind.Array)
+        {
+            outputs = [];
+            foreach (var item in outputsEl.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.String)
+                    outputs.Add(item.GetString() ?? "");
+            }
+        }
+        RunFlowVariableScope? scope = null;
+        if (root.TryGetProperty("variable_scope", out var scopeEl) && scopeEl.ValueKind == JsonValueKind.String)
+        {
+            scope = scopeEl.GetString() switch
+            {
+                "isolated" => RunFlowVariableScope.Isolated,
+                _ => RunFlowVariableScope.Inherit,
+            };
+        }
+        return new RunFlowAction
+        {
+            FlowId = GetString(root, "flow_id"),
+            Path = GetString(root, "path"),
+            Inputs = inputs,
+            Outputs = outputs,
+            ShareBrowser = GetBool(root, "share_browser"),
+            VariableScope = scope,
+        };
     }
 
     static string? GetString(JsonElement root, string name) =>

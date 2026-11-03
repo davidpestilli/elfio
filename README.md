@@ -40,6 +40,7 @@ Ver [docs/avaliacao/protocolos/eval-grok-roteiro-v2.md](docs/avaliacao/protocolo
 - [docs/README.md](docs/README.md) — índice
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — mapa Rust → C#
 - [docs/PARITY.md](docs/PARITY.md) — checklist de paridade
+- [docs/studio-guia.md](docs/studio-guia.md) — uso do Studio WPF
 - [docs/hoblio-reference/](docs/hoblio-reference/) — guias de produto/utilização (origem Hoblio Rust)
 
 ## Layout
