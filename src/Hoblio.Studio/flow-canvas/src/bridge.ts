@@ -44,7 +44,8 @@ export type HostMessage =
   | { type: "setGraph"; payload: SetGraphPayload }
   | { type: "patchNodes"; payload: { nodes: Pick<CanvasNodeDto, "id" | "label" | "summary" | "isActive">[] } }
   | { type: "patchEdge"; payload: { id: string; waypoints: { x: number; y: number }[] } }
-  | { type: "patchToolbar"; payload: { canUndo: boolean; canRedo: boolean } };
+  | { type: "patchToolbar"; payload: { canUndo: boolean; canRedo: boolean } }
+  | { type: "flashNode"; payload: { nodeId: string; durationMs?: number } };
 
 export type CanvasMessage =
   | { type: "ready" }

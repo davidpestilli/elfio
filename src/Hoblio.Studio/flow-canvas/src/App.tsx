@@ -54,6 +54,7 @@ function toFlowNodes(dtos: CanvasNodeDto[]): Node<FlowNodeData>[] {
       label: n.label,
       summary: n.summary,
       isActive: n.isActive,
+      isFlashing: false,
     },
     selected: false,
   }));
@@ -83,7 +84,7 @@ function applySelection(nodes: Node[], edges: Edge[], nodeIds: string[], edgeId:
 }
 
 export function App() {
-  const { fitView } = useReactFlow();
+  const { fitView, setCenter, getNode } = useReactFlow();
   const [nodes, setNodes] = useState<Node<FlowNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [canEdit, setCanEdit] = useState(true);
@@ -96,6 +97,7 @@ export function App() {
   const canEditRef = useRef(canEdit);
   const guidesRef = useRef<AlignmentGuide[]>([]);
   const nodesRef = useRef(nodes);
+  const flashTimers = useRef<Map<string, number>>(new Map());
   nodesRef.current = nodes;
   canEditRef.current = canEdit;
 
@@ -157,10 +159,47 @@ export function App() {
                   label: p.label,
                   summary: p.summary,
                   isActive: p.isActive,
+                  isFlashing: node.data.isFlashing ?? false,
                 },
               };
             }),
           );
+        } finally {
+          applyingRemote.current = false;
+        }
+        return;
+      }
+
+      if (message.type === "flashNode") {
+        const { nodeId, durationMs = 2600 } = message.payload;
+        applyingRemote.current = true;
+        try {
+          setNodes((prev) =>
+            prev.map((node) =>
+              node.id === nodeId
+                ? { ...node, selected: true, data: { ...node.data, isFlashing: true } }
+                : node,
+            ),
+          );
+          const target = getNode(nodeId) ?? nodesRef.current.find((n) => n.id === nodeId);
+          if (target) {
+            const cx = target.position.x + FALLBACK_W / 2;
+            const cy = target.position.y + FALLBACK_H / 2;
+            void setCenter(cx, cy, { duration: 280 });
+          }
+          const prior = flashTimers.current.get(nodeId);
+          if (prior !== undefined) window.clearTimeout(prior);
+          const timer = window.setTimeout(() => {
+            setNodes((prev) =>
+              prev.map((node) =>
+                node.id === nodeId
+                  ? { ...node, data: { ...node.data, isFlashing: false } }
+                  : node,
+              ),
+            );
+            flashTimers.current.delete(nodeId);
+          }, durationMs);
+          flashTimers.current.set(nodeId, timer);
         } finally {
           applyingRemote.current = false;
         }
@@ -188,7 +227,7 @@ export function App() {
         }
       }
     },
-    [fitView, publishGuides],
+    [fitView, getNode, publishGuides, setCenter],
   );
 
   useEffect(() => {

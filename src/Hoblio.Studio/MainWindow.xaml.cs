@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Specialized;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -14,7 +15,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = _vm;
-        Loaded += (_, _) => FlowCanvas.AttachViewModel(_vm);
+        Loaded += (_, _) =>
+        {
+            FlowCanvas.AttachViewModel(_vm);
+            _vm.LogLines.CollectionChanged += OnLogLinesChanged;
+        };
+    }
+
+    void OnLogLinesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action != NotifyCollectionChangedAction.Add || RunLogListBox.Items.Count == 0)
+            return;
+        RunLogListBox.ScrollIntoView(RunLogListBox.Items[^1]);
     }
 
     void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

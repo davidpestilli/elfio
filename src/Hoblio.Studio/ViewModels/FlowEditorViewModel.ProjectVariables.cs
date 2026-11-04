@@ -85,7 +85,6 @@ public sealed partial class FlowEditorViewModel
             FlowVariableProducers.Add(p);
         OnPropertyChanged(nameof(ShowEmptyFlowProducers));
         OnPropertyChanged(nameof(FlowVariableProducerCount));
-        OnPropertyChanged(nameof(ExpandFlowVariablesSection));
         OnPropertyChanged(nameof(ShowFlowVariableProducerSearch));
         RebuildFilteredFlowVariableProducers();
         RebuildTemplateVariableNames();

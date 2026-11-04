@@ -29,8 +29,6 @@ public sealed partial class FlowEditorViewModel
 
     public int FlowVariableProducerCount => FlowVariableProducers.Count;
 
-    public bool ExpandFlowVariablesSection => FlowVariableProducers.Count > 0;
-
     public ObservableCollection<FlowVariableProducer> FilteredFlowVariableProducers { get; } = [];
 
     public bool ShowFlowVariableProducerSearch => FlowVariableProducers.Count > 6;
@@ -213,7 +211,6 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowDeleteNodeButton));
         OnPropertyChanged(nameof(EmbeddedSubflowCount));
         OnPropertyChanged(nameof(FlowVariableProducerCount));
-        OnPropertyChanged(nameof(ExpandFlowVariablesSection));
         OnPropertyChanged(nameof(ShowFlowVariableProducerSearch));
         OnPropertyChanged(nameof(ShowNodeLogicSection));
         OnPropertyChanged(nameof(NodeActionSectionTitle));

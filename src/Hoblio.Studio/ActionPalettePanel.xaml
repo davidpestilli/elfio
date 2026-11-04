@@ -3,36 +3,84 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{StaticResource Brush.PanelBg}">
   <DockPanel>
-    <StackPanel DockPanel.Dock="Top" Margin="12,12,12,8">
-      <TextBlock Text="Ações" FontSize="15" FontWeight="SemiBold" Foreground="#111827"/>
-      <TextBlock Text="Clique para adicionar ao fluxo. Ligue nós arrastando conectores no canvas."
-                 TextWrapping="Wrap" FontSize="11" Foreground="#6B7280" Margin="0,4,0,8"/>
-      <TextBlock Text="Filtrar" Style="{StaticResource FieldLabel}" Margin="0"/>
-      <TextBox Text="{Binding PaletteFilter, UpdateSourceTrigger=PropertyChanged}"
-               Style="{StaticResource FieldBox}" Margin="0"/>
+    <StackPanel DockPanel.Dock="Top" Margin="12,12,12,6">
+      <DockPanel LastChildFill="True">
+        <TextBlock Text="Ações" FontSize="15" FontWeight="SemiBold" Foreground="#111827" VerticalAlignment="Center"/>
+        <TextBlock DockPanel.Dock="Right" Text="ⓘ" FontSize="13" Foreground="#9CA3AF" Margin="6,0,0,0"
+                   VerticalAlignment="Center" Cursor="Help"
+                   ToolTip="Clique para adicionar ao fluxo. Ligue nós arrastando conectores no canvas."/>
+      </DockPanel>
+
+      <Grid Margin="0,8,0,0">
+        <TextBox Text="{Binding PaletteFilter, UpdateSourceTrigger=PropertyChanged}"
+                 Style="{StaticResource PaletteSearchBox}"/>
+        <TextBlock IsHitTestVisible="False" Text="🔍  Buscar ação, tag ou nome em inglês…"
+                   Foreground="#9CA3AF" FontSize="12" Margin="10,0,0,0" VerticalAlignment="Center">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Visibility" Value="Collapsed"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding PaletteFilter}" Value="">
+                  <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+      </Grid>
+
+      <Border Style="{StaticResource PaletteReadOnlyBanner}"
+              Visibility="{Binding ShowPaletteReadOnlyHint, Converter={StaticResource BoolVis}}">
+        <TextBlock Text="{Binding PaletteReadOnlyHint}" TextWrapping="Wrap"
+                   FontSize="11" Foreground="#92400E"/>
+      </Border>
     </StackPanel>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,0,12,12">
-      <ItemsControl ItemsSource="{Binding FilteredPaletteGroups}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <StackPanel>
-              <TextBlock Text="{Binding Name}" Style="{StaticResource PaletteGroupHeader}"/>
-              <ItemsControl ItemsSource="{Binding Items}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Button Style="{StaticResource PaletteActionButton}"
-                            Command="{Binding DataContext.AddPaletteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding Key}"
-                            ToolTip="{Binding Hint}"
-                            Content="{Binding Title}"/>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+      <StackPanel>
+        <StackPanel Visibility="{Binding ShowEmptyFilteredPalette, Converter={StaticResource BoolVis}}"
+                    Margin="0,8,0,12">
+          <TextBlock Text="Nenhuma ação encontrada." FontSize="12" Foreground="#6B7280"/>
+          <Button Content="Limpar busca" Style="{StaticResource PropertiesHyperlinkButton}"
+                  HorizontalAlignment="Left" Margin="-4,4,0,0"
+                  Command="{Binding ClearPaletteFilterCommand}"/>
+        </StackPanel>
+
+        <ItemsControl ItemsSource="{Binding FilteredPaletteGroups}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Expander Header="{Binding HeaderText}" IsExpanded="{Binding StartsExpanded, Mode=OneWay}"
+                        Style="{StaticResource PaletteSection}">
+                <ItemsControl ItemsSource="{Binding Items}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource PaletteActionButton}"
+                              Command="{Binding DataContext.AddPaletteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding Key}"
+                              ToolTip="{Binding Hint}">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                          </Grid.ColumnDefinitions>
+                          <Border Grid.Column="0" Background="{Binding AccentBrush}" CornerRadius="6,0,0,6"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Glyph}" FontSize="13"
+                                     VerticalAlignment="Center" Margin="8,0,4,0" Foreground="#64748B"/>
+                          <StackPanel Grid.Column="2" Margin="0,6,8,6">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource PaletteActionTitle}"/>
+                            <TextBlock Text="{Binding Hint}" Style="{StaticResource PaletteActionHint}"/>
+                          </StackPanel>
+                        </Grid>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Expander>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
     </ScrollViewer>
   </DockPanel>
 </UserControl>

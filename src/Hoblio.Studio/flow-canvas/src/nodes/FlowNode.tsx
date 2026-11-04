@@ -6,6 +6,7 @@ export type FlowNodeData = {
   label: string;
   summary: string;
   isActive: boolean;
+  isFlashing?: boolean;
 };
 
 type SideSpec = {
@@ -128,6 +129,7 @@ export function FlowNode({ id, data, selected }: NodeProps) {
     "hoblio-node",
     selected ? "selected" : "",
     d.isActive ? "active" : "",
+    d.isFlashing ? "flash" : "",
     `kind-${kind}`,
   ]
     .filter(Boolean)

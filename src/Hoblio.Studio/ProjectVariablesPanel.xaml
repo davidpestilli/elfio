@@ -121,7 +121,7 @@
       </ItemsControl>
     </Expander>
 
-    <Expander Header="JSON avançado" Style="{StaticResource PropsSection}" Margin="0,8,0,0">
+    <Expander Header="JSON avançado" Style="{StaticResource PropsSection}" Margin="0,8,0,0" IsExpanded="False">
       <TextBox Text="{Binding VariablesAdvancedJson, UpdateSourceTrigger=PropertyChanged}"
                AcceptsReturn="True" MinHeight="120" TextWrapping="Wrap" FontFamily="Consolas"
                IsEnabled="{Binding IsEditing}"/>

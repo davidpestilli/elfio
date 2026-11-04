@@ -15,7 +15,7 @@
       <StackPanel>
         <!-- Canvas focus (Rust: no node selected) -->
         <StackPanel Visibility="{Binding ShowCanvasProperties, Converter={StaticResource BoolVis}}">
-          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+          <Expander IsExpanded="False" Style="{StaticResource PropsSection}"
                     Visibility="{Binding ShowActiveSubflowManage, Converter={StaticResource BoolVis}}">
             <Expander.Header>
               <TextBlock Text="Subfluxo atual" FontWeight="SemiBold"/>
@@ -34,7 +34,7 @@
             </StackPanel>
           </Expander>
 
-          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+          <Expander IsExpanded="False" Style="{StaticResource PropsSection}"
                     Visibility="{Binding ShowEmbeddedSubflowsList, Converter={StaticResource BoolVis}}">
             <Expander.Header>
               <TextBlock FontWeight="SemiBold">
@@ -82,7 +82,7 @@
             </ItemsControl>
           </Expander>
 
-          <Expander IsExpanded="True" Style="{StaticResource PropsSection}">
+          <Expander IsExpanded="False" Style="{StaticResource PropsSection}">
             <Expander.Header>
               <TextBlock Text="{Binding VariablesSectionTitle}" FontWeight="SemiBold"/>
             </Expander.Header>
@@ -92,7 +92,7 @@
             </StackPanel>
           </Expander>
 
-          <Expander Style="{StaticResource PropsSection}" IsExpanded="{Binding ExpandFlowVariablesSection, Mode=OneWay}">
+          <Expander Style="{StaticResource PropsSection}" IsExpanded="False">
             <Expander.Header>
               <TextBlock FontWeight="SemiBold">
                 <Run Text="Variáveis na execução"/>
@@ -146,7 +146,7 @@
             <TextBlock Text="{Binding SubflowContextBannerText}" TextWrapping="Wrap" Foreground="#1E40AF" FontSize="11"/>
           </Border>
 
-          <Expander IsExpanded="True" Style="{StaticResource PropsSection}">
+          <Expander IsExpanded="False" Style="{StaticResource PropsSection}">
             <Expander.Header>
               <TextBlock Text="Identidade" FontWeight="SemiBold"/>
             </Expander.Header>
@@ -166,7 +166,7 @@
             </StackPanel>
           </Expander>
 
-          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+          <Expander IsExpanded="False" Style="{StaticResource PropsSection}"
                     Visibility="{Binding ShowNodeLogicSection, Converter={StaticResource BoolVis}}">
             <Expander.Header>
               <TextBlock Text="Lógica e loops" FontWeight="SemiBold"/>
@@ -230,7 +230,7 @@
             </StackPanel>
           </Expander>
 
-          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+          <Expander IsExpanded="False" Style="{StaticResource PropsSection}"
                     Visibility="{Binding ShowActionSection, Converter={StaticResource BoolVis}}">
             <Expander.Header>
               <TextBlock Text="{Binding NodeActionSectionTitle, Mode=OneWay}" FontWeight="SemiBold"/>
@@ -438,7 +438,7 @@
           </Expander>
         </StackPanel>
 
-        <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+        <Expander IsExpanded="False" Style="{StaticResource PropsSection}"
                   Visibility="{Binding ShowConnectionProperties, Converter={StaticResource BoolVis}}"
                   IsEnabled="{Binding IsEditing}">
           <Expander.Header>

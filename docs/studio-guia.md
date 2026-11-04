@@ -8,10 +8,10 @@ Interface inspirada no **Hoblio Studio (Rust/Tauri)** e no fluxo de trabalho do 
 |------|--------|
 | **Faixa superior (WPF)** | **Elfio Studio**, Arquivo (Novo, Abrir, Salvar), Validar / Executar / Parar, abas de fluxo, status, nome do documento (`untitled *`) e pasta do projeto |
 | **Barra do diagrama** | **Exibição / Edição**, desfazer/refazer, apagar seleção, limpar fluxo; com uma ligação selecionada, rótulo customizado da aresta |
-| **Paleta** | Ações agrupadas por categoria; clique para inserir no fluxo |
+| **Paleta** | Ações por categoria (grupos colapsáveis); busca; clique para inserir no fluxo |
 | **Diagrama** | Nós e conexões (waypoints, reconectar handles); selecione um nó para editar |
 | **Propriedades** | Sem nó: variáveis de projeto, índice **Flow variables**; com nó: campos por tipo de ação / loop / `run_flow` |
-| **Log** | Saída da execução (texto ou JSON) |
+| **Log** | Linhas formatadas em PT, navegação para o nó no canvas; opcional JSON bruto |
 
 ## Fluxo típico
 
@@ -27,9 +27,36 @@ Interface inspirada no **Hoblio Studio (Rust/Tauri)** e no fluxo de trabalho do 
 - **Exibição**: evita alterações acidentais; propriedades ficam somente leitura.
 - **Edição**: desfazer/refazer, limpar fluxo, excluir nós, editar variáveis JSON.
 
+## Paleta de ações (sidebar esquerda)
+
+- **Busca** com placeholder (sem label “Filtrar”); aceita português, id do nó e aliases em inglês (`HttpGet`, `Delay`, …). Com texto na busca, os grupos com resultados **abrem** automaticamente.
+- **Grupos colapsáveis** (`Expander`) com contagem de itens; ao abrir o Studio, **todos os grupos começam fechados**.
+- Cada ação é um **card**: faixa de cor alinhada ao canvas, ícone, título em PT, descrição curta; tooltip com detalhe.
+- Instruções de uso no ícone **ⓘ** no cabeçalho (não ocupam espaço fixo).
+- **Modo Exibição** ou execução em andamento: banner na paleta e botões de inserção desabilitados.
+
+Metadados: `ActionPaletteCatalog.cs`, apresentação `PaletteVisuals.cs`, filtro `PaletteSearch.cs`.
+
+## Painéis laterais — estado inicial
+
+- **Paleta** e **Propriedades** (incl. Flow variables, JSON avançado em variáveis de projeto): seções **recolhidas** ao entrar no Studio.
+- A seção Flow variables **não** expande mais sozinha quando há produtores.
+
+## Log de execução
+
+- **Formato legível** (`RunLogFormatter`): textos em português, indentação por subfluxo, `node_exit` oculto; ações com módulo/nó; falhas em destaque vermelho.
+- **Tema escuro**: linhas em cards `#2A2D33`, sem highlight amarelo do `ListBox`; scroll automático para a última linha.
+- **Copiar log** / **Limpar**: aviso verde na barra do log (~4 s) e mensagem na barra de status; Limpar só habilitado se houver linhas.
+- **Mostrar JSON**: checkbox à **direita** da barra (separado dos botões); alterna para JSONL por linha.
+- **Clique na linha** (quando há nó associado): seleciona o nó, centraliza o canvas e **pisca** a borda (mensagem `flashNode` no React Flow). Se o nó não estiver no diagrama atual (ex. evento só no subfluxo), aviso na status bar.
+- **Hover** em linhas clicáveis: fundo/borda levemente mais claros.
+
+Build do canvas após alterar TypeScript: `npm run build` em `src/Hoblio.Studio/flow-canvas` (o `.csproj` copia `dist/` na compilação).
+
 ## Dicas
 
-- Use **Filtrar** na paleta para achar ações rapidamente.
+- Use a **busca** na paleta (português ou nomes em inglês, ex. `HttpGet`) para achar ações rapidamente.
+- No **log**, clique numa linha de ação ou entrada de nó para localizar o bloco no diagrama.
 - **Flow variables** (sem nó selecionado) lista produtores de variáveis; clique no nó para ir ao bloco.
 - Portas `then` / `else` / `body` / `after` são escolhidas ao **ligar** no canvas ou ao **reconectar** a aresta.
 

@@ -57,6 +57,21 @@ body,
   box-shadow: 0 0 0 3px #86efac;
 }
 
+.hoblio-node.flash {
+  animation: hoblio-node-flash 0.55s ease-in-out 4;
+  border-color: #f59e0b !important;
+}
+
+@keyframes hoblio-node-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(245 158 11 / 15%);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(245 158 11 / 55%);
+  }
+}
+
 .hoblio-node.kind-start {
   border-color: #059669;
 }

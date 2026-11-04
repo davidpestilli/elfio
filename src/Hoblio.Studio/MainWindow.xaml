@@ -104,8 +104,12 @@
     <Border Grid.Row="4" Grid.ColumnSpan="5" Background="{StaticResource Brush.LogBg}">
       <DockPanel>
         <Border DockPanel.Dock="Top" Background="#252526" Padding="12,8">
-          <DockPanel>
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
               <TextBlock Text="Log de execução" Foreground="#E5E7EB" FontWeight="SemiBold" VerticalAlignment="Center"/>
               <Button Content="Copiar log" Margin="12,0,0,0" Padding="8,2"
                       Style="{StaticResource SecondaryToolButton}"
@@ -113,16 +117,84 @@
               <Button Content="Limpar" Margin="8,0,0,0" Padding="8,2"
                       Style="{StaticResource SecondaryToolButton}"
                       Command="{Binding ClearLogCommand}"/>
+              <TextBlock Text="{Binding LogToolbarNotice}" Margin="12,0,0,0" FontSize="11"
+                         Foreground="#86EFAC" VerticalAlignment="Center"
+                         Visibility="{Binding ShowLogToolbarNotice, Converter={StaticResource BoolVis}}"/>
             </StackPanel>
-            <CheckBox DockPanel.Dock="Right" Content="Mostrar JSON" IsChecked="{Binding ShowLogJson}"
-                      Foreground="#CBD5E1" VerticalAlignment="Center"/>
-          </DockPanel>
+            <CheckBox Grid.Column="1" Content="Mostrar JSON" IsChecked="{Binding ShowLogJson}"
+                      Foreground="#CBD5E1" VerticalAlignment="Center" Margin="24,0,0,0"/>
+          </Grid>
         </Border>
-        <ListBox ItemsSource="{Binding LogLines}" Foreground="{StaticResource Brush.LogFg}"
-                 Background="Transparent" BorderThickness="0" Padding="8,4">
+        <ListBox x:Name="RunLogListBox" ItemsSource="{Binding LogLines}"
+                 ItemContainerStyle="{StaticResource RunLogListBoxItem}"
+                 Background="Transparent" BorderThickness="0" Padding="0,4"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.CanContentScroll="False">
           <ListBox.ItemTemplate>
             <DataTemplate>
-              <TextBlock Text="{Binding Human}" FontFamily="Consolas" FontSize="12"/>
+              <Grid>
+                <Button x:Name="RichLine" Style="{StaticResource LogLineButton}"
+                        Command="{Binding DataContext.FocusLogLineNodeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                        CommandParameter="{Binding}"
+                        ToolTip="Clique para localizar o nó no canvas"
+                        IsEnabled="{Binding CanFocusNode}">
+                  <Border Margin="{Binding IndentMargin}" Padding="8,5" CornerRadius="4" BorderThickness="1">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="#2A2D33"/>
+                        <Setter Property="BorderBrush" Value="#3F4450"/>
+                        <Style.Triggers>
+                          <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                              <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True"/>
+                              <Condition Binding="{Binding CanFocusNode}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Background" Value="#353B47"/>
+                            <Setter Property="BorderBrush" Value="#64748B"/>
+                          </MultiDataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3"/>
+                        <ColumnDefinition Width="*"/>
+                      </Grid.ColumnDefinitions>
+                      <Border Grid.Column="0" Background="{Binding AccentBrush}" CornerRadius="2" Margin="0,0,8,0"/>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding Title}" TextWrapping="Wrap"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{Binding TitleBrush}"/>
+                        <TextBlock Text="{Binding Subtitle}" TextWrapping="Wrap" FontSize="10"
+                                   Foreground="#B8BFC9" Margin="0,2,0,0">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                              <Setter Property="Visibility" Value="Visible"/>
+                              <Style.Triggers>
+                                <Trigger Property="Text" Value="">
+                                  <Setter Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="Text" Value="{x:Null}">
+                                  <Setter Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </Button>
+                <TextBlock x:Name="JsonLine" Text="{Binding Json}" FontFamily="Consolas" FontSize="11"
+                           Foreground="#CBD5E1" TextWrapping="Wrap" Margin="8,2" Visibility="Collapsed"/>
+              </Grid>
+              <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding DataContext.ShowLogJson, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                             Value="True">
+                  <Setter TargetName="RichLine" Property="Visibility" Value="Collapsed"/>
+                  <Setter TargetName="JsonLine" Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+              </DataTemplate.Triggers>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>

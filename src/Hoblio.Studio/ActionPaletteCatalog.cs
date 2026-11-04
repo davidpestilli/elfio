@@ -1,10 +1,11 @@
 namespace Hoblio.Studio;
 
-public sealed record PaletteEntry(string Key, string Title, string? Hint = null);
+public sealed record PaletteEntry(string Key, string Title, string? Hint = null, string? SearchAliases = null);
 
 public sealed class PaletteGroup
 {
     public required string Name { get; init; }
+    public bool DefaultExpanded { get; init; }
     public IList<PaletteEntry> Items { get; init; } = [];
 }
 
@@ -18,12 +19,13 @@ public static class ActionPaletteCatalog
             Name = "Utilitários",
             Items =
             [
-                new("node:start", "Start node", "Entrada do fluxo (máx. um Start por grafo)"),
-                new("node:end", "End node", "Saída do fluxo"),
-                new("action:log", "Log", "Escreve no log de execução"),
-                new("action:no_op", "NoOp", "Não faz nada (placeholder)"),
-                new("action:delay", "Delay", "Aguarda milissegundos"),
-                new("action:http_get", "HttpGet", "Requisição HTTP GET"),
+                new("node:start", "Início", "Entrada do fluxo (máx. um Start por grafo)",
+                    "Start node start"),
+                new("node:end", "Fim", "Saída do fluxo", "End node end"),
+                new("action:log", "Log", "Escreve no log de execução", "LogAction log"),
+                new("action:no_op", "No-op", "Não faz nada (placeholder)", "NoOp noop"),
+                new("action:delay", "Aguardar", "Aguarda milissegundos", "Delay wait sleep"),
+                new("action:http_get", "HTTP GET", "Requisição HTTP GET", "HttpGet http rede web"),
             ],
         },
         new PaletteGroup
@@ -31,8 +33,10 @@ public static class ActionPaletteCatalog
             Name = "Caixa de mensagens",
             Items =
             [
-                new("action:show_message", "ShowMessage", "Diálogo informativo"),
-                new("action:show_get_user_input", "ShowGetUserInput", "Pergunta ao usuário"),
+                new("action:show_message", "Mostrar mensagem", "Diálogo informativo",
+                    "ShowMessage messagebox dialog"),
+                new("action:show_get_user_input", "Perguntar ao usuário", "Pergunta ao usuário",
+                    "ShowGetUserInput input prompt"),
             ],
         },
         new PaletteGroup
@@ -40,9 +44,10 @@ public static class ActionPaletteCatalog
             Name = "Arquivos",
             Items =
             [
-                new("action:file_write", "FileWrite", "Cria ou sobrescreve arquivo"),
-                new("action:file_append", "FileAppend", "Acrescenta linhas"),
-                new("action:file_read", "FileRead", "Lê arquivo para variável"),
+                new("action:file_write", "Gravar arquivo", "Cria ou sobrescreve arquivo",
+                    "FileWrite write file"),
+                new("action:file_append", "Anexar ao arquivo", "Acrescenta linhas", "FileAppend append"),
+                new("action:file_read", "Ler arquivo", "Lê arquivo para variável", "FileRead read file"),
             ],
         },
         new PaletteGroup
@@ -50,12 +55,15 @@ public static class ActionPaletteCatalog
             Name = "Browser",
             Items =
             [
-                new("action:browser_navigate", "BrowserNavigate", "Abre URL no Chrome/Edge"),
-                new("action:browser_click", "BrowserClick", "Clique em seletor CSS"),
-                new("action:browser_wait_navigation", "Wait navigation", "Espera navegação"),
-                new("action:browser_fill", "BrowserFill", "Preenche campo"),
-                new("action:browser_wait_for", "BrowserWaitFor", "Espera elemento"),
-                new("action:browser_get_text", "BrowserGetText", "Captura texto"),
+                new("action:browser_navigate", "Abrir URL", "Abre URL no Chrome/Edge",
+                    "BrowserNavigate navigate url chrome"),
+                new("action:browser_click", "Clicar elemento", "Clique em seletor CSS",
+                    "BrowserClick click css selector"),
+                new("action:browser_wait_navigation", "Esperar navegação", "Espera navegação",
+                    "Wait navigation browser"),
+                new("action:browser_fill", "Preencher campo", "Preenche campo", "BrowserFill fill input"),
+                new("action:browser_wait_for", "Esperar elemento", "Espera elemento", "BrowserWaitFor wait"),
+                new("action:browser_get_text", "Capturar texto", "Captura texto", "BrowserGetText get text"),
             ],
         },
         new PaletteGroup
@@ -63,11 +71,11 @@ public static class ActionPaletteCatalog
             Name = "Variáveis",
             Items =
             [
-                new("action:set_variable", "Set variable", "Define valor"),
-                new("action:increase_variable", "Increase variable", "Incrementa número"),
-                new("action:decrease_variable", "Decrease variable", "Decrementa número"),
-                new("action:list_clear", "List clear", "Esvazia lista"),
-                new("action:list_append", "List append", "Adiciona item à lista"),
+                new("action:set_variable", "Definir variável", "Define valor", "Set variable set"),
+                new("action:increase_variable", "Incrementar", "Incrementa número", "Increase variable"),
+                new("action:decrease_variable", "Decrementar", "Decrementa número", "Decrease variable"),
+                new("action:list_clear", "Limpar lista", "Esvazia lista", "List clear"),
+                new("action:list_append", "Adicionar à lista", "Adiciona item à lista", "List append"),
             ],
         },
         new PaletteGroup
@@ -75,25 +83,27 @@ public static class ActionPaletteCatalog
             Name = "Fluxos",
             Items =
             [
-                new("action:run_flow", "Run flow", "Chama subfluxo ou flow.json filho"),
-                new("ui:create_subflow", "New subflow", "Cria subfluxo embutido neste flow.json"),
+                new("action:run_flow", "Executar fluxo", "Chama subfluxo ou flow.json filho",
+                    "Run flow subflow"),
+                new("ui:create_subflow", "Novo subfluxo", "Cria subfluxo embutido neste flow.json",
+                    "New subflow create"),
             ],
         },
         new PaletteGroup
         {
             Name = "Condicionais",
-            Items = [new("if", "If", "Ramifica then/else")],
+            Items = [new("if", "Se (If)", "Ramifica then/else", "If conditional branch")],
         },
         new PaletteGroup
         {
             Name = "Loops",
             Items =
             [
-                new("for_each", "For each", "Itera lista"),
-                new("while_loop", "While", "Enquanto condição"),
-                new("repeat", "Repeat N times", "Repete N vezes"),
-                new("next_loop", "Next loop", "Próxima iteração"),
-                new("exit_loop", "Exit loop", "Sai do loop"),
+                new("for_each", "Para cada", "Itera lista", "For each foreach loop"),
+                new("while_loop", "Enquanto", "Enquanto condição", "While loop"),
+                new("repeat", "Repetir N vezes", "Repete N vezes", "Repeat N times"),
+                new("next_loop", "Próximo loop", "Próxima iteração", "Next loop continue"),
+                new("exit_loop", "Sair do loop", "Sai do loop", "Exit loop break"),
             ],
         },
     ];

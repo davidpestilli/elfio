@@ -163,6 +163,13 @@ public partial class FlowCanvasHost : UserControl
         });
     }
 
+    public void FlashNode(string nodeId, int durationMs = 2600)
+    {
+        if (!_webReady || WebView.CoreWebView2 is null || string.IsNullOrWhiteSpace(nodeId))
+            return;
+        PostJson(new { type = "flashNode", payload = new { nodeId, durationMs } });
+    }
+
     public void PatchNodePresentation(IEnumerable<FlowNodeViewModel> nodes)
     {
         if (!_webReady || WebView.CoreWebView2 is null)

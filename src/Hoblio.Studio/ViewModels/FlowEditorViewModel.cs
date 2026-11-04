@@ -95,6 +95,22 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
     public ObservableCollection<FlowConnectionViewModel> Connections { get; } = [];
     public ObservableCollection<string> DiagramNodeIds { get; } = [];
     public ObservableCollection<RunLogLine> LogLines { get; } = [];
+    readonly RunLogFormatter _runLogFormatter = new();
+    DispatcherTimer? _logNoticeTimer;
+
+    string? _logToolbarNotice;
+    public string? LogToolbarNotice
+    {
+        get => _logToolbarNotice;
+        private set
+        {
+            _logToolbarNotice = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ShowLogToolbarNotice));
+        }
+    }
+
+    public bool ShowLogToolbarNotice => !string.IsNullOrWhiteSpace(_logToolbarNotice);
     public ObservableCollection<PaletteGroupViewModel> PaletteGroups { get; } = BuildPaletteGroups();
     public ObservableCollection<PaletteGroupViewModel> FilteredPaletteGroups { get; } = [];
 
@@ -106,8 +122,9 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             groups.Add(new PaletteGroupViewModel
             {
                 Name = g.Name,
+                StartsExpanded = g.DefaultExpanded,
                 Items = new ObservableCollection<PaletteEntryViewModel>(
-                    g.Items.Select(e => new PaletteEntryViewModel { Key = e.Key, Title = e.Title, Hint = e.Hint })),
+                    g.Items.Select(PaletteEntryViewModel.FromCatalogEntry)),
             });
         }
         return groups;
@@ -124,6 +141,18 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             RebuildFilteredPalette();
         }
     }
+
+    public bool ShowEmptyFilteredPalette =>
+        _paletteFilter.Trim().Length > 0 && FilteredPaletteGroups.Count == 0;
+
+    public bool ShowPaletteReadOnlyHint => !CanEditDiagram;
+
+    public string PaletteReadOnlyHint =>
+        IsRunning
+            ? "Execução em andamento — a paleta está pausada."
+            : "Ative Edição na barra do diagrama para adicionar ações.";
+
+    public RelayCommand ClearPaletteFilterCommand { get; }
 
     bool _isEditing = true;
     public bool IsEditing
@@ -409,14 +438,14 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         AddPaletteEntryCommand = new RelayCommand<string>(key => AddNodeFromPalette(key ?? "action:log"), _ => CanEditDiagram);
         AddWaypointCommand = new RelayCommand(AddWaypoint, () => CanEditDiagram && SelectedConnection is not null);
         CopyLogCommand = new RelayCommand(CopyLogToClipboard, () => LogLines.Count > 0);
-        ClearLogCommand = new RelayCommand(() =>
-        {
-            LogLines.Clear();
-            CopyLogCommand.RaiseCanExecuteChanged();
-        });
+        ClearLogCommand = new RelayCommand(ClearRunLog, () => LogLines.Count > 0);
         ClearFlowCommand = new RelayCommand(ClearFlow, () => CanEditDiagram);
         UndoCommand = new RelayCommand(Undo, () => CanEditDiagram && _undoStack.Count > 0);
         RedoCommand = new RelayCommand(Redo, () => CanEditDiagram && _redoStack.Count > 0);
+        ClearPaletteFilterCommand = new RelayCommand(
+            () => PaletteFilter = "",
+            () => _paletteFilter.Trim().Length > 0);
+        InitRunLogCommands();
         InitInspectorCommands();
         InitSubflowCommands();
         InitConnectionCommands();
@@ -437,19 +466,20 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         foreach (var group in PaletteGroups)
         {
             var items = group.Items
-                .Where(i => q.Length == 0
-                            || i.Title.Contains(q, StringComparison.OrdinalIgnoreCase)
-                            || i.Key.Contains(q, StringComparison.OrdinalIgnoreCase)
-                            || (i.Hint?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false))
+                .Where(i => PaletteSearch.Matches(i.SearchIndex, q))
                 .ToList();
             if (items.Count == 0)
                 continue;
             FilteredPaletteGroups.Add(new PaletteGroupViewModel
             {
                 Name = group.Name,
+                StartsExpanded = q.Length > 0,
                 Items = new ObservableCollection<PaletteEntryViewModel>(items),
             });
         }
+
+        OnPropertyChanged(nameof(ShowEmptyFilteredPalette));
+        ClearPaletteFilterCommand.RaiseCanExecuteChanged();
     }
 
     void SetStatus(string message, bool isError = false)
@@ -477,6 +507,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(InspectorReadOnly));
         OpenSelectedRunFlowSubflowCommand?.RaiseCanExecuteChanged();
         AddPaletteEntryCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(ShowPaletteReadOnlyHint));
+        OnPropertyChanged(nameof(PaletteReadOnlyHint));
         CreateSubflowCommand?.RaiseCanExecuteChanged();
         ClearFlowCommand.RaiseCanExecuteChanged();
         UndoCommand.RaiseCanExecuteChanged();
@@ -724,7 +756,9 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         }
 
         LogLines.Clear();
+        _runLogFormatter.Reset();
         CopyLogCommand.RaiseCanExecuteChanged();
+        ClearLogCommand.RaiseCanExecuteChanged();
         IsRunning = true;
         _runCts = new CancellationTokenSource();
         var dir = _projectDir;
@@ -740,8 +774,11 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        LogLines.Add(RunLogLine.FromEvent(evt));
+                        var logLine = RunLogLine.FromEvent(evt, _runLogFormatter);
+                        if (!logLine.IsHidden)
+                            LogLines.Add(logLine);
                         CopyLogCommand.RaiseCanExecuteChanged();
+                        ClearLogCommand.RaiseCanExecuteChanged();
                         RecordRunEvent(evt);
                         SetActiveHighlight();
                         if (evt is RunEvent.ActionExecuted)
@@ -775,6 +812,18 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         _runCts?.Cancel();
     }
 
+    void ClearRunLog()
+    {
+        if (LogLines.Count == 0)
+            return;
+        LogLines.Clear();
+        _runLogFormatter.Reset();
+        CopyLogCommand.RaiseCanExecuteChanged();
+        ClearLogCommand.RaiseCanExecuteChanged();
+        PulseLogToolbarNotice("Log limpo.");
+        SetStatus("Log de execução limpo.");
+    }
+
     void CopyLogToClipboard()
     {
         if (LogLines.Count == 0)
@@ -783,7 +832,22 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             Environment.NewLine,
             LogLines.Select(l => ShowLogJson ? l.Json : l.Human));
         Clipboard.SetText(text);
+        var mode = ShowLogJson ? "JSON" : "texto formatado";
+        PulseLogToolbarNotice($"Log copiado ({LogLines.Count} linha(s), {mode}).");
         SetStatus($"Log copiado ({LogLines.Count} linha(s)).");
+    }
+
+    void PulseLogToolbarNotice(string message)
+    {
+        LogToolbarNotice = message;
+        _logNoticeTimer?.Stop();
+        _logNoticeTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+        _logNoticeTimer.Tick += (_, _) =>
+        {
+            _logNoticeTimer.Stop();
+            LogToolbarNotice = null;
+        };
+        _logNoticeTimer.Start();
     }
 
     void AddNodeFromPalette(string paletteKey)

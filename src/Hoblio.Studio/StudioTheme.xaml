@@ -64,44 +64,127 @@
     <Setter Property="BorderBrush" Value="#991B1B"/>
   </Style>
 
-  <Style x:Key="PaletteGroupHeader" TargetType="TextBlock">
-    <Setter Property="FontSize" Value="11"/>
+  <Style x:Key="PaletteSection" TargetType="Expander">
+    <Setter Property="Margin" Value="0,0,0,6"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="FontSize" Value="12"/>
     <Setter Property="FontWeight" Value="SemiBold"/>
-    <Setter Property="Foreground" Value="#6B7280"/>
-    <Setter Property="Margin" Value="0,12,0,6"/>
+    <Setter Property="Foreground" Value="#374151"/>
+  </Style>
+
+  <Style x:Key="PaletteSearchBox" TargetType="TextBox">
+    <Setter Property="Padding" Value="8,6,8,6"/>
+    <Setter Property="Margin" Value="0,8,0,0"/>
+    <Setter Property="BorderBrush" Value="#D1D5DB"/>
+    <Setter Property="Background" Value="#F9FAFB"/>
+    <Setter Property="FontSize" Value="12"/>
   </Style>
 
   <Style x:Key="PaletteActionButton" TargetType="Button">
-    <Setter Property="HorizontalContentAlignment" Value="Left"/>
-    <Setter Property="Background" Value="#F9FAFB"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Background" Value="#FFFFFF"/>
     <Setter Property="Foreground" Value="#111827"/>
     <Setter Property="BorderBrush" Value="#E5E7EB"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="Padding" Value="8,6"/>
-    <Setter Property="Margin" Value="0,0,0,4"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Margin" Value="0,0,0,5"/>
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border Background="{TemplateBinding Background}"
+          <Border x:Name="Bd"
+                  Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="6"
                   Padding="{TemplateBinding Padding}">
-            <ContentPresenter/>
+            <ContentPresenter HorizontalAlignment="Stretch"/>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter Property="Background" Value="{StaticResource Brush.AccentSoft}"/>
-              <Setter Property="BorderBrush" Value="#BFDBFE"/>
+              <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.AccentSoft}"/>
+              <Setter TargetName="Bd" Property="BorderBrush" Value="#BFDBFE"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-              <Setter Property="Opacity" Value="0.5"/>
+              <Setter Property="Opacity" Value="0.45"/>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+  </Style>
+
+  <Style x:Key="PaletteActionTitle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="#111827"/>
+    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+  </Style>
+
+  <Style x:Key="PaletteActionHint" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="10"/>
+    <Setter Property="Foreground" Value="#6B7280"/>
+    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    <Setter Property="Margin" Value="0,1,0,0"/>
+  </Style>
+
+  <Style x:Key="LogLineButton" TargetType="Button">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <ContentPresenter HorizontalAlignment="Stretch"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter Property="Cursor" Value="Arrow"/>
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="RunLogListBoxItem" TargetType="ListBoxItem">
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Margin" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border x:Name="Bd" Background="Transparent" Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="PaletteReadOnlyBanner" TargetType="Border">
+    <Setter Property="Background" Value="#FFFBEB"/>
+    <Setter Property="BorderBrush" Value="#FDE68A"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="Padding" Value="8,6"/>
+    <Setter Property="Margin" Value="0,0,0,8"/>
   </Style>
 
   <Style x:Key="FlowModeRadio" TargetType="RadioButton">
