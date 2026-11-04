@@ -5,7 +5,7 @@
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Margin="12,12,12,8">
       <TextBlock Text="Ações" FontSize="15" FontWeight="SemiBold" Foreground="#111827"/>
-      <TextBlock Text="Clique para adicionar ao fluxo. Ligue nós arrastando conectores no canvas ou Nova ligação no painel (sem nó selecionado)."
+      <TextBlock Text="Clique para adicionar ao fluxo. Ligue nós arrastando conectores no canvas."
                  TextWrapping="Wrap" FontSize="11" Foreground="#6B7280" Margin="0,4,0,8"/>
       <TextBlock Text="Filtrar" Style="{StaticResource FieldLabel}" Margin="0"/>
       <TextBox Text="{Binding PaletteFilter, UpdateSourceTrigger=PropertyChanged}"

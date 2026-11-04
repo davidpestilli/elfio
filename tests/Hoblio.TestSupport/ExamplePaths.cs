@@ -21,7 +21,7 @@ public static class ExamplePaths
         }
 
         throw new DirectoryNotFoundException(
-            $"Example `{demoName}` not found. Set HOBLIO_EXAMPLES_ROOT or clone examples under hoblio-c#/examples.");
+            $"Example `{demoName}` not found. Set HOBLIO_EXAMPLES_ROOT or clone examples under elfio/examples.");
     }
 
     static IEnumerable<string> CandidateRoots()

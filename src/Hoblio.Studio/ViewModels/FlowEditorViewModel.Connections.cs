@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Windows;
 using Hoblio.Model;
+using Hoblio.Studio.FlowCanvas;
 
 namespace Hoblio.Studio.ViewModels;
 
@@ -36,6 +37,19 @@ public sealed partial class FlowEditorViewModel
         PendingConnection.IsVisible = true;
     }
 
+    public void CompleteConnection(
+        FlowConnectorViewModel source,
+        FlowConnectorViewModel target,
+        string? sourceHandle = null,
+        string? targetHandle = null)
+    {
+        _canvasConnectSourceHandle = sourceHandle;
+        _canvasConnectTargetHandle = targetHandle;
+        OnConnectionCompleted(Tuple.Create<object?, object?>(source, target));
+        _canvasConnectSourceHandle = null;
+        _canvasConnectTargetHandle = null;
+    }
+
     void OnConnectionCompleted(object? param)
     {
         if (!CanEditDiagram)
@@ -53,16 +67,31 @@ public sealed partial class FlowEditorViewModel
         var toId = tgt.Node.Id;
         PersistCanvasToActiveGraph();
         var (nodes, edges, _) = ActiveGraphSlice();
-        if (edges.Any(e => e.From == fromId && e.To == toId && e.ResolvedPort() == EdgePort.Main))
-        {
-            SetStatus("Essa ligação já existe (porta main).");
-            return;
-        }
+        var port = src.Port;
+        var replaced = edges.RemoveAll(e => e.From == fromId && e.ResolvedPort() == port);
 
         PushHistory();
-        edges.Add(new Edge { From = fromId, To = toId, Port = "main" });
+        var normalizedSource = FlowCanvasHandles.NormalizeSourceHandle(_canvasConnectSourceHandle);
+        var persistSource =
+            normalizedSource is not null &&
+            !string.Equals(normalizedSource, FlowCanvasHandles.MainSource, StringComparison.Ordinal) &&
+            !(port != EdgePort.Main && string.Equals(normalizedSource, port.AsString(), StringComparison.Ordinal))
+                ? normalizedSource
+                : null;
+        var persistTarget = string.IsNullOrEmpty(_canvasConnectTargetHandle) ||
+                            string.Equals(_canvasConnectTargetHandle, "left", StringComparison.Ordinal)
+            ? null
+            : _canvasConnectTargetHandle;
+
+        EdgeUi? ui = persistSource is not null || persistTarget is not null
+            ? new EdgeUi { SourceHandle = persistSource, TargetHandle = persistTarget }
+            : null;
+
+        edges.Add(new Edge { From = fromId, To = toId, Port = port.AsString(), Ui = ui });
         CommitGraphSlice(nodes, edges);
-        SetStatus($"Ligado: {fromId} → {toId}");
+        SetStatus(replaced > 0
+            ? $"Substituída ligação de `{fromId}` ({port.AsString()}) → `{toId}`."
+            : $"Ligado: {fromId} → {toId} ({port.AsString()}).");
     }
 
     static bool CanCreateConnection(FlowConnectorViewModel source, FlowConnectorViewModel target) =>
@@ -223,8 +252,9 @@ public sealed partial class FlowEditorViewModel
         {
             if (node.Input is { } input)
                 input.IsConnected = Connections.Any(c => c.Target.Id == node.Id);
-            if (node.Output is { } output)
-                output.IsConnected = Connections.Any(c => c.Source.Id == node.Id);
+            foreach (var output in node.OutputConnectors)
+                output.IsConnected = Connections.Any(c =>
+                    c.Source.Id == node.Id && c.Port == output.Port);
         }
     }
 

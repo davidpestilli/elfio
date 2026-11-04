@@ -1,10 +1,9 @@
 ﻿<Window x:Class="Hoblio.Studio.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:nodify="clr-namespace:Nodify;assembly=Nodify"
         xmlns:local="clr-namespace:Hoblio.Studio"
-        xmlns:vm="clr-namespace:Hoblio.Studio.ViewModels"
-        Title="{Binding Title}"
+        xmlns:canvas="clr-namespace:Hoblio.Studio.FlowCanvas"
+        Title="Elfio Studio"
         Width="1480" Height="920"
         MinWidth="1100" MinHeight="700"
         Background="{StaticResource Brush.AppBg}"
@@ -17,6 +16,7 @@
   </Window.InputBindings>
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
       <RowDefinition Height="5"/>
@@ -38,8 +38,10 @@
           <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <TextBlock Text="Hoblio Studio" FontSize="16" FontWeight="Bold"
-                     Foreground="{StaticResource Brush.RibbonFg}" Margin="0,0,20,0"/>
+          <Image Source="Assets/elfio.png" Width="22" Height="22" Margin="0,0,8,0"
+                 RenderOptions.BitmapScalingMode="HighQuality"/>
+          <TextBlock Text="Elfio Studio" FontSize="16" FontWeight="Bold"
+                     Foreground="{StaticResource Brush.RibbonFg}" Margin="0,0,20,0" VerticalAlignment="Center"/>
           <TextBlock Text="Arquivo" Foreground="{StaticResource Brush.RibbonMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
           <Button Content="Novo" Style="{StaticResource RibbonButton}" Command="{Binding NewProjectCommand}"/>
           <Button Content="Abrir…" Style="{StaticResource RibbonButton}" Command="{Binding OpenProjectCommand}"/>
@@ -52,6 +54,8 @@
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right">
           <TextBlock HorizontalAlignment="Right">
+            <Run Text="{Binding DocumentTitle, Mode=OneWay}" Foreground="{StaticResource Brush.RibbonMuted}"/>
+            <Run Text=" — " Foreground="{StaticResource Brush.RibbonMuted}"/>
             <Run Text="{Binding Status, Mode=OneWay}" Foreground="{StaticResource Brush.RibbonFg}"/>
           </TextBlock>
           <TextBlock Text="{Binding ProjectPath}" Foreground="{StaticResource Brush.RibbonMuted}"
@@ -60,175 +64,44 @@
       </Grid>
     </Border>
 
+    <!-- Flow tabs (Entry + subfluxos), como Hoblio Studio -->
+    <Border Grid.Row="1" Grid.ColumnSpan="5" Background="#1E1E1E" BorderBrush="#333333" BorderThickness="0,0,0,1"
+            Padding="12,6" Visibility="{Binding ShowFlowTabs, Converter={StaticResource BoolVis}}">
+      <ItemsControl ItemsSource="{Binding EditorTabs}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal"/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Button Content="{Binding DisplayTitle}" Margin="0,0,4,0"
+                    Style="{StaticResource FlowTabButton}"
+                    ToolTip="{Binding Subtitle}"
+                    Command="{Binding DataContext.SwitchEditorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    CommandParameter="{Binding Key}"/>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
     <!-- Palette -->
-    <Border Grid.Row="1" Grid.Column="0" BorderBrush="{StaticResource Brush.PanelBorder}" BorderThickness="0,0,1,0">
+    <Border Grid.Row="2" Grid.Column="0" BorderBrush="{StaticResource Brush.PanelBorder}" BorderThickness="0,0,1,0">
       <local:ActionPalettePanel DataContext="{Binding}"/>
     </Border>
-    <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+    <GridSplitter Grid.Row="2" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-    <!-- Canvas column -->
-    <Grid Grid.Row="1" Grid.Column="2">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-      </Grid.RowDefinitions>
+    <canvas:FlowCanvasHost x:Name="FlowCanvas" Grid.Row="2" Grid.Column="2"
+                           PreviewKeyDown="FlowCanvasHost_PreviewKeyDown"/>
 
-      <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="10,8">
-        <StackPanel>
-        <ItemsControl ItemsSource="{Binding EditorTabs}" Margin="0,0,0,8">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal"/>
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Button Content="{Binding Title}" Margin="0,0,6,0" Padding="10,4"
-                      Style="{StaticResource SecondaryToolButton}"
-                      Command="{Binding DataContext.SwitchEditorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                      CommandParameter="{Binding Key}"/>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <StackPanel Orientation="Horizontal">
-          <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="14" Padding="2">
-            <StackPanel Orientation="Horizontal">
-              <RadioButton Content="Exibição" GroupName="FlowMode" Style="{StaticResource FlowModeRadio}"
-                           IsChecked="{Binding IsViewMode}"
-                           ToolTip="Somente visualização"/>
-              <RadioButton Content="Edição" GroupName="FlowMode" Style="{StaticResource FlowModeRadio}"
-                           IsChecked="{Binding IsEditing}"
-                           ToolTip="Editar diagrama e propriedades"/>
-            </StackPanel>
-          </Border>
-          <StackPanel Orientation="Horizontal" Margin="16,0,0,0"
-                      Visibility="{Binding IsEditing, Converter={StaticResource BoolVis}}">
-            <Button Content="Desfazer" Style="{StaticResource SecondaryToolButton}" Command="{Binding UndoCommand}"/>
-            <Button Content="Refazer" Style="{StaticResource SecondaryToolButton}" Command="{Binding RedoCommand}"/>
-            <Button Content="Limpar fluxo" Style="{StaticResource SecondaryToolButton}" Command="{Binding ClearFlowCommand}"/>
-            <Button Content="Novo subfluxo" Style="{StaticResource SecondaryToolButton}" Command="{Binding CreateSubflowCommand}"/>
-            <Button Content="+ Waypoint" Style="{StaticResource SecondaryToolButton}" Command="{Binding AddWaypointCommand}"/>
-            <Button Content="Remover ligação" Style="{StaticResource SecondaryToolButton}" Command="{Binding RemoveEdgeCommand}"/>
-          </StackPanel>
-          <TextBlock Margin="16,0,0,0" VerticalAlignment="Center" Foreground="#64748B" FontSize="12" TextWrapping="Wrap">
-            <Run Text="{Binding ActiveEditorTitle, Mode=OneWay}"/>
-            <Run Text=" — vazio+arrastar: seleção; Ctrl+C/X/V: copiar/recortar/colar; meio/direito/Espaço: pan; Ctrl+A: selecionar tudo"/>
-          </TextBlock>
-        </StackPanel>
-        </StackPanel>
-      </Border>
+    <GridSplitter Grid.Row="2" Grid.Column="3" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-      <Grid x:Name="FlowCanvasHost" Grid.Row="1" Background="{StaticResource Brush.CanvasBg}"
-            PreviewMouseDown="FlowCanvasHost_PreviewMouseDown"
-            PreviewMouseMove="FlowCanvasHost_PreviewMouseMove"
-            PreviewMouseUp="FlowCanvasHost_PreviewMouseUp"
-            PreviewKeyDown="FlowCanvasHost_PreviewKeyDown"
-            PreviewKeyUp="FlowCanvasHost_PreviewKeyUp">
-        <nodify:NodifyEditor x:Name="FlowEditor" ItemsSource="{Binding Nodes}"
-                             SelectedItems="{Binding DiagramSelectedItems}"
-                             Connections="{Binding Connections}"
-                             PendingConnection="{Binding PendingConnection}"
-                             Focusable="True"
-                             DisablePanning="False"
-                             DisableZooming="False"
-                             EnableRealtimeSelection="True"
-                             SelectionRectangleStyle="{StaticResource FlowSelectionRectangle}"
-                             ItemsDragCompletedCommand="{Binding ItemsDragCompletedCommand}"
-                             ConnectionStartedCommand="{Binding ConnectionStartedCommand}"
-                             ConnectionCompletedCommand="{Binding ConnectionCompletedCommand}"
-                             DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
-                             RemoveConnectionCommand="{Binding RemoveConnectionCommand}"
-                             Background="Transparent">
-          <nodify:NodifyEditor.PendingConnectionTemplate>
-            <DataTemplate DataType="{x:Type vm:StudioPendingConnectionViewModel}">
-              <nodify:PendingConnection Source="{Binding Source}"
-                                        Target="{Binding Target}"
-                                        IsVisible="{Binding IsVisible}"
-                                        EnableSnapping="True"
-                                        AllowOnlyConnectors="True"
-                                        Stroke="#64748B"
-                                        StrokeThickness="2"
-                                        StrokeDashArray="4 3"/>
-            </DataTemplate>
-          </nodify:NodifyEditor.PendingConnectionTemplate>
-          <nodify:NodifyEditor.ConnectionTemplate>
-            <DataTemplate>
-              <local:FlowConnectionView PreviewMouseLeftButtonDown="Connection_PreviewMouseLeftButtonDown"/>
-            </DataTemplate>
-          </nodify:NodifyEditor.ConnectionTemplate>
-          <nodify:NodifyEditor.ItemContainerStyle>
-            <Style TargetType="{x:Type nodify:ItemContainer}">
-              <Setter Property="Location" Value="{Binding Location, Mode=TwoWay}"/>
-              <Setter Property="IsSelectable" Value="True"/>
-              <Setter Property="SelectedBorderThickness" Value="2"/>
-              <Setter Property="SelectedBrush" Value="#2563EB"/>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding DataContext.CanEditDiagram, RelativeSource={RelativeSource AncestorType=nodify:NodifyEditor}}" Value="False">
-                  <Setter Property="IsSelectable" Value="False"/>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </nodify:NodifyEditor.ItemContainerStyle>
-          <nodify:NodifyEditor.ItemTemplate>
-            <DataTemplate>
-              <Grid VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto"/>
-                  <ColumnDefinition Width="Auto"/>
-                  <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <nodify:Connector Grid.Column="0"
-                                  Style="{StaticResource FlowPortConnector}"
-                                  DataContext="{Binding Input}"
-                                  VerticalAlignment="Center"
-                                  Margin="0,0,6,0"
-                                  Panel.ZIndex="2"
-                                  Visibility="{Binding HasInput, Converter={StaticResource BoolVis}}"
-                                  Anchor="{Binding Anchor, Mode=OneWayToSource}"/>
-                <Border Grid.Column="1" BorderThickness="2" CornerRadius="8" Padding="10,8" MinWidth="150" Cursor="Hand"
-                        PreviewMouseLeftButtonDown="NodeCard_PreviewMouseLeftButtonDown">
-                  <Border.Style>
-                    <Style TargetType="Border">
-                      <Setter Property="Background" Value="White"/>
-                      <Setter Property="BorderBrush" Value="#CBD5E1"/>
-                      <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsActive}" Value="True">
-                          <Setter Property="Background" Value="#FEF3C7"/>
-                          <Setter Property="BorderBrush" Value="#F59E0B"/>
-                        </DataTrigger>
-                      </Style.Triggers>
-                    </Style>
-                  </Border.Style>
-                  <StackPanel>
-                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="#0F172A"/>
-                    <TextBlock Text="{Binding Summary}" FontSize="11" Foreground="#2563EB" Margin="0,4,0,0"/>
-                    <TextBlock Text="{Binding Id}" FontSize="10" Foreground="#94A3B8" Margin="0,2,0,0"/>
-                  </StackPanel>
-                </Border>
-                <nodify:Connector Grid.Column="2"
-                                  Style="{StaticResource FlowPortConnector}"
-                                  DataContext="{Binding Output}"
-                                  VerticalAlignment="Center"
-                                  Margin="6,0,0,0"
-                                  Panel.ZIndex="2"
-                                  Visibility="{Binding HasOutput, Converter={StaticResource BoolVis}}"
-                                  Anchor="{Binding Anchor, Mode=OneWayToSource}"/>
-              </Grid>
-            </DataTemplate>
-          </nodify:NodifyEditor.ItemTemplate>
-        </nodify:NodifyEditor>
-        <local:WaypointOverlay x:Name="WaypointLayer" DataContext="{Binding}" Panel.ZIndex="10"/>
-      </Grid>
-    </Grid>
+    <local:PropertiesPanel Grid.Row="2" Grid.Column="4" DataContext="{Binding}"/>
 
-    <GridSplitter Grid.Row="1" Grid.Column="3" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
-
-    <local:PropertiesPanel Grid.Row="1" Grid.Column="4" DataContext="{Binding}"/>
-
-    <GridSplitter Grid.Row="2" Grid.ColumnSpan="5" Height="5" VerticalAlignment="Stretch" Background="Transparent"/>
+    <GridSplitter Grid.Row="3" Grid.ColumnSpan="5" Height="5" VerticalAlignment="Stretch" Background="Transparent"/>
 
     <!-- Run log -->
-    <Border Grid.Row="3" Grid.ColumnSpan="5" Background="{StaticResource Brush.LogBg}">
+    <Border Grid.Row="4" Grid.ColumnSpan="5" Background="{StaticResource Brush.LogBg}">
       <DockPanel>
         <Border DockPanel.Dock="Top" Background="#252526" Padding="12,8">
           <DockPanel>

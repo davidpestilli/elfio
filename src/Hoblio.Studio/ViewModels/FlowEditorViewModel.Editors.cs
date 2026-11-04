@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Windows;
 using Hoblio.Model;
 using Hoblio.Serde;
+using Hoblio.Studio;
 
 namespace Hoblio.Studio.ViewModels;
 
@@ -11,20 +12,26 @@ public sealed class EditorTabViewModel
     public required string Key { get; init; }
     public required string Title { get; init; }
     public string? Subtitle { get; init; }
+    public bool IsActive { get; init; }
     public bool IsSubflow => Key.StartsWith("subflow:", StringComparison.Ordinal);
     public bool IsFile => Key.StartsWith("file:", StringComparison.Ordinal);
+    public string DisplayTitle => IsSubflow ? $"⎇ {Title}" : Title;
 }
 
 public sealed partial class FlowEditorViewModel
 {
     string? _activeSubflowId;
-    int _paletteSpawnIndex;
     string _entryFlowPath = ProjectLayout.FlowFile;
     string _activeFlowPath = ProjectLayout.FlowFile;
     readonly Dictionary<string, FlowFileSnapshot> _flowFiles = new(StringComparer.OrdinalIgnoreCase);
 
     public ObservableCollection<EditorTabViewModel> EditorTabs { get; } = [];
     public ObservableCollection<string> ManifestFlowIds { get; } = [];
+
+    public bool ShowFlowTabs => EditorTabs.Count > 1;
+
+    public string ActiveEditorTabKey =>
+        _activeSubflowId is not null ? "subflow:" + _activeSubflowId : "file:" + _activeFlowPath;
 
     public string? ActiveSubflowId
     {
@@ -125,43 +132,53 @@ public sealed partial class FlowEditorViewModel
     void RebuildEditorTabs()
     {
         EditorTabs.Clear();
+        var activeKey = ActiveEditorTabKey;
         if (_flowFiles.Count == 0)
         {
-            EditorTabs.Add(new EditorTabViewModel { Key = "file:" + _entryFlowPath, Title = "Principal" });
-            return;
-        }
-        foreach (var entry in ProjectFlowCatalog.ListFlows(_project.Manifest))
-        {
-            var title = entry.Id == "entry" ? "Principal" : entry.Id;
+            var soloKey = "file:" + _entryFlowPath;
             EditorTabs.Add(new EditorTabViewModel
             {
-                Key = "file:" + entry.Path,
+                Key = soloKey,
+                Title = "Entry",
+                Subtitle = _entryFlowPath,
+                IsActive = soloKey == activeKey,
+            });
+            OnPropertyChanged(nameof(ShowFlowTabs));
+            return;
+        }
+
+        foreach (var entry in ProjectFlowCatalog.ListFlows(_project.Manifest))
+        {
+            var title = entry.Id == "entry" ? "Entry" : entry.Id;
+            var key = "file:" + entry.Path;
+            EditorTabs.Add(new EditorTabViewModel
+            {
+                Key = key,
                 Title = title,
-                Subtitle = entry.Path,
+                Subtitle = entry.Description ?? entry.Path,
+                IsActive = key == activeKey,
             });
         }
-        var graph = CurrentFileGraph();
-        if (graph.Subflows is not null && _activeSubflowId is null)
+
+        EnsureFlowLoaded(_activeFlowPath);
+        var ownerGraph = _flowFiles[_activeFlowPath].Graph;
+        if (ownerGraph.Subflows is not null)
         {
-            foreach (var id in graph.Subflows.Keys.OrderBy(k => k, StringComparer.Ordinal))
+            foreach (var id in ownerGraph.Subflows.Keys.OrderBy(k => k, StringComparer.Ordinal))
             {
+                var key = "subflow:" + id;
                 EditorTabs.Add(new EditorTabViewModel
                 {
-                    Key = "subflow:" + id,
+                    Key = key,
                     Title = id,
-                    Subtitle = "subfluxo embutido",
+                    Subtitle = $"Subfluxo embutido em {_activeFlowPath}",
+                    IsActive = key == activeKey,
                 });
             }
         }
-        else if (_activeSubflowId is not null)
-        {
-            EditorTabs.Add(new EditorTabViewModel
-            {
-                Key = "subflow:" + _activeSubflowId,
-                Title = _activeSubflowId,
-                Subtitle = "subfluxo embutido",
-            });
-        }
+
+        OnPropertyChanged(nameof(ShowFlowTabs));
+        OnPropertyChanged(nameof(ActiveEditorTabKey));
     }
 
     void SwitchEditor(string? key)
@@ -190,8 +207,9 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(VariablesJson));
         OnPropertyChanged(nameof(VariablesAdvancedJson));
         ReloadProjectVariablesUi();
-        _paletteSpawnIndex = 0;
-        RebuildCanvas();
+        PaletteSpawn.Reset();
+        RebuildEditorTabs();
+        RebuildCanvas(requestCanvasFitView: true);
         RefreshInspectorVisibility();
     }
 
@@ -296,6 +314,7 @@ public sealed partial class FlowEditorViewModel
         connection.Waypoints[index] = point;
         connection.NotifyGeometryChanged();
         MarkDirty();
+        NotifyFlowCanvasEdge(connection);
     }
 
     public void RemoveWaypoint(FlowConnectionViewModel connection, int index)
@@ -306,6 +325,7 @@ public sealed partial class FlowEditorViewModel
         connection.Waypoints.RemoveAt(index);
         connection.NotifyGeometryChanged();
         MarkDirty();
+        NotifyFlowCanvasEdge(connection);
     }
 
     public void InsertWaypoint(FlowConnectionViewModel connection, int segmentIndex)
@@ -321,5 +341,6 @@ public sealed partial class FlowEditorViewModel
         connection.Waypoints.Insert(segmentIndex, new Point((a.X + b.X) / 2, (a.Y + b.Y) / 2));
         connection.NotifyGeometryChanged();
         MarkDirty();
+        NotifyFlowCanvasEdge(connection);
     }
 }

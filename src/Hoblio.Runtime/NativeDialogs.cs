@@ -7,44 +7,43 @@ public sealed record UserInputResult(string UserInput, string ButtonPressed);
 
 public static class NativeDialogs
 {
-    public static void SpawnShowMessage(string title, string text, double? timeoutSeconds)
+    /// <summary>Blocks until the user closes the dialog or the optional timeout elapses (same as Hoblio <c>run_show_message</c>).</summary>
+    public static void RunShowMessage(string title, string text, double? timeoutSeconds)
     {
-        ThreadPool.QueueUserWorkItem(_ =>
+        RunSta(() =>
         {
-            RunSta(() =>
+            if (timeoutSeconds is > 0)
             {
-                if (timeoutSeconds is > 0)
+                var win = new Window
                 {
-                    var win = new Window
+                    Title = title,
+                    Width = 420,
+                    Height = 200,
+                    Topmost = true,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Content = new System.Windows.Controls.TextBlock
                     {
-                        Title = title,
-                        Width = 420,
-                        Height = 200,
-                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                        Content = new System.Windows.Controls.TextBlock
-                        {
-                            Text = text,
-                            TextWrapping = TextWrapping.Wrap,
-                            Margin = new Thickness(16),
-                        },
-                    };
-                    var timer = new System.Windows.Threading.DispatcherTimer
-                    {
-                        Interval = TimeSpan.FromSeconds(timeoutSeconds.Value),
-                    };
-                    timer.Tick += (_, _) =>
-                    {
-                        timer.Stop();
-                        win.Close();
-                    };
-                    timer.Start();
-                    win.ShowDialog();
-                }
-                else
+                        Text = text,
+                        TextWrapping = TextWrapping.Wrap,
+                        Margin = new Thickness(16),
+                    },
+                };
+                var timer = new System.Windows.Threading.DispatcherTimer
                 {
-                    MessageBox.Show(text, title, MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            });
+                    Interval = TimeSpan.FromSeconds(timeoutSeconds.Value),
+                };
+                timer.Tick += (_, _) =>
+                {
+                    timer.Stop();
+                    win.Close();
+                };
+                timer.Start();
+                win.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show(text, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         });
     }
 

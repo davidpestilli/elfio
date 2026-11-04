@@ -8,6 +8,7 @@ using Hoblio.Model;
 using Hoblio.Runtime;
 using Hoblio.Serde;
 using Hoblio.Studio;
+using Hoblio.Studio.FlowCanvas;
 
 namespace Hoblio.Studio.ViewModels;
 
@@ -66,8 +67,13 @@ public sealed class FlowNodeViewModel : INotifyPropertyChanged
 
         if (HasOutput)
         {
-            Output = new FlowConnectorViewModel { Node = this, IsInput = false };
-            OutputConnectors.Add(Output);
+            foreach (var port in NodeOutputPorts.ForKind(Kind))
+            {
+                var connector = new FlowConnectorViewModel { Node = this, IsInput = false, Port = port };
+                OutputConnectors.Add(connector);
+            }
+            Output = OutputConnectors.FirstOrDefault(c => c.Port == EdgePort.Main)
+                     ?? OutputConnectors.FirstOrDefault();
         }
         else
             Output = null;
@@ -134,6 +140,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(InspectorReadOnly));
             RefreshInspectorVisibility();
             RaiseClipboardCommands();
+            NotifyFlowCanvasFull();
         }
     }
 
@@ -149,6 +156,10 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         }
     }
     public bool CanEditDiagram => IsEditing && !IsRunning;
+
+    public bool CanUndoDiagram => CanEditDiagram && _undoStack.Count > 0;
+
+    public bool CanRedoDiagram => CanEditDiagram && _redoStack.Count > 0;
 
     FlowNodeViewModel? _selectedNodeVm;
     public FlowNodeViewModel? SelectedNode
@@ -192,10 +203,10 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
     public string? ProjectPath
     {
         get => _projectDir;
-        private set { _projectDir = value; OnPropertyChanged(); OnPropertyChanged(nameof(Title)); }
+        private set { _projectDir = value; OnPropertyChanged(); OnPropertyChanged(nameof(DocumentTitle)); }
     }
 
-    public string Title => _project.Manifest.Name + (IsDirty ? " *" : "");
+    public string DocumentTitle => _project.Manifest.Name + (IsDirty ? " *" : "");
 
     public bool IsDirty { get; private set; }
 
@@ -212,6 +223,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             RunCommand.RaiseCanExecuteChanged();
             StopRunCommand.RaiseCanExecuteChanged();
             RefreshInspectorVisibility();
+            NotifyFlowCanvasFull();
         }
     }
 
@@ -266,10 +278,18 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(SelectedEdgeSourceId));
             foreach (var c in Connections)
                 c.IsSelected = ReferenceEquals(c, value);
+            OnPropertyChanged(nameof(SelectedEdgeCanvasLabel));
+            if (!_canvasSelectionSync)
+                NotifyFlowCanvasFull();
         }
     }
 
     public bool ShowConnectionProperties => SelectedConnection is not null;
+
+    public string? SelectedEdgeCanvasLabel =>
+        SelectedConnection is { } c
+            ? $"{c.Source.Id} → {c.Target.Id} ({c.Port.AsString()})"
+            : null;
 
     public string SelectedConnectionFromId => SelectedConnection?.Source.Id ?? "";
 
@@ -337,7 +357,10 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             node.Label = value;
             var vm = Nodes.FirstOrDefault(n => n.Id == node.Id);
             if (vm is not null)
+            {
                 vm.Label = value;
+                NotifyFlowCanvasNodePresentation(vm);
+            }
             MarkDirty();
             OnPropertyChanged();
         }
@@ -501,11 +524,11 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         ProjectPath = dir;
         _variablesJson = JsonSerializer.Serialize(project.Variables, new JsonSerializerOptions { WriteIndented = true });
         InitFlowFileState(project, dir);
-        _paletteSpawnIndex = 0;
-        RebuildCanvas();
+        PaletteSpawn.Reset();
+        RebuildCanvas(requestCanvasFitView: true);
         _savedDigest = ProjectDigest();
         IsDirty = false;
-        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(DocumentTitle));
         if (resetUndo)
         {
             _undoStack.Clear();
@@ -516,7 +539,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShowWelcomeHint));
     }
 
-    void RebuildCanvas()
+    void RebuildCanvas(bool requestCanvasFitView = false)
     {
         Nodes.Clear();
         Connections.Clear();
@@ -552,6 +575,10 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                 Source = src,
                 Target = tgt,
                 Port = edge.ResolvedPort(),
+                Label = edge.Label,
+                SourceHandle = FlowCanvasHandles.SourceHandleFor(
+                    src.Kind, edge.ResolvedPort(), edge.Ui?.SourceHandle),
+                TargetHandle = FlowCanvasHandles.DefaultTargetHandle(edge.Ui?.TargetHandle),
             };
             if (edge.Ui?.Waypoints is { Count: > 0 } wps)
             {
@@ -568,6 +595,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         RefreshRunFlowTargets();
         ReloadProjectVariablesUi();
         RebuildTemplateVariableNames();
+        NotifyFlowCanvasFull(requestCanvasFitView);
     }
 
     void ScheduleConnectionAnchorSync()
@@ -596,7 +624,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         SaveAllFlowFiles();
         _savedDigest = ProjectDigest();
         IsDirty = false;
-        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(DocumentTitle));
         SetStatus("Salvo");
     }
 
@@ -789,7 +817,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             Control = control,
         };
         var (sliceNodes, sliceEdges, _) = ActiveGraphSlice();
-        node.Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId);
+        node.Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId, paletteKey);
         sliceNodes.Add(node);
         WriteActiveGraphSlice(sliceNodes, sliceEdges);
         if (_activeSubflowId is null)
@@ -802,7 +830,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         SelectSingleNode(vm);
         OnPropertyChanged(nameof(ShowWelcomeHint));
         MarkDirty();
-        SetStatus("Nó adicionado — ligue arrastando conectores no canvas ou use Nova ligação no painel.");
+        SetStatus("Nó adicionado — ligue arrastando conectores no canvas.");
     }
 
     void AddStartNodeFromPalette()
@@ -820,7 +848,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             Id = id,
             Kind = NodeKind.Start,
             Label = "Start",
-            Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId),
+            Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId, "node:start"),
         };
         sliceNodes.Add(node);
         if (_activeSubflowId is null)
@@ -842,7 +870,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             Id = id,
             Kind = NodeKind.End,
             Label = "End",
-            Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId),
+            Ui = ComputePalettePlacement(sliceNodes, SelectedNodeId, "node:end"),
         };
         sliceNodes.Add(node);
         WriteActiveGraphSlice(sliceNodes, sliceEdges);
@@ -852,7 +880,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         SetStatus("Nó End adicionado.");
     }
 
-    NodeUi ComputePalettePlacement(List<Node> sliceNodes, string? selectedNodeId)
+    NodeUi ComputePalettePlacement(List<Node> sliceNodes, string? selectedNodeId, string? paletteKey = null)
     {
         const double nodeW = 180;
         const double nodeH = 90;
@@ -882,16 +910,10 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         }
         else
         {
-            candidate = (200, 120);
-            for (var attempt = 0; attempt < 48; attempt++)
-            {
-                var idx = _paletteSpawnIndex++;
-                var col = idx % 4;
-                var row = idx / 4;
-                candidate = (200 + col * stepX, 120 + row * stepY);
-                if (!Overlaps(candidate.x, candidate.y))
-                    break;
-            }
+            var key = paletteKey ?? "action:log";
+            candidate = PaletteSpawn.Next(key);
+            for (var attempt = 0; attempt < 48 && Overlaps(candidate.x, candidate.y); attempt++)
+                candidate = PaletteSpawn.Next(key);
         }
 
         return new NodeUi { X = candidate.x, Y = candidate.y };
@@ -983,18 +1005,22 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
     {
         UndoCommand.RaiseCanExecuteChanged();
         RedoCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(CanUndoDiagram));
+        OnPropertyChanged(nameof(CanRedoDiagram));
+        FlowCanvas?.PatchToolbarState(CanUndoDiagram, CanRedoDiagram);
     }
 
     void SetActiveHighlight()
     {
         foreach (var n in Nodes)
             n.IsActive = n.Id == _activeNodeId;
+        NotifyFlowCanvasNodePresentation(Nodes.ToArray());
     }
 
     void MarkDirty()
     {
         IsDirty = ProjectDigest() != _savedDigest;
-        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(DocumentTitle));
     }
 
     string ProjectDigest() => ProjectLoader.SerializeProjectToString(_project);
@@ -1018,13 +1044,27 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         SelectedConnection.Waypoints.Add(mid);
         SelectedConnection.NotifyGeometryChanged();
         MarkDirty();
+        NotifyFlowCanvasEdge(SelectedConnection);
+    }
+
+    void NotifyFlowCanvasEdge(FlowConnectionViewModel? conn)
+    {
+        if (conn is null)
+            NotifyFlowCanvasFull();
+        else
+            FlowCanvas?.PatchEdgeWaypoints(
+                FlowCanvasSerializer.EdgeId(conn.Source.Id, conn.Port, conn.Target.Id),
+                conn.Waypoints.Select(p => (p.X, p.Y)).ToList());
     }
 
     void RefreshNodeSummary(Node node)
     {
         var vm = Nodes.FirstOrDefault(n => n.Id == node.Id);
         if (vm is not null)
+        {
             vm.Summary = Summarize(node);
+            NotifyFlowCanvasNodePresentation(vm);
+        }
     }
 
     static string Summarize(Node node) => node.Kind switch

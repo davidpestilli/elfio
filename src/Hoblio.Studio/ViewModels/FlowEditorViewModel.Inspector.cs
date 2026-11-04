@@ -217,10 +217,6 @@ public sealed partial class FlowEditorViewModel
     public string GenericField2Label => GenericLabels().label2;
     public string GenericField3Label => GenericLabels().label3;
 
-    public string NewEdgeFromId { get; set; } = "";
-    public string NewEdgeToId { get; set; } = "";
-    public string NewEdgePort { get; set; } = "main";
-
     public string SelectedEdgeTargetId
     {
         get => SelectedConnection?.Target.Id ?? "";
@@ -249,13 +245,11 @@ public sealed partial class FlowEditorViewModel
     }
 
     public RelayCommand DeleteNodeCommand { get; private set; } = null!;
-    public RelayCommand AddEdgeCommand { get; private set; } = null!;
     public RelayCommand RemoveEdgeCommand { get; private set; } = null!;
 
     void InitInspectorCommands()
     {
         DeleteNodeCommand = new RelayCommand(DeleteSelectedNode, () => CanDeleteSelectedNode());
-        AddEdgeCommand = new RelayCommand(AddEdge);
         RemoveEdgeCommand = new RelayCommand(RemoveSelectedEdge, () => SelectedConnection is not null);
     }
 
@@ -266,27 +260,6 @@ public sealed partial class FlowEditorViewModel
     }
 
     void DeleteSelectedNode() => DeleteSelectedNodes();
-
-    void AddEdge()
-    {
-        if (string.IsNullOrWhiteSpace(NewEdgeFromId) || string.IsNullOrWhiteSpace(NewEdgeToId))
-            return;
-        var from = NewEdgeFromId.Trim();
-        var to = NewEdgeToId.Trim();
-        var port = string.IsNullOrWhiteSpace(NewEdgePort) ? "main" : NewEdgePort.Trim();
-        PushHistory();
-        PersistCanvasToActiveGraph();
-        var (nodes, edges, _) = ActiveGraphSlice();
-        if (edges.Any(e => e.From == from && e.To == to &&
-                           string.Equals(e.ResolvedPort().AsString(), port, StringComparison.OrdinalIgnoreCase)))
-        {
-            SetStatus("Essa aresta já existe.");
-            return;
-        }
-        edges.Add(new Edge { From = from, To = to, Port = port });
-        CommitGraphSlice(nodes, edges);
-        SetStatus($"Aresta adicionada: {from} → {to} ({port}).");
-    }
 
     void RemoveSelectedEdge() => OnRemoveConnection(SelectedConnection);
 

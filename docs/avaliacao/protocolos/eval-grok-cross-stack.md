@@ -7,8 +7,8 @@ Compara **Hoblio (Rust/Tauri)** e **Hoblio C# (WPF/Nodify)** nos mesmos `example
 | Stack | Caminho padrão |
 |-------|----------------|
 | Rust | `E:\Projetos\hoblio` |
-| C# | `E:\Projetos\hoblio-c#` |
-| Exemplos | `E:\Projetos\hoblio\examples` (ou junção `hoblio-c#\examples`) |
+| C# | `E:\Projetos\elfio` |
+| Exemplos | `E:\Projetos\hoblio\examples` (ou junção `elfio\examples`) |
 
 ## Execução (obrigatória)
 
@@ -16,7 +16,7 @@ A partir de **qualquer** repo (o script infere o outro):
 
 ```powershell
 # Opção A — raiz C#
-cd E:\Projetos\hoblio-c#
+cd E:\Projetos\elfio
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\eval-grok-cross-stack.ps1
 
 # Opção B — raiz Rust
@@ -29,7 +29,7 @@ Parâmetros opcionais:
 ```powershell
 -File .\scripts\eval-grok-cross-stack.ps1 `
   -RustRoot E:\Projetos\hoblio `
-  -CSharpRoot E:\Projetos\hoblio-c# `
+  -CSharpRoot E:\Projetos\elfio `
   -ExamplesRoot E:\Projetos\hoblio\examples `
   -SkipBuild `
   -StrictSummaryLines

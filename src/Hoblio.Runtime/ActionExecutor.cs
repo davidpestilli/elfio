@@ -33,7 +33,11 @@ public static class ActionExecutor
             ListClearAction lc => ListActions.ListClear(vars, lc.ListVariable),
             DelayAction d => Delay(d.Milliseconds),
             HttpGetAction h => HttpGet(h, vars),
-            BrowserNavigateAction n => browser.Navigate(n.Url, n.WaitMs, n.ShowOnScreen, n.StartMaximized),
+            BrowserNavigateAction n => browser.Navigate(
+                RunVariables.Interpolate(n.Url, vars),
+                n.WaitMs,
+                n.ShowOnScreen,
+                n.StartMaximized),
             BrowserClickAction c => browser.Click(c.Selector, c.TimeoutMs, c.WaitForNavigation ?? false, c.WaitSelectorAfter, c.WaitAfterTimeoutMs),
             BrowserWaitNavigationAction w => browser.WaitNavigation(w.TimeoutMs),
             BrowserFillAction f => browser.Fill(
@@ -92,7 +96,7 @@ public static class ActionExecutor
     {
         var title = RunVariables.Interpolate(sm.Title, vars);
         var text = RunVariables.Interpolate(sm.Text, vars);
-        NativeDialogs.SpawnShowMessage(title, text, sm.TimeoutSeconds);
+        NativeDialogs.RunShowMessage(title, text, sm.TimeoutSeconds);
         var timeoutNote = sm.TimeoutSeconds is > 0 and var t ? $"timeout={t}s" : "until closed";
         return $"show_message: \"{title}\" ({timeoutNote})";
     }

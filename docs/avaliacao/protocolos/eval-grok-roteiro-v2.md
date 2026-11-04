@@ -51,8 +51,8 @@ O Grokbot deve declarar **três** vereditos separados:
    | Stack | Padrão |
    |-------|--------|
    | Rust | `E:\Projetos\hoblio` |
-   | C# | `E:\Projetos\hoblio-c#` |
-   | Examples | `E:\Projetos\hoblio\examples` (junção em `hoblio-c#\examples`) |
+   | C# | `E:\Projetos\elfio` |
+   | Examples | `E:\Projetos\hoblio\examples` (junção em `elfio\examples`) |
 
 2. **Rust:** `git status --porcelain` → registrar; **não** commitar/push sem pedido do usuário. Harness não deve alterar arquivos tracked.
 3. **Chrome** instalado (para Fase 3). Sem Chrome: marcar T-BRW-* como `SKIP` com motivo, não inventar PASS.
@@ -67,7 +67,7 @@ O Grokbot deve declarar **três** vereditos separados:
 ## 3. Fase 1 — Harness cross-stack (obrigatório)
 
 ```powershell
-cd E:\Projetos\hoblio-c#
+cd E:\Projetos\elfio
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\eval-grok-cross-stack.ps1 `
   2>&1 | Tee-Object -FilePath reports\eval-cross-stack-<DATA>\eval-cross-stack.log
 ```

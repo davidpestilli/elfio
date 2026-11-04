@@ -74,25 +74,6 @@
                      Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
                      Visibility="{Binding ShowEmptyFlowProducers, Converter={StaticResource BoolVis}}"/>
 
-          <StackPanel Margin="0,0,0,16" IsEnabled="{Binding IsEditing}">
-            <TextBlock Text="Nova ligação" FontWeight="SemiBold" Margin="0,0,0,8"/>
-            <TextBlock Text="From (node id)" Style="{StaticResource FieldLabel}"/>
-            <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding NewEdgeFromId, UpdateSourceTrigger=PropertyChanged}"
-                      IsEditable="True" Margin="0,0,0,10"/>
-            <TextBlock Text="To (node id)" Style="{StaticResource FieldLabel}"/>
-            <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding NewEdgeToId, UpdateSourceTrigger=PropertyChanged}"
-                      IsEditable="True" Margin="0,0,0,10"/>
-            <TextBlock Text="Port" Style="{StaticResource FieldLabel}"/>
-            <ComboBox Text="{Binding NewEdgePort, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Margin="0,0,0,10">
-              <ComboBoxItem Content="main"/>
-              <ComboBoxItem Content="then"/>
-              <ComboBoxItem Content="else"/>
-              <ComboBoxItem Content="body"/>
-              <ComboBoxItem Content="after"/>
-            </ComboBox>
-            <Button Content="Add connection" Command="{Binding AddEdgeCommand}" Padding="8,4" HorizontalAlignment="Left"/>
-          </StackPanel>
-
           <local:ProjectVariablesPanel DataContext="{Binding}"/>
         </StackPanel>
 

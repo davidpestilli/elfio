@@ -37,12 +37,19 @@ public sealed class BrowserContext : IDisposable
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
         var page = RequirePage();
-        WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
-        page.ClickAsync(selector).GetAwaiter().GetResult();
-        if (waitForNavigation)
-            WaitForNavigationAsync(page, timeout).GetAwaiter().GetResult();
-        if (waitSelectorAfter is not null)
-            WaitForSelectorAsync(page, waitSelectorAfter, (int)(waitAfterTimeoutMs ?? (ulong)timeout)).GetAwaiter().GetResult();
+        RunWithTransientRetry(() =>
+        {
+            WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
+            page.ClickAsync(selector).GetAwaiter().GetResult();
+            if (waitForNavigation)
+            {
+                WaitForNavigationAsync(page, timeout).GetAwaiter().GetResult();
+                WaitForDomStableAsync(page, Math.Min(timeout, 8000)).GetAwaiter().GetResult();
+            }
+
+            if (waitSelectorAfter is not null)
+                WaitForSelectorAsync(page, waitSelectorAfter, (int)(waitAfterTimeoutMs ?? (ulong)timeout)).GetAwaiter().GetResult();
+        });
         var notes = (waitForNavigation, waitSelectorAfter is not null) switch
         {
             (true, true) => " (navigation + selector)",
@@ -56,7 +63,12 @@ public sealed class BrowserContext : IDisposable
     public string WaitNavigation(ulong? timeoutMs)
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
-        WaitForNavigationAsync(RequirePage(), timeout).GetAwaiter().GetResult();
+        var page = RequirePage();
+        RunWithTransientRetry(() =>
+        {
+            WaitForNavigationAsync(page, timeout).GetAwaiter().GetResult();
+            WaitForDomStableAsync(page, Math.Min(timeout, 8000)).GetAwaiter().GetResult();
+        });
         return $"browser_wait_navigation: ok ({timeout}ms max)";
     }
 
@@ -64,35 +76,39 @@ public sealed class BrowserContext : IDisposable
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
         var page = RequirePage();
-        WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
-        page.FocusAsync(selector).GetAwaiter().GetResult();
-        page.EvaluateFunctionAsync(
-            @"sel => {
-                const el = document.querySelector(sel);
-                if (!el) return;
+        RunWithTransientRetry(() =>
+        {
+            var handle = WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
+            handle.ClickAsync().GetAwaiter().GetResult();
+            handle.EvaluateFunctionAsync(
+                @"el => {
                 if (el.value !== undefined) el.value = '';
                 else if (el.isContentEditable) el.textContent = '';
-            }",
-            selector).GetAwaiter().GetResult();
-        page.TypeAsync(selector, text).GetAwaiter().GetResult();
+            }").GetAwaiter().GetResult();
+            handle.TypeAsync(text).GetAwaiter().GetResult();
+        });
         return $"browser_fill: {selector} ({text.Length} chars)";
     }
 
     public string WaitFor(string selector, ulong? timeoutMs)
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
-        WaitForSelectorAsync(RequirePage(), selector, timeout).GetAwaiter().GetResult();
+        RunWithTransientRetry(() =>
+            WaitForSelectorAsync(RequirePage(), selector, timeout).GetAwaiter().GetResult());
         return $"browser_wait_for: {selector}";
     }
 
     public string GetText(string selector, ulong? timeoutMs, string? variable, RunVariables vars)
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
-        var page = RequirePage();
-        WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
-        var text = page.EvaluateFunctionAsync<string>(
-            "sel => { const el = document.querySelector(sel); return el ? (el.innerText || el.textContent || '') : ''; }",
-            selector).GetAwaiter().GetResult() ?? "";
+        var text = RunWithTransientRetry(() =>
+        {
+            var page = RequirePage();
+            var handle = WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
+            return handle.EvaluateFunctionAsync<string>(
+                "el => (el && (el.innerText || el.textContent)) ? (el.innerText || el.textContent || '').trim() : ''"
+            ).GetAwaiter().GetResult() ?? "";
+        });
 
         var varNote = "";
         if (!string.IsNullOrEmpty(variable))
@@ -107,6 +123,64 @@ public sealed class BrowserContext : IDisposable
 
     IPage RequirePage() =>
         _page ?? throw new InvalidOperationException("no browser session: run browser_navigate before other browser actions");
+
+    static void RunWithTransientRetry(Action action, int attempts = 4)
+    {
+        Exception? last = null;
+        for (var i = 0; i < attempts; i++)
+        {
+            try
+            {
+                action();
+                return;
+            }
+            catch (Exception ex) when (IsTransientBrowserError(ex) && i < attempts - 1)
+            {
+                last = ex;
+                Thread.Sleep(150 * (i + 1));
+            }
+        }
+
+        if (last is not null)
+            throw last;
+        action();
+    }
+
+    static T RunWithTransientRetry<T>(Func<T> action, int attempts = 4)
+    {
+        Exception? last = null;
+        for (var i = 0; i < attempts; i++)
+        {
+            try
+            {
+                return action();
+            }
+            catch (Exception ex) when (IsTransientBrowserError(ex) && i < attempts - 1)
+            {
+                last = ex;
+                Thread.Sleep(150 * (i + 1));
+            }
+        }
+
+        if (last is not null)
+            throw last;
+        return action();
+    }
+
+    static bool IsTransientBrowserError(Exception ex)
+    {
+        for (var cur = ex; cur is not null; cur = cur.InnerException)
+        {
+            var msg = cur.Message;
+            if (msg.Contains("Execution context was destroyed", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("Cannot find context with specified id", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("Inspected target navigated or closed", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("Target closed", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("Protocol error", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
 
     async Task LaunchSession(string url, bool showOnScreen, bool startMaximized)
     {
@@ -131,10 +205,7 @@ public sealed class BrowserContext : IDisposable
         await GoToCompatAsync(_page, url);
     }
 
-    async Task NavigateExisting(string url)
-    {
-        await GoToCompatAsync(_page!, url);
-    }
+    async Task NavigateExisting(string url) => await GoToCompatAsync(_page!, url);
 
     static async Task GoToCompatAsync(IPage page, string url)
     {
@@ -144,20 +215,21 @@ public sealed class BrowserContext : IDisposable
             ReferrerPolicy = "strict-origin-when-cross-origin",
         };
         await page.GoToAsync(url, options);
+        await WaitForDomStableAsync(page, 5000);
     }
 
-    static async Task WaitForSelectorAsync(IPage page, string selector, int timeoutMs)
+    static async Task<IElementHandle> WaitForSelectorAsync(IPage page, string selector, int timeoutMs)
     {
-        var deadline = DateTime.UtcNow.AddMilliseconds(Math.Max(1, timeoutMs));
-        while (true)
-        {
-            var el = await page.QuerySelectorAsync(selector);
-            if (el is not null)
-                return;
-            if (DateTime.UtcNow >= deadline)
-                throw new TimeoutException($"timeout ({timeoutMs}ms) waiting for selector `{selector}`");
-            await Task.Delay(100);
-        }
+        var handle = await page.WaitForSelectorAsync(
+            selector,
+            new WaitForSelectorOptions
+            {
+                Timeout = Math.Max(1, timeoutMs),
+                Visible = false,
+            });
+        if (handle is null)
+            throw new TimeoutException($"timeout ({timeoutMs}ms) waiting for selector `{selector}`");
+        return handle;
     }
 
     static async Task WaitForNavigationAsync(IPage page, int timeoutMs)
@@ -181,9 +253,36 @@ public sealed class BrowserContext : IDisposable
         }
     }
 
+    static async Task WaitForDomStableAsync(IPage page, int timeoutMs)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(Math.Max(1, timeoutMs));
+        var stableSince = DateTime.MinValue;
+        while (DateTime.UtcNow < deadline)
+        {
+            if (await PageIsStableAsync(page))
+            {
+                if (stableSince == DateTime.MinValue)
+                    stableSince = DateTime.UtcNow;
+                if ((DateTime.UtcNow - stableSince).TotalMilliseconds >= 200)
+                    return;
+            }
+            else
+                stableSince = DateTime.MinValue;
+
+            await Task.Delay(100);
+        }
+    }
+
     static async Task<bool> PageIsStableAsync(IPage page)
     {
-        var state = await page.EvaluateFunctionAsync<string>("() => document.readyState");
-        return state is "complete" or "interactive";
+        try
+        {
+            var state = await page.EvaluateFunctionAsync<string>("() => document.readyState");
+            return state is "complete" or "interactive";
+        }
+        catch (Exception ex) when (IsTransientBrowserError(ex))
+        {
+            return false;
+        }
     }
 }

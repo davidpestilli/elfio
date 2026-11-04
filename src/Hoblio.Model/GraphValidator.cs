@@ -163,7 +163,6 @@ public static class GraphValidator
 
     static void ValidateVariableProducers(FlowGraph graph)
     {
-        var producers = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var node in graph.Nodes)
         {
             if (node.Action is { } action)
@@ -188,9 +187,6 @@ public static class GraphValidator
                 {
                     if (!IsValidVariableName(name))
                         throw new ValidationException(ValidationErrorKind.InvalidVariableName, $"node `{node.Id}` uses invalid variable name `{name}`");
-                    if (producers.TryGetValue(name, out var prev))
-                        throw new ValidationException(ValidationErrorKind.DuplicateVariableProducer, $"variable `{name}` is produced by both `{prev}` and `{node.Id}`");
-                    producers[name] = node.Id;
                 }
             }
 
@@ -199,9 +195,6 @@ public static class GraphValidator
                 var name = cfg.ItemVariable.Trim();
                 if (string.IsNullOrEmpty(name) || !IsValidVariableName(name))
                     throw new ValidationException(ValidationErrorKind.InvalidVariableName, $"node `{node.Id}` uses invalid variable name `{cfg.ItemVariable}`");
-                if (producers.TryGetValue(name, out var prev))
-                    throw new ValidationException(ValidationErrorKind.DuplicateVariableProducer, $"variable `{name}` is produced by both `{prev}` and `{node.Id}`");
-                producers[name] = node.Id;
             }
 
             if (node.Kind == NodeKind.Repeat && node.Control is RepeatControlKind rc)
@@ -209,9 +202,6 @@ public static class GraphValidator
                 var name = rc.IndexVariable.Trim();
                 if (string.IsNullOrEmpty(name) || !IsValidVariableName(name))
                     throw new ValidationException(ValidationErrorKind.InvalidVariableName, $"node `{node.Id}` uses invalid variable name `{rc.IndexVariable}`");
-                if (producers.TryGetValue(name, out var prev))
-                    throw new ValidationException(ValidationErrorKind.DuplicateVariableProducer, $"variable `{name}` is produced by both `{prev}` and `{node.Id}`");
-                producers[name] = node.Id;
             }
         }
     }

@@ -40,21 +40,29 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 
 ## Studio (UI)
 
-| Item | React Flow (Rust) | WPF Nodify (C#) |
+| Item | React Flow (Rust) | WPF + React Flow (C#) |
 |------|-------------------|-----------------|
 | Canvas flowchart | ✓ | ✓ |
 | Abrir/salvar projeto | ✓ | ✓ |
 | Validar / executar | ✓ | ✓ |
-| Posição UI (drag) | ✓ | ✓ (Nodify) |
+| Posição UI (drag) | ✓ | ✓ (React Flow) |
 | Palette agrupada / novos nós | ✓ | ✓ (categorias PAD + filtro; Start/End/New subflow alinhados ao Rust) |
 | Modo Exibição / Edição | ✓ | ✓ |
 | PropertiesPanel completo | ✓ | ✓ (formulário por tipo de ação, if/loop, run_flow, erro, última exec.) |
 | Run log panel | ✓ | ✓ (lista + toggle JSON + copiar log) |
 | Waypoint edges (arrastar / + / duplo clique / viewport) | ✓ | ✓ |
+| Handles multi-lado (then/else/body/after) | ✓ | ✓ |
+| Reconectar arestas (`edgesReconnectable`) | ✓ | ✓ |
+| Substituir ligação na mesma porta | ✓ | ✓ |
+| Snap grid 10×10 + guias de alinhamento | ✓ | ✓ |
+| `fitView` ao abrir fluxo / aba | ✓ | ✓ (`fitViewToken`) |
+| Delete nós (protege `start`) + arestas | ✓ | ✓ |
+| Atalhos copiar/colar/recortar/selecionar tudo | ✓ | ✓ (bridge → WPF) |
+| Toolbar canvas (modo, undo/redo, limpar, rótulo de aresta) | ✓ | ✓ |
 | Subflows embutidos / abas | ✓ | ✓ |
 | `run_flow` (runtime + Studio) | ✓ | ✓ (painel: flow_id/path, scope, share_browser, inputs/outputs, abrir subfluxo) |
 | Renomear subfluxo + patch `run_flow` | ✓ | ✓ (UI inline + `SubflowDocumentOpsTests`) |
-| PropertiesPanel (canvas vs nó, variáveis, subfluxos) | ✓ | ✓ (nova ligação + ligação selecionada no painel) |
+| PropertiesPanel (canvas vs nó, variáveis, subfluxos) | ✓ | ✓ (Flow variables + gestão subfluxo; ligações no canvas) |
 | `manifest.flows` (abas + save multi-arquivo) | ✓ | ✓ |
 | Variáveis de projeto | ✓ | ✓ (editor JSON) |
 | Stop / cancelar run | ✓ | ✓ (delay cooperativo + RunCancel) |
@@ -69,6 +77,7 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | Item | Notas |
 |------|--------|
 | Ramo On error dedicado no grafo | Fora de escopo nos dois stacks |
+| MiniMap / Controls / panOnScroll | ✓ paridade visual; sensibilidade pode diferir levemente |
 ## Testes espelhados do Rust
 
 | Teste Rust (`hoblio-runtime`) | Teste C# |

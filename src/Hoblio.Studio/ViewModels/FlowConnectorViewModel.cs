@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using Hoblio.Model;
 
 namespace Hoblio.Studio.ViewModels;
 
@@ -24,6 +25,8 @@ public sealed class FlowConnectorViewModel : INotifyPropertyChanged
     }
 
     public required bool IsInput { get; init; }
+
+    public EdgePort Port { get; init; } = EdgePort.Main;
 
     bool _isConnected;
     public bool IsConnected
@@ -60,9 +63,16 @@ public sealed class FlowConnectorViewModel : INotifyPropertyChanged
         const double gap = 6;
         const double anchorY = 28;
         var cardLeft = Node.Location.X + (Node.HasInput ? port + gap : 0);
-        return IsInput
-            ? new Point(Node.Location.X + port / 2, Node.Location.Y + anchorY)
-            : new Point(cardLeft + cardWidth + gap + port / 2, Node.Location.Y + anchorY);
+        if (IsInput)
+            return new Point(Node.Location.X + port / 2, Node.Location.Y + anchorY);
+
+        var outputs = Node.OutputConnectors;
+        var idx = outputs.IndexOf(this);
+        if (idx < 0)
+            idx = 0;
+        var count = Math.Max(outputs.Count, 1);
+        var yOffset = count <= 1 ? anchorY : 14 + idx * (28.0 / Math.Max(count - 1, 1));
+        return new Point(cardLeft + cardWidth + gap + port / 2, Node.Location.Y + yOffset);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

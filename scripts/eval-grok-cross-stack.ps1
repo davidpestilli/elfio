@@ -1,7 +1,7 @@
 # Hoblio vs Hoblio C# — comparative evaluation (Grok bot / CI)
 # Usage:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/eval-grok-cross-stack.ps1
-#   powershell ... -File scripts/eval-grok-cross-stack.ps1 -RustRoot E:\Projetos\hoblio -CSharpRoot E:\Projetos\hoblio-c#
+#   powershell ... -File scripts/eval-grok-cross-stack.ps1 -RustRoot E:\Projetos\hoblio -CSharpRoot E:\Projetos\elfio
 param(
     [string]$RustRoot = "",
     [string]$CSharpRoot = "",
@@ -17,12 +17,18 @@ function Resolve-DefaultRoots {
     param([string]$ScriptDir)
     $csharpCandidate = Split-Path -Parent $ScriptDir
     $rustCandidate = Join-Path (Split-Path -Parent $csharpCandidate) "hoblio"
-    if ((Split-Path -Leaf $csharpCandidate) -eq "hoblio-c#") {
+    $leaf = Split-Path -Leaf $csharpCandidate
+    if ($leaf -eq "elfio" -or $leaf -eq "hoblio-c#") {
         return @{ CSharp = $csharpCandidate; Rust = $rustCandidate }
     }
     # Script lives under hoblio/scripts
     $rustCandidate = Split-Path -Parent $ScriptDir
-    $csharpCandidate = Join-Path (Split-Path -Parent $rustCandidate) "hoblio-c#"
+    $parent = Split-Path -Parent $rustCandidate
+    $csharpCandidate = if (Test-Path (Join-Path $parent "elfio")) {
+        Join-Path $parent "elfio"
+    } else {
+        Join-Path $parent "hoblio-c#"
+    }
     return @{ Rust = $rustCandidate; CSharp = $csharpCandidate }
 }
 

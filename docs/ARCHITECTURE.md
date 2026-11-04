@@ -1,4 +1,4 @@
-# Arquitetura — Hoblio C#
+# Arquitetura — Elfio (Hoblio C#)
 
 ## Correspondência com o repo Rust
 
@@ -9,7 +9,7 @@
 | `hoblio-runtime` | `Hoblio.Runtime` | `FlowExecutor`, `ActionExecutor`, browser, arquivos, expressões |
 | `hoblio-log` | (parcial) | CLI `--jsonl` → `.hoblio/run.jsonl` |
 | `hoblio-cli` | `Hoblio.Cli` | `validate`, `run` |
-| `hoblio-studio` | `Hoblio.Studio` | WPF + Nodify (canvas, abrir/salvar/validar/executar) |
+| `hoblio-studio` | `Hoblio.Studio` | WPF + WebView2/React Flow (canvas, abrir/salvar/validar/executar) |
 
 ## Formato on-disk
 
@@ -29,7 +29,9 @@ JSON usa `snake_case` e discriminated unions (`type` em ações e controles), es
 
 ## Studio
 
-Editor WPF + Nodify: canvas, palette agrupada, subfluxos/`manifest.flows`, painel de propriedades por tipo de ação, variáveis de projeto, `run_flow`, clipboard (Ctrl+C/X/V), waypoints e ligações no painel. Checklist detalhado em [PARITY.md](PARITY.md); uso em [studio-guia.md](studio-guia.md).
+Shell **WPF** (ribbon, paleta, propriedades, log) + **WebView2** hospedando o bundle Vite `flow-canvas/` (React Flow). Estado do grafo e histórico ficam no `FlowEditorViewModel`; o canvas troca mensagens JSON via `FlowCanvasHost` (`FlowEditorViewModel.FlowCanvas.cs`): `setGraph`, seleção, drag, waypoints, reconectar, toolbar (modo/undo/limpar/rótulo), clipboard.
+
+Palette agrupada, subfluxos/`manifest.flows`, painel por tipo de ação, índice **Flow variables**, variáveis de projeto, `run_flow`. Build do canvas: `scripts/build-flow-canvas.ps1` ou MSBuild quando `dist/` falta. Checklist em [PARITY.md](PARITY.md); uso em [studio-guia.md](studio-guia.md).
 
 **Validação:** `GraphValidator.ValidateProject` inclui checagem de `{refs}` em templates contra variáveis de projeto e produtores do fluxo. **Fora de escopo (Rust também):** ramo **On error** dedicado no grafo além de retry/continue no nó.
 

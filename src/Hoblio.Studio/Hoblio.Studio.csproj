@@ -4,14 +4,31 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>Hoblio.Studio</RootNamespace>
-    <ApplicationIcon />
+    <ApplicationIcon>Assets\elfio.ico</ApplicationIcon>
+    <Product>Elfio Studio</Product>
   </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\elfio.ico" />
+    <Resource Include="Assets\elfio.png" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hoblio.Runtime\Hoblio.Runtime.csproj" />
     <ProjectReference Include="..\Hoblio.Serde\Hoblio.Serde.csproj" />
     <ProjectReference Include="..\Hoblio.Model\Hoblio.Model.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Nodify" Version="6.1.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3595.46" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="flow-canvas\dist\**\*" Link="flow-canvas\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="flow-canvas\public\favicon.png" Link="flow-canvas\favicon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Target Name="BuildFlowCanvas" BeforeTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)\flow-canvas\package.json') And !Exists('$(MSBuildProjectDirectory)\flow-canvas\dist\index.html')">
+    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)\flow-canvas" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\flow-canvas" />
+  </Target>
 </Project>

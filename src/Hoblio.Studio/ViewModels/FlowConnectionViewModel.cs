@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Media;
 using Hoblio.Model;
 using Hoblio.Studio;
+using Hoblio.Studio.FlowCanvas;
 
 namespace Hoblio.Studio.ViewModels;
 
@@ -34,6 +35,12 @@ public sealed class FlowConnectionViewModel : INotifyPropertyChanged
 
     public EdgePort Port { get; set; } = EdgePort.Main;
 
+    public string? Label { get; set; }
+
+    public string SourceHandle { get; set; } = FlowCanvas.FlowCanvasHandles.MainSource;
+
+    public string TargetHandle { get; set; } = "left";
+
     public List<Point> Waypoints { get; } = [];
 
     bool _isSelected;
@@ -54,7 +61,7 @@ public sealed class FlowConnectionViewModel : INotifyPropertyChanged
 
     public void BindAnchorUpdates()
     {
-        if (Source.Output is { } output)
+        foreach (var output in Source.OutputConnectors)
             output.PropertyChanged += OnConnectorChanged;
         if (Target.Input is { } input)
             input.PropertyChanged += OnConnectorChanged;
@@ -135,7 +142,10 @@ public sealed class FlowConnectionViewModel : INotifyPropertyChanged
         }
     }
 
-    public Point SourcePoint => ResolveAnchor(Source.Output, Source, fromOutput: true);
+    public Point SourcePoint => ResolveAnchor(
+        Source.OutputConnectors.FirstOrDefault(c => c.Port == Port) ?? Source.Output,
+        Source,
+        fromOutput: true);
     public Point TargetPoint => ResolveAnchor(Target.Input, Target, fromOutput: false);
 
     static Point ResolveAnchor(FlowConnectorViewModel? connector, FlowNodeViewModel node, bool fromOutput) =>

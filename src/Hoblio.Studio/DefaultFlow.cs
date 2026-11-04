@@ -14,13 +14,9 @@ public static class DefaultFlow
         },
         Flow = new FlowGraph
         {
-            Start = "start",
-            Nodes =
-            [
-                new Node { Id = "start", Kind = NodeKind.Start, Label = "Start", Ui = new NodeUi { X = 80, Y = 120 } },
-                new Node { Id = "end", Kind = NodeKind.End, Label = "End", Ui = new NodeUi { X = 720, Y = 120 } },
-            ],
-            Edges = [new Edge { From = "start", To = "end" }],
+            Start = "",
+            Nodes = [],
+            Edges = [],
         },
         Variables = new Dictionary<string, System.Text.Json.JsonElement>(StringComparer.Ordinal),
     };

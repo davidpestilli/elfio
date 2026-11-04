@@ -8,7 +8,7 @@ public sealed partial class FlowEditorViewModel
 {
     bool _syncingCanvasSelection;
 
-    /// <summary>Fonte ligada a <c>NodifyEditor.SelectedItems</c> (itens do diagrama, não containers).</summary>
+    /// <summary>Legado de seleção do canvas (sincronizado com React Flow via bridge).</summary>
     public ObservableCollection<object> DiagramSelectedItems { get; } = [];
 
     public ObservableCollection<FlowNodeViewModel> SelectedNodes { get; } = [];
@@ -153,6 +153,8 @@ public sealed partial class FlowEditorViewModel
         {
             _syncingCanvasSelection = false;
         }
+        if (!_canvasSelectionSync)
+            NotifyFlowCanvasFull();
     }
 
     static FlowNodeViewModel? ResolveDiagramNode(object item) => item switch
