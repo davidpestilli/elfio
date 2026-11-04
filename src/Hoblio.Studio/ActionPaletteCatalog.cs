@@ -8,7 +8,7 @@ public sealed class PaletteGroup
     public IList<PaletteEntry> Items { get; init; } = [];
 }
 
-/// <summary>Ações e controles agrupados como no Hoblio Studio (Rust) / estilo PAD.</summary>
+/// <summary>Ações e controles agrupados por categoria de produto (Studio).</summary>
 public static class ActionPaletteCatalog
 {
     public static IReadOnlyList<PaletteGroup> Groups { get; } =

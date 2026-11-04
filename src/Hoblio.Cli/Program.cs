@@ -34,11 +34,15 @@ static class CliApp
 
         var validateCmd = new Command("validate", "Validate manifest, flow schema, and graph invariants");
         validateCmd.AddArgument(projectArg);
-        validateCmd.SetHandler((string dir) =>
+        var updateManifestOpt = new Option<bool>(
+            "--update-manifest",
+            "Refresh module_references and engine_version in manifest.json without changing flow.json");
+        validateCmd.AddOption(updateManifestOpt);
+        validateCmd.SetHandler((string dir, bool updateManifest) =>
         {
-            try { ValidateProject(dir); }
+            try { ValidateProject(dir, updateManifest); }
             catch (Exception ex) { Fail(ex); }
-        }, projectArg);
+        }, projectArg, updateManifestOpt);
 
         root.AddCommand(runCmd);
         root.AddCommand(validateCmd);
@@ -67,9 +71,16 @@ static class CliApp
         Console.Error.WriteLine($"run complete: project={project.Manifest.Name} last_node={outcome.LastNodeId}");
     }
 
-    static void ValidateProject(string projectDir)
+    static void ValidateProject(string projectDir, bool updateManifest)
     {
         ProjectLoader.ValidateProjectDir(projectDir);
+        if (updateManifest)
+        {
+            var wrote = ProjectLoader.UpdateManifestCapabilities(projectDir);
+            Console.Error.WriteLine(wrote
+                ? $"manifest updated: {projectDir}"
+                : $"manifest unchanged: {projectDir}");
+        }
         Console.Error.WriteLine($"valid: {projectDir}");
     }
 }

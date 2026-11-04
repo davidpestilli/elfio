@@ -43,6 +43,8 @@ public sealed partial class FlowEditorViewModel
             OnPropertyChanged();
             OnPropertyChanged(nameof(ActiveEditorTitle));
             OnPropertyChanged(nameof(ActiveSubflowRenameDraft));
+            RefreshPropertiesPanelContext();
+            OnPropertyChanged(nameof(VariablesSectionHint));
             RebuildEditorTabs();
         }
     }

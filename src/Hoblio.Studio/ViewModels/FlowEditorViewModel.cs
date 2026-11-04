@@ -274,6 +274,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             DeleteDiagramSelectionCommand?.RaiseCanExecuteChanged();
             OnPropertyChanged(nameof(SelectedEdgeTargetId));
             OnPropertyChanged(nameof(ShowConnectionProperties));
+            RefreshPropertiesPanelContext();
             OnPropertyChanged(nameof(SelectedConnectionFromId));
             OnPropertyChanged(nameof(SelectedEdgeSourceId));
             foreach (var c in Connections)
@@ -620,8 +621,8 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             return;
         }
         SyncUiToProject();
-        ProjectLoader.SaveProject(_projectDir, _project);
         SaveAllFlowFiles();
+        ProjectLoader.SaveProject(_projectDir, _project);
         _savedDigest = ProjectDigest();
         IsDirty = false;
         OnPropertyChanged(nameof(DocumentTitle));

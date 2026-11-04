@@ -35,6 +35,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Item | Rust | C# |
 |------|------|-----|
 | `hoblio validate <dir>` | ✓ | ✓ |
+| `hoblio validate --update-manifest` | — | ✓ |
 | `hoblio run <dir>` | ✓ | ✓ |
 | `--jsonl` | ✓ | ✓ (`RunEventJson`, formato Studio) |
 
@@ -46,7 +47,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Abrir/salvar projeto | ✓ | ✓ |
 | Validar / executar | ✓ | ✓ |
 | Posição UI (drag) | ✓ | ✓ (React Flow) |
-| Palette agrupada / novos nós | ✓ | ✓ (categorias PAD + filtro; Start/End/New subflow alinhados ao Rust) |
+| Palette agrupada / novos nós | ✓ | ✓ (categorias de paleta + filtro; Start/End/New subflow alinhados ao Rust) |
 | Modo Exibição / Edição | ✓ | ✓ |
 | PropertiesPanel completo | ✓ | ✓ (formulário por tipo de ação, if/loop, run_flow, erro, última exec.) |
 | Run log panel | ✓ | ✓ (lista + toggle JSON + copiar log) |
@@ -89,7 +90,7 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | `action.rs` (5 JSON roundtrips) | `ActionKindTests` (5 facts) |
 | `expr` / `variables` / `lists` / `adjust_var` unit | `UnitBehaviorTests` (+3) |
 
-Contagem atual: **45** testes automatizados (`dotnet test` na solution).
+Contagem atual: **54** testes automatizados (`dotnet test` na solution).
 
 Verificação local: `.\scripts\verify-parity.ps1` (Release build + 45 testes + validate nos 9 demos + probe browser).
 

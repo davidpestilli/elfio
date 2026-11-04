@@ -233,11 +233,87 @@
   </Style>
 
   <Style x:Key="PropsSection" TargetType="Expander">
-    <Setter Property="Margin" Value="0,0,0,8"/>
+    <Setter Property="Margin" Value="0,0,0,10"/>
     <Setter Property="Background" Value="#FAFAFA"/>
     <Setter Property="BorderBrush" Value="#E5E7EB"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="Padding" Value="8"/>
+    <Setter Property="Padding" Value="10,8"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="Foreground" Value="#111827"/>
+  </Style>
+
+  <Style x:Key="PropertiesPanelSubtitle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Foreground" Value="#64748B"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="Margin" Value="0,2,0,0"/>
+  </Style>
+
+  <Style x:Key="PropertiesSectionHint" TargetType="TextBlock">
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="Foreground" Value="#64748B"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Margin" Value="0,0,0,10"/>
+  </Style>
+
+  <Style x:Key="PropertiesColumnHeader" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="#6B7280"/>
+    <Setter Property="Margin" Value="0,0,4,4"/>
+  </Style>
+
+  <Style x:Key="PropertiesListRow" TargetType="Border">
+    <Setter Property="BorderBrush" Value="#E5E7EB"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="Padding" Value="10"/>
+    <Setter Property="Margin" Value="0,0,0,8"/>
+    <Setter Property="Background" Value="#FFFFFF"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="#F9FAFB"/>
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="PropertiesHyperlinkButton" TargetType="Button">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Foreground" Value="{StaticResource Brush.Accent}"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Padding" Value="4,2"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <TextBlock x:Name="Txt" Text="{TemplateBinding Content}"
+                     Foreground="{TemplateBinding Foreground}"
+                     FontWeight="{TemplateBinding FontWeight}"
+                     FontSize="{TemplateBinding FontSize}"
+                     Padding="{TemplateBinding Padding}"/>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Txt" Property="TextDecorations" Value="Underline"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.45"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="PropertiesSourceBadge" TargetType="Border">
+    <Setter Property="Background" Value="#F1F5F9"/>
+    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="Padding" Value="6,2"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
   </Style>
 
   <Style x:Key="FieldLabel" TargetType="TextBlock">

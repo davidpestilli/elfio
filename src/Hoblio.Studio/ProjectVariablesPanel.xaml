@@ -3,16 +3,28 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Hoblio.Studio">
   <StackPanel>
-    <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,10"
-               Text="Initial values for the run. Lists are used by For each."/>
     <TextBlock Text="{Binding ProjectVariablesValidationError}" Foreground="#DC2626" FontSize="11" Margin="0,0,0,8"
                Visibility="{Binding HasProjectVariablesValidationError, Converter={StaticResource BoolVis}}"/>
 
-    <Grid Margin="0,0,0,6">
-      <TextBlock Text="Variables" FontWeight="SemiBold" VerticalAlignment="Center"/>
-      <Button Content="+ Variable" HorizontalAlignment="Right" Padding="8,4"
+    <Grid Margin="0,0,0,4">
+      <TextBlock Text="Variáveis escalares" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      <Button Content="+ Adicionar" HorizontalAlignment="Right" Style="{StaticResource SecondaryToolButton}"
               Command="{Binding AddProjectScalarCommand}"/>
     </Grid>
+    <TextBlock Text="Valores iniciais da execução. Listas alimentam o For each."
+               Style="{StaticResource PropertiesSectionHint}" Margin="0,0,0,8"/>
+
+    <Grid Margin="0,0,0,4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="88"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" Text="Nome" Style="{StaticResource PropertiesColumnHeader}"/>
+      <TextBlock Grid.Column="1" Text="Tipo" Style="{StaticResource PropertiesColumnHeader}"/>
+      <TextBlock Grid.Column="2" Text="Valor" Style="{StaticResource PropertiesColumnHeader}"/>
+    </Grid>
+
     <ItemsControl ItemsSource="{Binding ProjectScalars}">
       <ItemsControl.ItemTemplate>
         <DataTemplate DataType="{x:Type local:ScalarVariableRow}">
@@ -25,9 +37,9 @@
             <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
                      LostFocus="Row_LostFocus"/>
             <ComboBox Grid.Column="1" Margin="0,0,4,0" Loaded="ScalarKind_Loaded" SelectionChanged="ScalarKind_Changed">
-              <ComboBoxItem Tag="{x:Static local:ScalarVariableKind.Text}" Content="Text"/>
-              <ComboBoxItem Tag="{x:Static local:ScalarVariableKind.Number}" Content="Number"/>
-              <ComboBoxItem Tag="{x:Static local:ScalarVariableKind.Boolean}" Content="Boolean"/>
+              <ComboBoxItem Tag="{x:Static local:ScalarVariableKind.Text}" Content="Texto"/>
+              <ComboBoxItem Tag="{x:Static local:ScalarVariableKind.Number}" Content="Número"/>
+              <ComboBoxItem Tag="{x:Static local:ScalarVariableKind.Boolean}" Content="Booleano"/>
             </ComboBox>
             <Grid Grid.Column="2">
               <TextBox Text="{Binding TextValue, UpdateSourceTrigger=PropertyChanged}" LostFocus="Row_LostFocus">
@@ -57,7 +69,7 @@
                   </Style>
                 </TextBox.Style>
               </TextBox>
-              <CheckBox IsChecked="{Binding BoolValue}" Content="true" VerticalAlignment="Center"
+              <CheckBox IsChecked="{Binding BoolValue}" Content="verdadeiro" VerticalAlignment="Center"
                         Checked="Row_LostFocus" Unchecked="Row_LostFocus">
                 <CheckBox.Style>
                   <Style TargetType="CheckBox">
@@ -76,33 +88,40 @@
       </ItemsControl.ItemTemplate>
     </ItemsControl>
 
-    <Grid Margin="0,12,0,6">
-      <TextBlock Text="Lists" FontWeight="SemiBold" VerticalAlignment="Center"/>
-      <Button Content="+ List" HorizontalAlignment="Right" Padding="8,4"
+    <Grid Margin="0,12,0,4">
+      <TextBlock Text="Listas" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      <Button Content="+ Adicionar lista" HorizontalAlignment="Right" Style="{StaticResource SecondaryToolButton}"
               Command="{Binding AddProjectListCommand}"/>
     </Grid>
-    <ItemsControl ItemsSource="{Binding ProjectLists}">
-      <ItemsControl.ItemTemplate>
-        <DataTemplate DataType="{x:Type local:ListVariableRow}">
-          <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
-            <StackPanel>
-              <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6"
-                       LostFocus="Row_LostFocus"/>
-              <ItemsControl ItemsSource="{Binding Items}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <TextBox Text="{Binding ., UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
-                             LostFocus="Row_LostFocus"/>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
-          </Border>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
-    </ItemsControl>
+    <Expander Style="{StaticResource PropsSection}" IsExpanded="False">
+      <Expander.Header>
+        <TextBlock Text="Conteúdo das listas" FontWeight="SemiBold"/>
+      </Expander.Header>
+      <ItemsControl ItemsSource="{Binding ProjectLists}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="{x:Type local:ListVariableRow}">
+            <Border Style="{StaticResource PropertiesListRow}">
+              <StackPanel>
+                <TextBlock Text="Nome da lista" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6"
+                         LostFocus="Row_LostFocus"/>
+                <TextBlock Text="Itens" Style="{StaticResource FieldLabel}"/>
+                <ItemsControl ItemsSource="{Binding Items}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <TextBox Text="{Binding ., UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                               LostFocus="Row_LostFocus"/>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Expander>
 
-    <Expander Header="Advanced JSON" Margin="0,8,0,0">
+    <Expander Header="JSON avançado" Style="{StaticResource PropsSection}" Margin="0,8,0,0">
       <TextBox Text="{Binding VariablesAdvancedJson, UpdateSourceTrigger=PropertyChanged}"
                AcceptsReturn="True" MinHeight="120" TextWrapping="Wrap" FontFamily="Consolas"
                IsEnabled="{Binding IsEditing}"/>

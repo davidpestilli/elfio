@@ -62,7 +62,8 @@ public class UnitBehaviorTests
     [Fact]
     public void Run_event_json_not_empty_object()
     {
-        var json = RunEventJson.Serialize(new RunEvent.ActionExecuted("n1", "log: hi", null));
+        var json = RunEventJson.Serialize(new RunEvent.ActionExecuted(
+            "n1", "log: hi", null, "demo", 1, 1, "System", "LogMessage"));
         Assert.Contains("action_executed", json);
         Assert.Contains("log: hi", json);
         Assert.DoesNotContain("{}", json);

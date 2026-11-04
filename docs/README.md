@@ -3,6 +3,7 @@
 | Documento | Conteúdo |
 |-----------|----------|
 | [guia-construcao.md](guia-construcao.md) | Build, testes, Grok v2, pendências Elfio |
+| [construcao/README.md](construcao/README.md) | Runtime, catálogo de ações, telemetria, manifest |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Mapa crates Rust → projetos .NET |
 | [PARITY.md](PARITY.md) | Checklist de paridade com Hoblio Rust |
 | [studio-guia.md](studio-guia.md) | Uso do Elfio Studio (WPF + React Flow) |

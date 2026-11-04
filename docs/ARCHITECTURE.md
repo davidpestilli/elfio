@@ -27,6 +27,8 @@ JSON usa `snake_case` e discriminated unions (`type` em ações e controles), es
 3. Ações via `ActionExecutor` + política `ErrorHandling` (retry / continue)
 4. Browser: sessão única por run (`BrowserContext` + PuppeteerSharp)
 
+Detalhe de camadas, catálogo `module`/`action_id`, JSONL e extensão do manifest: [construcao/README.md](construcao/README.md).
+
 ## Studio
 
 Shell **WPF** (ribbon, paleta, propriedades, log) + **WebView2** hospedando o bundle Vite `flow-canvas/` (React Flow). Estado do grafo e histórico ficam no `FlowEditorViewModel`; o canvas troca mensagens JSON via `FlowCanvasHost` (`FlowEditorViewModel.FlowCanvas.cs`): `setGraph`, seleção, drag, waypoints, reconectar, toolbar (modo/undo/limpar/rótulo), clipboard.

@@ -1,0 +1,145 @@
+# Runtime e pipeline de execução
+
+## Objetivo
+
+Manter um motor de automação onde o **fluxograma é vista de edição** sobre um programa executável (`flow.json`), com **controle de fluxo** interpretado pelo runtime e **ações** delegadas a executores especializados. O mesmo pipeline serve **CLI**, **testes** e **Studio**, para que validação, execução e logs coincidam.
+
+---
+
+## Camadas
+
+| Camada | Projeto | Responsabilidade |
+|--------|---------|------------------|
+| Persistência | `Hoblio.Serde` | `manifest.json`, `flow.json`, subfluxos em disco ou embutidos |
+| Modelo | `Hoblio.Model` | Grafo, `ActionKind`, `ControlKind`, validação (`GraphValidator`, `TemplateReferenceValidator`) |
+| Runtime | `Hoblio.Runtime` | `FlowExecutor`, `ActionExecutor`, browser, arquivos, expressões, eventos |
+| Hosts | `Hoblio.Cli`, `Hoblio.Studio` | Entrada do usuário, cancelamento, painel de log, destaque no canvas |
+
+```mermaid
+flowchart TB
+  subgraph disk [Projeto on-disk]
+    M[manifest.json]
+    F[flow.json + flows filhos]
+  end
+
+  subgraph validate [Antes do run]
+    GV[GraphValidator.ValidateProject]
+    TR[TemplateReferenceValidator]
+  end
+
+  subgraph run [Run]
+    FE[FlowExecutor]
+    AE[ActionExecutor]
+    BC[BrowserContext]
+    RV[RunVariables]
+  end
+
+  subgraph obs [Observabilidade]
+    RE[RunEvent]
+    JL[run.jsonl CLI --jsonl]
+  end
+
+  M --> GV
+  F --> GV
+  GV --> FE
+  FE --> AE
+  FE --> BC
+  FE --> RV
+  FE --> RE
+  RE --> JL
+```
+
+---
+
+## Sequência lógica de um run
+
+1. Carregar projeto (`ProjectLoader.LoadProject`).
+2. Validar grafo e projeto (`GraphValidator.ValidateProject` — inclui refs `{variável}` conhecidas).
+3. Reset de cancelamento (`RunCancel.Reset`).
+4. Abrir contexto de browser único por run (`BrowserContext`), compartilhável com subfluxos quando `run_flow.share_browser` não isola sessão.
+5. Emitir `RunStarted`.
+6. Percorrer o grafo a partir de `start`, nó a nó:
+   - **Start / End** — marca entrada/saída.
+   - **Action** — executa `ActionKind` ou resolve `run_flow` (subfluxo embutido, arquivo ou entrada do manifest).
+   - **If / ForEach / While / Repeat** — avalia condição ou frame de loop; escolhe aresta (`then`, `else`, `body`, `after`).
+   - **Next loop / Exit loop** — manipula o frame de loop ativo.
+7. Para cada passo relevante: `NodeEnter`, depois `ActionExecuted` (ações e controles) ou eventos de subfluxo (`FlowStarted` / `FlowFinished`).
+8. Emitir `RunFinished` com último nó alcançado.
+
+Limite de segurança: **10 000 visitas de nó** (`MaxNodeVisits`) para detectar ciclo fora de construto de loop.
+
+---
+
+## Dois caminhos no interpretador
+
+| Caminho | Nós | Executor | DLL / plugin futuro |
+|---------|-----|----------|---------------------|
+| **Controle de fluxo** | `if`, `for_each`, `while_loop`, `repeat`, `next_loop`, `exit_loop` | Lógica em `FlowExecutor` + `ExpressionEvaluator` | Não requer módulo externo |
+| **Ação** | `kind: action` | `ActionExecutor.Execute` (+ política de erro) | Catálogo fixo hoje; extensível via módulos |
+
+Subfluxo (`run_flow`) é **ação especial**: resolvida em `FlowExecutor` (profundidade máxima, escopo de variáveis `inherit` vs `isolated`, merge de inputs/outputs).
+
+---
+
+## Política de erro por nó
+
+Cada nó de ação pode definir `error_handling`:
+
+| Campo | Efeito |
+|-------|--------|
+| `retry_count` | Tentativas extras após falha (total = 1 + retry) |
+| `retry_delay_ms` | Espera entre tentativas (padrão 500 ms) |
+| `on_failure` | `stop` (propaga exceção) ou `continue` (resumo `failed (continued): …` e segue o grafo) |
+
+Retries usam o mesmo `ActionExecutor`; cancelamento cooperativo (`RunCancel`) interrompe também durante `delay` entre tentativas.
+
+**Fora de escopo atual:** ramo dedicado **On error** no grafo (aresta separada após falha). Retry + continue cobrem o subset usado nos demos de resiliência.
+
+---
+
+## Serviços por run (estado compartilhado)
+
+| Serviço | Escopo | Motivo |
+|---------|--------|--------|
+| `RunVariables` | Run ou cópia isolada em subfluxo | Estado mutável entre nós |
+| `BrowserContext` | Run (opcionalmente compartilhado) | Sessão CDP única |
+| `HttpClient` estático | Processo | `http_get` simples |
+| `projectRoot` | Run | Caminhos relativos de arquivo |
+
+Evolução desejada: **container de serviços por run** (browser, repositórios, emissor de log) alimentado na abertura do run — mesmo padrão de “registrar serviços por módulo” quando existirem assemblies de ação plugáveis. Hoje tudo está inlined em `ActionExecutor` e helpers estáticos.
+
+---
+
+## Fronteiras de código (manter ao crescer)
+
+| Fase | Onde | O quê |
+|------|------|--------|
+| Design-time | `Hoblio.Model` | Tipos JSON, validação, catálogo de ações (futuro: metadados únicos) |
+| Run-time | `Hoblio.Runtime` | Interpretação do grafo, dispatch, políticas, telemetria |
+| Domínio pesado | `BrowserContext`, `FileActions`, … | Runtimes atrás de interfaces finas; ações no grafo permanecem descritores pequenos |
+
+Evitar que o Studio ou a paleta hardcodem nomes de log: usar o [catálogo](./catalogo-acoes-e-modulos.md) como fonte de `module` + `action_id`.
+
+---
+
+## Debug e passo a passo (futuro)
+
+Hoje o run é **contínuo** com cancelamento. Um modo passo a passo exigiria:
+
+- Pausar após `NodeEnter` ou `ActionExecuted`.
+- Manter mapa **nó id ↔ ordem lógica** (`step_index`) por fluxo/subfluxo.
+- Reutilizar o mesmo `FlowExecutor` com callback que bloqueia até “próximo passo”.
+
+A telemetria descrita em [telemetria-e-logs.md](./telemetria-e-logs.md) antecipa os campos necessários para highlight e replay.
+
+---
+
+## Verificação
+
+```powershell
+dotnet test
+dotnet run --project src/Hoblio.Cli -- validate examples/resilience-demo
+dotnet run --project src/Hoblio.Cli -- run examples/flow-control-demo --jsonl
+```
+
+Demos por área: [PARITY.md](../PARITY.md).

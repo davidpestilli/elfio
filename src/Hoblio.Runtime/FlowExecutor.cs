@@ -60,6 +60,7 @@ public static partial class FlowExecutor
         var runVars = RunVariables.SeedFromProject(project.Variables);
         var flowCache = new Dictionary<string, LoadedFlowFile>(StringComparer.OrdinalIgnoreCase);
         var visits = 0;
+        var telemetry = new RunTelemetry();
         var endNode = ExecuteGraph(
             project.Flow,
             project.Flow,
@@ -72,6 +73,7 @@ public static partial class FlowExecutor
             [],
             flowCache,
             ref visits,
+            telemetry,
             Emit,
             cancellationToken);
         Emit(new RunEvent.RunFinished(endNode));
@@ -90,6 +92,7 @@ public static partial class FlowExecutor
         List<object> loopFrames,
         Dictionary<string, LoadedFlowFile> flowCache,
         ref int visits,
+        RunTelemetry telemetry,
         Action<RunEvent> emit,
         CancellationToken cancellationToken)
     {
@@ -158,6 +161,7 @@ public static partial class FlowExecutor
                                 [],
                                 flowCache,
                                 ref visits,
+                                telemetry,
                                 emit,
                                 cancellationToken);
                             RunFlowSupport.MergeIsolatedOutputs(runVars, snapshot, childVars, runFlow.Outputs);
@@ -177,6 +181,7 @@ public static partial class FlowExecutor
                                 [],
                                 flowCache,
                                 ref visits,
+                                telemetry,
                                 emit,
                                 cancellationToken);
                         }
@@ -185,10 +190,18 @@ public static partial class FlowExecutor
                     }
                     else
                     {
-                        summary = ExecuteWithPolicy(node.Action, node.ErrorHandling, browser, runVars, projectRoot);
+                        var outcome = ExecuteWithPolicy(
+                            node, flowRef, telemetry, emit,
+                            node.Action, node.ErrorHandling, browser, runVars, projectRoot);
+                        summary = outcome.Summary;
+                        EmitActionExecuted(
+                            emit, telemetry, node, flowRef, summary,
+                            ActionExecutor.SnapshotVariables(node.Action, runVars),
+                            outcome.Status, outcome.InsideErrorHandling, outcome.ErrorCode);
+                        break;
                     }
                     var variables = ActionExecutor.SnapshotVariables(node.Action, runVars);
-                    emit(new RunEvent.ActionExecuted(node.Id, summary, variables));
+                    EmitActionExecuted(emit, telemetry, node, flowRef, summary, variables);
                     break;
                 }
                 case NodeKind.If:
@@ -199,7 +212,7 @@ public static partial class FlowExecutor
                     var pass = ExpressionEvaluator.EvalIf(cfg, runVars);
                     var port = pass ? EdgePort.Then : EdgePort.Else;
                     var summary = $"if {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}";
-                    emit(new RunEvent.ActionExecuted(node.Id, summary, null));
+                    EmitActionExecuted(emit, telemetry, node, flowRef, summary, null);
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
@@ -237,7 +250,11 @@ public static partial class FlowExecutor
                             port = EdgePort.Body;
                         }
                     }
-                    emit(new RunEvent.ActionExecuted(node.Id, $"for_each `{cfg.ListVariable}` -> port {port.AsString()}", null));
+                    EmitActionExecuted(
+                        emit, telemetry, node, flowRef,
+                        $"for_each `{cfg.ListVariable}` -> port {port.AsString()}", null,
+                        inputVariableNames: [cfg.ListVariable],
+                        outputVariableNames: [cfg.ItemVariable]);
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
@@ -262,7 +279,9 @@ public static partial class FlowExecutor
                     }
                     else
                         port = EdgePort.After;
-                    emit(new RunEvent.ActionExecuted(node.Id, $"while {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}", null));
+                    EmitActionExecuted(
+                        emit, telemetry, node, flowRef,
+                        $"while {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}", null);
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
@@ -304,7 +323,10 @@ public static partial class FlowExecutor
                             port = EdgePort.Body;
                         }
                     }
-                    emit(new RunEvent.ActionExecuted(node.Id, $"repeat `{cfg.Times}` -> port {port.AsString()}", null));
+                    EmitActionExecuted(
+                        emit, telemetry, node, flowRef,
+                        $"repeat `{cfg.Times}` -> port {port.AsString()}", null,
+                        outputVariableNames: [cfg.IndexVariable]);
                     routed = RouteTo(routes, node.Id, port);
                     break;
                 }
@@ -320,7 +342,7 @@ public static partial class FlowExecutor
                         LoopFrameRepeat rp => NextRepeat(rp, loopFrames, routes, runVars),
                         _ => throw new InvalidOperationException("next_loop frame mismatch"),
                     };
-                    emit(new RunEvent.ActionExecuted(node.Id, "next_loop", null));
+                    EmitActionExecuted(emit, telemetry, node, flowRef, "next_loop", null);
                     break;
                 }
                 case NodeKind.ExitLoop:
@@ -337,7 +359,7 @@ public static partial class FlowExecutor
                         _ => throw new InvalidOperationException("exit_loop frame mismatch"),
                     };
                     routed = RouteTo(routes, loopId, EdgePort.After);
-                    emit(new RunEvent.ActionExecuted(node.Id, "exit_loop", null));
+                    EmitActionExecuted(emit, telemetry, node, flowRef, "exit_loop", null);
                     break;
                 }
             }
@@ -373,7 +395,18 @@ public static partial class FlowExecutor
         return RouteTo(routes, frame.RepeatId, EdgePort.Body);
     }
 
-    static string ExecuteWithPolicy(ActionKind action, ErrorHandling? policy, BrowserContext browser, RunVariables vars, string? projectRoot)
+    readonly record struct ActionRunOutcome(string Summary, string Status, bool InsideErrorHandling, string? ErrorCode);
+
+    static ActionRunOutcome ExecuteWithPolicy(
+        Node node,
+        string flowRef,
+        RunTelemetry telemetry,
+        Action<RunEvent> emit,
+        ActionKind action,
+        ErrorHandling? policy,
+        BrowserContext browser,
+        RunVariables vars,
+        string? projectRoot)
     {
         policy ??= new ErrorHandling();
         var attempts = policy.Attempts();
@@ -383,16 +416,22 @@ public static partial class FlowExecutor
         {
             try
             {
-                return ActionExecutor.Execute(action, browser, vars, projectRoot);
+                var summary = ActionExecutor.Execute(action, browser, vars, projectRoot);
+                return new ActionRunOutcome(summary, "Succeeded", false, null);
             }
             catch (Exception ex) when (attempt < attempts)
             {
                 last = ex;
+                EmitRepeatAction(emit, telemetry, node, flowRef);
                 Thread.Sleep(delayMs);
             }
             catch (Exception ex) when (policy.ContinuesOnFailure())
             {
-                return $"failed (continued): {RunErrors.ContinueSummary(ex)}";
+                return new ActionRunOutcome(
+                    $"failed (continued): {RunErrors.ContinueSummary(ex)}",
+                    "Continued",
+                    true,
+                    null);
             }
             catch (Exception ex)
             {
@@ -400,6 +439,64 @@ public static partial class FlowExecutor
             }
         }
         throw last ?? new InvalidOperationException("action failed");
+    }
+
+    static void EmitRepeatAction(
+        Action<RunEvent> emit,
+        RunTelemetry telemetry,
+        Node node,
+        string flowRef)
+    {
+        emit(new RunEvent.ActionExecuted(
+            node.Id,
+            "repeat action",
+            null,
+            flowRef,
+            telemetry.NextLogIndex(),
+            telemetry.CurrentStepIndex,
+            null,
+            "RepeatAction",
+            node.Label,
+            "Succeeded",
+            InsideErrorHandling: true));
+    }
+
+    static void EmitActionExecuted(
+        Action<RunEvent> emit,
+        RunTelemetry telemetry,
+        Node node,
+        string flowRef,
+        string summary,
+        Dictionary<string, string>? variables,
+        string status = "Succeeded",
+        bool insideErrorHandling = false,
+        string? errorCode = null,
+        IReadOnlyList<string>? inputVariableNames = null,
+        IReadOnlyList<string>? outputVariableNames = null)
+    {
+        var descriptor = ActionCatalog.Describe(node);
+        if (node.Action is not null && inputVariableNames is null && outputVariableNames is null)
+        {
+            var io = ActionCatalog.VariableIo(node.Action);
+            inputVariableNames = io.Inputs;
+            outputVariableNames = io.Outputs;
+        }
+
+        emit(new RunEvent.ActionExecuted(
+            node.Id,
+            summary,
+            variables,
+            flowRef,
+            telemetry.NextLogIndex(),
+            telemetry.NextStepIndex(),
+            descriptor.Module,
+            descriptor.ActionId,
+            node.Label,
+            status,
+            insideErrorHandling,
+            errorCode,
+            inputVariableNames,
+            outputVariableNames));
     }
 
     static Dictionary<(string From, EdgePort Port), string> BuildRoutes(IEnumerable<Edge> edges)

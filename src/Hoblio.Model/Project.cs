@@ -16,6 +16,9 @@ public sealed class FlowManifest
     public string? Description { get; init; }
     public string? EntryFlow { get; init; }
     public Dictionary<string, ManifestFlowEntry>? Flows { get; init; }
+    public string? EngineVersion { get; set; }
+    public string? CreatedEngineVersion { get; set; }
+    public List<ModuleReference>? ModuleReferences { get; set; }
 }
 
 public sealed class ManifestFlowEntry

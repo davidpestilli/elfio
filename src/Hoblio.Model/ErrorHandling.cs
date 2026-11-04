@@ -1,6 +1,6 @@
 namespace Hoblio.Model;
 
-/// <summary>Per action-node retry and failure policy (PAD-style subset).</summary>
+/// <summary>Per action-node retry and failure policy (retry + continue on failure).</summary>
 public sealed class ErrorHandling
 {
     public uint RetryCount { get; set; }

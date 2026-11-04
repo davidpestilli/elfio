@@ -13,6 +13,14 @@ Repositório: [github.com/davidpestilli/elfio](https://github.com/davidpestilli/
 
 Referência de produto e formato de fluxo (repo Rust): [hoblio-reference/README.md](hoblio-reference/README.md).
 
+Arquitetura de execução, identificadores de ação, logs e manifest: [construcao/README.md](construcao/README.md).
+
+Atualizar capacidades no manifest sem abrir o Studio:
+
+```powershell
+dotnet run --project src/Hoblio.Cli -- validate examples/browser-demo-flow --update-manifest
+```
+
 ## Build e testes
 
 ```powershell
@@ -115,7 +123,7 @@ Resumo do que entrou nesta rodada (paridade funcional com o Hoblio Rust/Tauri pa
 | **`browser_navigate`** | Interpolação de `{variáveis}` na URL antes de navegar. |
 | **`BrowserContext`** | Estabilidade pós-navegação, `WaitForSelector`, leituras via element handle, retries quando o contexto CDP é destruído. |
 | **`show_message`** | Diálogo **bloqueante** em thread STA (`RunShowMessage`) — browser permanece até OK (comportamento do Rust). |
-| **`GraphValidator`** | Várias ações podem escrever na mesma variável de run (estilo PAD); removida regra de produtor único. |
+| **`GraphValidator`** | Várias ações podem escrever na mesma variável de run; removida regra de produtor único. |
 | **Projeto novo** | `DefaultFlow.Create()` — `start: ""`, sem nós (Start/End pela paleta **Utilitários**). |
 | **Exemplo** | `examples/login-eproc/flow.json` sincronizado com o repo Rust (`pick_environment`, HML/PRD, probes com `continue`). |
 

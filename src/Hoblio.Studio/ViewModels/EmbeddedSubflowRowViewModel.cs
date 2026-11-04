@@ -13,8 +13,18 @@ public sealed class EmbeddedSubflowRowViewModel : INotifyPropertyChanged
         Id = id;
         _host = host;
         _renameDraft = id;
-        ApplyRenameCommand = new RelayCommand(() => _host.RenameEmbeddedSubflow(Id, RenameDraft), () => CanApplyRename);
+        ApplyRenameCommand = new RelayCommand(() =>
+        {
+            _host.RenameEmbeddedSubflow(Id, RenameDraft);
+            ShowRenameEditor = false;
+        }, () => CanApplyRename);
         DeleteCommand = new RelayCommand(() => _host.DeleteEmbeddedSubflow(Id), () => _host.CanEditDiagram);
+        BeginRenameCommand = new RelayCommand(() => ShowRenameEditor = true);
+        CancelRenameCommand = new RelayCommand(() =>
+        {
+            RenameDraft = Id;
+            ShowRenameEditor = false;
+        });
     }
 
     public string Id { get; }
@@ -51,9 +61,24 @@ public sealed class EmbeddedSubflowRowViewModel : INotifyPropertyChanged
 
     public bool CanApplyRename => RenameDraft != Id && RenameError is null;
 
+    bool _showRenameEditor;
+    public bool ShowRenameEditor
+    {
+        get => _showRenameEditor;
+        set
+        {
+            if (_showRenameEditor == value)
+                return;
+            _showRenameEditor = value;
+            OnPropertyChanged();
+        }
+    }
+
     public RelayCommand<string?> OpenCommand => _host.OpenEmbeddedSubflowCommand;
     public RelayCommand ApplyRenameCommand { get; }
     public RelayCommand DeleteCommand { get; }
+    public RelayCommand BeginRenameCommand { get; }
+    public RelayCommand CancelRenameCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string? name = null) =>

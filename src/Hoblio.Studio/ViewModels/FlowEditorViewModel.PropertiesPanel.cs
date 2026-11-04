@@ -16,18 +16,82 @@ public sealed partial class FlowEditorViewModel
     public bool ShowSubflowContextBanner => HasSelectedNode && ActiveSubflowId is not null;
 
     public string SubflowContextBannerText =>
-        ActiveSubflowId is null ? "" : $"Subflow {ActiveSubflowId} — seeds live under subflows.{ActiveSubflowId}.variables.";
+        ActiveSubflowId is null
+            ? ""
+            : $"Subfluxo {ActiveSubflowId} — valores iniciais em subflows.{ActiveSubflowId}.variables.";
 
     public string ActiveSubflowDefinedHint =>
-        ActiveSubflowId is null ? "" : $"Defined in {ActiveFlowPath} → subflows.{ActiveSubflowId}";
+        ActiveSubflowId is null ? "" : $"{ActiveFlowPath} → subflows.{ActiveSubflowId}";
 
     public bool ShowEmptyFlowProducers => NoSelectedNode && FlowVariableProducers.Count == 0;
 
-    public string VariablesSectionTitle => "Project variables";
+    public int EmbeddedSubflowCount => EmbeddedSubflowRows.Count;
+
+    public int FlowVariableProducerCount => FlowVariableProducers.Count;
+
+    public bool ExpandFlowVariablesSection => FlowVariableProducers.Count > 0;
+
+    public ObservableCollection<FlowVariableProducer> FilteredFlowVariableProducers { get; } = [];
+
+    public bool ShowFlowVariableProducerSearch => FlowVariableProducers.Count > 6;
+
+    public bool ShowEmptyFilteredFlowProducers =>
+        NoSelectedNode && FlowVariableProducers.Count > 0 && FilteredFlowVariableProducers.Count == 0;
+
+    string _flowVariableProducerFilter = "";
+    public string FlowVariableProducerFilter
+    {
+        get => _flowVariableProducerFilter;
+        set
+        {
+            if (_flowVariableProducerFilter == value)
+                return;
+            _flowVariableProducerFilter = value;
+            OnPropertyChanged();
+            RebuildFilteredFlowVariableProducers();
+            OnPropertyChanged(nameof(ShowEmptyFilteredFlowProducers));
+        }
+    }
+
+    public bool ShowNodeLogicSection =>
+        ShowIfSection || ShowWhileSection || ShowRepeatSection || ShowForEachSection || ShowNextExitLoopHint;
+
+    public string NodeActionSectionTitle
+    {
+        get
+        {
+            if (!ShowActionSection)
+                return "Ação";
+            var type = ActionType;
+            return string.IsNullOrWhiteSpace(type) ? "Ação" : $"Ação · {type}";
+        }
+    }
+
+    public string VariablesSectionTitle => "Valores iniciais";
 
     public string VariablesSectionHint => ActiveSubflowId is not null
-        ? "Seeds and defaults for this subflow only (saved under subflows in JSON)."
-        : "Initial run variables for this flow file (entry orchestrator uses flow.json).";
+        ? "Padrões deste subfluxo (gravados em subflows no JSON)."
+        : "Variáveis iniciais deste arquivo de fluxo (orquestrador de entrada usa flow.json).";
+
+    public string PropertiesPanelSubtitle
+    {
+        get
+        {
+            if (SelectedConnection is not null)
+                return "Ligação selecionada";
+            if (HasSelectedNode)
+            {
+                var kind = SelectedNodeKindDisplay;
+                var label = NodeLabelEdit.Trim();
+                if (!string.IsNullOrEmpty(label) && !string.Equals(label, kind, StringComparison.OrdinalIgnoreCase))
+                    return $"{kind} · {label}";
+                return string.IsNullOrEmpty(kind) ? "Nó selecionado" : kind;
+            }
+            if (ActiveSubflowId is not null)
+                return $"Subfluxo · {ActiveSubflowId}";
+            return "Fluxo · valores iniciais e subfluxos";
+        }
+    }
 
     public string SelectedNodeKindDisplay => GetSelectedNode()?.Kind.ToString() ?? "";
 
@@ -123,6 +187,8 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowNodeProperties));
         OnPropertyChanged(nameof(VariablesSectionHint));
         OnPropertyChanged(nameof(ShowSubflowContextBanner));
+        OnPropertyChanged(nameof(EmbeddedSubflowCount));
+        RefreshPropertiesPanelContext();
     }
 
     void RefreshPropertiesPanelVisibility()
@@ -133,6 +199,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowEmbeddedSubflowsList));
         OnPropertyChanged(nameof(ShowSubflowContextBanner));
         OnPropertyChanged(nameof(VariablesSectionHint));
+        OnPropertyChanged(nameof(VariablesSectionTitle));
         OnPropertyChanged(nameof(SelectedNodeKindDisplay));
         OnPropertyChanged(nameof(IsStartNodeSelected));
         OnPropertyChanged(nameof(ShowLogFields));
@@ -144,7 +211,34 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ActiveSubflowDefinedHint));
         OnPropertyChanged(nameof(ShowEmptyFlowProducers));
         OnPropertyChanged(nameof(ShowDeleteNodeButton));
+        OnPropertyChanged(nameof(EmbeddedSubflowCount));
+        OnPropertyChanged(nameof(FlowVariableProducerCount));
+        OnPropertyChanged(nameof(ExpandFlowVariablesSection));
+        OnPropertyChanged(nameof(ShowFlowVariableProducerSearch));
+        OnPropertyChanged(nameof(ShowNodeLogicSection));
+        OnPropertyChanged(nameof(NodeActionSectionTitle));
+        OnPropertyChanged(nameof(ShowEmptyFilteredFlowProducers));
+        RefreshPropertiesPanelContext();
         ApplyActiveSubflowRenameCommand?.RaiseCanExecuteChanged();
         DeleteActiveSubflowCommand?.RaiseCanExecuteChanged();
+    }
+
+    void RefreshPropertiesPanelContext() => OnPropertyChanged(nameof(PropertiesPanelSubtitle));
+
+    void RebuildFilteredFlowVariableProducers()
+    {
+        FilteredFlowVariableProducers.Clear();
+        var q = FlowVariableProducerFilter.Trim();
+        foreach (var p in FlowVariableProducers)
+        {
+            if (string.IsNullOrEmpty(q)
+                || p.Name.Contains(q, StringComparison.OrdinalIgnoreCase)
+                || p.Source.Contains(q, StringComparison.OrdinalIgnoreCase)
+                || p.NodeLabel.Contains(q, StringComparison.OrdinalIgnoreCase))
+            {
+                FilteredFlowVariableProducers.Add(p);
+            }
+        }
+        OnPropertyChanged(nameof(ShowEmptyFilteredFlowProducers));
     }
 }

@@ -54,6 +54,7 @@ public static class ProjectLoader
     public static void SaveProject(string dir, FlowProject project)
     {
         Directory.CreateDirectory(dir);
+        ModuleManifestSync.Refresh(project.Manifest, project.Flow, dir);
         var manifestPath = ProjectLayout.ManifestPath(dir);
         var flowPath = ProjectLayout.FlowPath(dir);
 
@@ -123,6 +124,30 @@ public static class ProjectLoader
     {
         var project = LoadProject(dir);
         GraphValidator.ValidateProject(project);
+    }
+
+    /// <summary>Recompute <see cref="FlowManifest.ModuleReferences"/> from graphs on disk and save manifest if changed.</summary>
+    public static bool UpdateManifestCapabilities(string dir)
+    {
+        var project = LoadProject(dir);
+        ModuleManifestSync.Refresh(project.Manifest, project.Flow, dir);
+        var manifestPath = ProjectLayout.ManifestPath(dir);
+        var text = JsonSerializer.Serialize(project.Manifest, HoblioJson.Options) + Environment.NewLine;
+        if (File.Exists(manifestPath))
+        {
+            try
+            {
+                var existing = File.ReadAllText(manifestPath);
+                if (JsonSemanticEquals(existing, text))
+                    return false;
+            }
+            catch
+            {
+                // fall through
+            }
+        }
+        File.WriteAllText(manifestPath, text);
+        return true;
     }
 
     public static (FlowGraph Graph, Dictionary<string, JsonElement> Variables) LoadFlowDocument(

@@ -348,6 +348,7 @@ public sealed partial class FlowEditorViewModel
     void RefreshActionFieldBindings()
     {
         OnPropertyChanged(nameof(CurrentActionSummary));
+        OnPropertyChanged(nameof(NodeActionSectionTitle));
         OnPropertyChanged(nameof(ActionTemplateHint));
         OnPropertyChanged(nameof(ShowActionTemplateHint));
         OnPropertyChanged(nameof(ShowActionNoOp));

@@ -84,6 +84,10 @@ public sealed partial class FlowEditorViewModel
         foreach (var p in Hoblio.Studio.FlowVariableProducers.Collect(nodes))
             FlowVariableProducers.Add(p);
         OnPropertyChanged(nameof(ShowEmptyFlowProducers));
+        OnPropertyChanged(nameof(FlowVariableProducerCount));
+        OnPropertyChanged(nameof(ExpandFlowVariablesSection));
+        OnPropertyChanged(nameof(ShowFlowVariableProducerSearch));
+        RebuildFilteredFlowVariableProducers();
         RebuildTemplateVariableNames();
     }
 

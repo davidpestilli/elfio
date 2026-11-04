@@ -48,9 +48,23 @@ public static class RunEventJson
         var obj = new JsonObject
         {
             ["kind"] = "action_executed",
+            ["log_index"] = e.LogIndex,
+            ["flow_ref"] = e.FlowRef,
+            ["step_index"] = e.StepIndex,
             ["node_id"] = e.NodeId,
+            ["action_id"] = e.ActionId,
             ["summary"] = e.Summary,
+            ["status"] = e.Status,
+            ["inside_error_handling"] = e.InsideErrorHandling,
         };
+        if (!string.IsNullOrWhiteSpace(e.Module))
+            obj["module"] = e.Module;
+        if (!string.IsNullOrWhiteSpace(e.Title))
+            obj["title"] = e.Title;
+        if (!string.IsNullOrWhiteSpace(e.ErrorCode))
+            obj["error_code"] = e.ErrorCode;
+        WriteVariableNames(obj, "input_variable_names", e.InputVariableNames);
+        WriteVariableNames(obj, "output_variable_names", e.OutputVariableNames);
         if (e.Variables is { Count: > 0 })
         {
             var vars = new JsonObject();
@@ -59,5 +73,20 @@ public static class RunEventJson
             obj["variables"] = vars;
         }
         return obj.ToJsonString();
+    }
+
+    static void WriteVariableNames(JsonObject obj, string key, IReadOnlyList<string>? names)
+    {
+        if (names is not { Count: > 0 })
+            return;
+        if (names.Count == 1)
+        {
+            obj[key] = names[0];
+            return;
+        }
+        var arr = new JsonArray();
+        foreach (var n in names)
+            arr.Add(n);
+        obj[key] = arr;
     }
 }

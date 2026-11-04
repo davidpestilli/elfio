@@ -5,98 +5,173 @@
              Background="{StaticResource Brush.PanelBg}">
   <DockPanel>
     <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Brush.PanelBorder}" BorderThickness="0,0,0,1" Padding="12,10">
-      <TextBlock Text="Properties" FontSize="15" FontWeight="SemiBold" Foreground="#111827"/>
+      <StackPanel>
+        <TextBlock Text="Propriedades" FontSize="15" FontWeight="SemiBold" Foreground="#111827"/>
+        <TextBlock Text="{Binding PropertiesPanelSubtitle, Mode=OneWay}" Style="{StaticResource PropertiesPanelSubtitle}"/>
+      </StackPanel>
     </Border>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
       <StackPanel>
         <!-- Canvas focus (Rust: no node selected) -->
         <StackPanel Visibility="{Binding ShowCanvasProperties, Converter={StaticResource BoolVis}}">
-          <StackPanel Visibility="{Binding ShowActiveSubflowManage, Converter={StaticResource BoolVis}}" Margin="0,0,0,16">
-            <TextBlock Text="Embedded subflow" FontWeight="SemiBold"/>
-            <TextBlock Text="{Binding ActiveSubflowDefinedHint, Mode=OneWay}" TextWrapping="Wrap"
-                       Foreground="#64748B" FontSize="11" Margin="0,4,0,8"/>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-              <TextBlock Text="Id" VerticalAlignment="Center" Width="24"/>
-              <TextBox Text="{Binding ActiveSubflowRenameDraft, UpdateSourceTrigger=PropertyChanged}" Width="140" Margin="0,0,8,0"/>
-              <Button Content="Rename" Command="{Binding ApplyActiveSubflowRenameCommand}" Padding="8,4" Margin="0,0,4,0"/>
-              <Button Content="Delete" Command="{Binding DeleteActiveSubflowCommand}" Padding="8,4"/>
+          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+                    Visibility="{Binding ShowActiveSubflowManage, Converter={StaticResource BoolVis}}">
+            <Expander.Header>
+              <TextBlock Text="Subfluxo atual" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <StackPanel>
+              <TextBlock Text="{Binding ActiveSubflowDefinedHint, Mode=OneWay}" Style="{StaticResource PropertiesSectionHint}"/>
+              <TextBlock Text="Identificador" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ActiveSubflowRenameDraft, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                <Button Content="Renomear" Style="{StaticResource SecondaryToolButton}"
+                        Command="{Binding ApplyActiveSubflowRenameCommand}"/>
+                <Button Content="Excluir" Style="{StaticResource DangerPanelButton}" Padding="8,4" Margin="0"
+                        Command="{Binding DeleteActiveSubflowCommand}"/>
+              </StackPanel>
+              <TextBlock Text="{Binding ActiveSubflowRenameError}" Foreground="#DC2626" FontSize="11"/>
             </StackPanel>
-            <TextBlock Text="{Binding ActiveSubflowRenameError}" Foreground="#DC2626" FontSize="11"/>
-          </StackPanel>
+          </Expander>
 
-          <StackPanel Visibility="{Binding ShowEmbeddedSubflowsList, Converter={StaticResource BoolVis}}" Margin="0,0,0,16">
-            <TextBlock Text="Embedded subflows" FontWeight="SemiBold" Margin="0,0,0,8"/>
+          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+                    Visibility="{Binding ShowEmbeddedSubflowsList, Converter={StaticResource BoolVis}}">
+            <Expander.Header>
+              <TextBlock FontWeight="SemiBold">
+                <Run Text="Subfluxos embutidos"/>
+                <Run Text="{Binding EmbeddedSubflowCount, Mode=OneWay, StringFormat=' ({0})'}"/>
+              </TextBlock>
+            </Expander.Header>
             <ItemsControl ItemsSource="{Binding EmbeddedSubflowRows}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
+                  <Border Style="{StaticResource PropertiesListRow}">
                     <StackPanel>
-                      <StackPanel Orientation="Horizontal">
-                        <Button Content="Open" Command="{Binding OpenCommand}" CommandParameter="{Binding Id}" Padding="8,4" Margin="0,0,8,0"/>
-                        <TextBlock Text="Id" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBox Text="{Binding RenameDraft, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0"/>
-                        <Button Content="Rename" Command="{Binding ApplyRenameCommand}" Padding="8,4" Margin="0,0,4,0"/>
-                        <Button Content="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding Id}" Padding="8,4"/>
+                      <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                          <Button Content="Abrir" Style="{StaticResource PropertiesHyperlinkButton}"
+                                  Command="{Binding OpenCommand}" CommandParameter="{Binding Id}"/>
+                          <Button Content="⋯" Style="{StaticResource SecondaryToolButton}" Padding="8,2" Margin="4,0,0,0"
+                                  ToolTip="Mais ações">
+                            <Button.ContextMenu>
+                              <ContextMenu
+                                  DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Renomear…" Command="{Binding BeginRenameCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Excluir" Command="{Binding DeleteCommand}"/>
+                              </ContextMenu>
+                            </Button.ContextMenu>
+                          </Button>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontFamily="Consolas" VerticalAlignment="Center"/>
+                      </DockPanel>
+                      <StackPanel Margin="0,8,0,0"
+                                  Visibility="{Binding ShowRenameEditor, Converter={StaticResource BoolVis}}">
+                        <TextBlock Text="Novo identificador" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding RenameDraft, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                        <StackPanel Orientation="Horizontal">
+                          <Button Content="Aplicar" Style="{StaticResource SecondaryToolButton}" Command="{Binding ApplyRenameCommand}"/>
+                          <Button Content="Cancelar" Style="{StaticResource SecondaryToolButton}" Command="{Binding CancelRenameCommand}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding RenameError}" Foreground="#DC2626" FontSize="11" Margin="0,4,0,0"/>
                       </StackPanel>
-                      <TextBlock Text="{Binding RenameError}" Foreground="#DC2626" FontSize="11" Margin="0,4,0,0"/>
                     </StackPanel>
                   </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-          </StackPanel>
+          </Expander>
 
-          <TextBlock Text="{Binding VariablesSectionTitle}" FontWeight="SemiBold"/>
-          <TextBlock Text="{Binding VariablesSectionHint}" TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,4,0,12"/>
+          <Expander IsExpanded="True" Style="{StaticResource PropsSection}">
+            <Expander.Header>
+              <TextBlock Text="{Binding VariablesSectionTitle}" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <StackPanel>
+              <TextBlock Text="{Binding VariablesSectionHint}" Style="{StaticResource PropertiesSectionHint}"/>
+              <local:ProjectVariablesPanel DataContext="{Binding}"/>
+            </StackPanel>
+          </Expander>
 
-          <TextBlock Text="Flow variables" FontWeight="SemiBold" Margin="0,0,0,4"/>
-          <TextBlock Text="Names assigned during the run by actions and loops (read-only index)."
-                     TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,8"/>
-          <ItemsControl ItemsSource="{Binding FlowVariableProducers}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                  <TextBlock Text="{Binding Name}" FontFamily="Consolas" FontWeight="SemiBold" MinWidth="100"/>
-                  <TextBlock Foreground="#64748B" FontSize="11">
-                    <Run Text="{Binding Source}"/>
-                    <Run Text=" · "/>
-                    <Button Content="{Binding NodeLabel}" Padding="0" BorderThickness="0" Background="Transparent"
-                            Foreground="#2563EB" Cursor="Hand" HorizontalAlignment="Left"
-                            Command="{Binding DataContext.SelectFlowProducerNodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding NodeId}"/>
-                  </TextBlock>
-                </StackPanel>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <TextBlock Text="No producers yet — use BrowserGetText or Set variable."
-                     Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
-                     Visibility="{Binding ShowEmptyFlowProducers, Converter={StaticResource BoolVis}}"/>
-
-          <local:ProjectVariablesPanel DataContext="{Binding}"/>
+          <Expander Style="{StaticResource PropsSection}" IsExpanded="{Binding ExpandFlowVariablesSection, Mode=OneWay}">
+            <Expander.Header>
+              <TextBlock FontWeight="SemiBold">
+                <Run Text="Variáveis na execução"/>
+                <Run Text="{Binding FlowVariableProducerCount, Mode=OneWay, StringFormat=' ({0})'}"/>
+              </TextBlock>
+            </Expander.Header>
+            <StackPanel>
+              <TextBlock Style="{StaticResource PropertiesSectionHint}"
+                         Text="Nomes atribuídos durante a execução por ações e loops (somente leitura)."/>
+              <StackPanel Visibility="{Binding ShowFlowVariableProducerSearch, Converter={StaticResource BoolVis}}" Margin="0,0,0,8">
+                <TextBlock Text="Filtrar" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding FlowVariableProducerFilter, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource FieldBox}" Margin="0"/>
+              </StackPanel>
+              <ItemsControl ItemsSource="{Binding FilteredFlowVariableProducers}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Style="{StaticResource PropertiesListRow}" Padding="8,6">
+                      <StackPanel>
+                        <TextBlock Text="{Binding Name}" FontFamily="Consolas" FontWeight="SemiBold" FontSize="12"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                          <Border Style="{StaticResource PropertiesSourceBadge}">
+                            <TextBlock Text="{Binding Source}" FontSize="10" Foreground="#475569"/>
+                          </Border>
+                          <TextBlock Text="→" Foreground="#94A3B8" Margin="6,0" VerticalAlignment="Center"/>
+                          <Button Content="{Binding NodeLabel}" Style="{StaticResource PropertiesHyperlinkButton}"
+                                  HorizontalAlignment="Left"
+                                  Command="{Binding DataContext.SelectFlowProducerNodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  CommandParameter="{Binding NodeId}"/>
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="Nenhuma variável ainda — use BrowserGetText ou Definir variável."
+                         Style="{StaticResource PropertiesSectionHint}" Margin="0"
+                         Visibility="{Binding ShowEmptyFlowProducers, Converter={StaticResource BoolVis}}"/>
+              <TextBlock Text="Nenhum resultado para o filtro."
+                         Style="{StaticResource PropertiesSectionHint}" Margin="0"
+                         Visibility="{Binding ShowEmptyFilteredFlowProducers, Converter={StaticResource BoolVis}}"/>
+            </StackPanel>
+          </Expander>
         </StackPanel>
 
         <!-- Node selected (Rust: Properties) -->
         <StackPanel Visibility="{Binding ShowNodeProperties, Converter={StaticResource BoolVis}}"
                     IsEnabled="{Binding IsEditing}">
-          <TextBlock Text="{Binding SubflowContextBannerText}" TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,10"
-                     Visibility="{Binding ShowSubflowContextBanner, Converter={StaticResource BoolVis}}"/>
+          <Border Background="{StaticResource Brush.AccentSoft}" CornerRadius="6" Padding="10" Margin="0,0,0,10"
+                  Visibility="{Binding ShowSubflowContextBanner, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="{Binding SubflowContextBannerText}" TextWrapping="Wrap" Foreground="#1E40AF" FontSize="11"/>
+          </Border>
 
-          <TextBlock Text="Id" Style="{StaticResource FieldLabel}"/>
-          <TextBox Text="{Binding SelectedNodeId, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}" Foreground="#6B7280"/>
-          <TextBlock Text="Kind" Style="{StaticResource FieldLabel}"/>
-          <TextBox Text="{Binding SelectedNodeKindDisplay, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}" Foreground="#6B7280"/>
-          <TextBlock Text="Label" Style="{StaticResource FieldLabel}"/>
-          <TextBox Text="{Binding NodeLabelEdit, UpdateSourceTrigger=PropertyChanged}"
-                   IsReadOnly="{Binding IsStartNodeSelected}" Style="{StaticResource FieldBox}"/>
-          <TextBlock Text="{Binding ProducerRenameError}" Foreground="#DC2626" FontSize="11" Margin="0,0,0,8"
-                     Visibility="{Binding HasProducerRenameError, Converter={StaticResource BoolVis}}"/>
+          <Expander IsExpanded="True" Style="{StaticResource PropsSection}">
+            <Expander.Header>
+              <TextBlock Text="Identidade" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <StackPanel>
+              <TextBlock Text="Id" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectedNodeId, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}" Foreground="#6B7280"/>
+              <TextBlock Text="Tipo" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectedNodeKindDisplay, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}" Foreground="#6B7280"/>
+              <TextBlock Text="Rótulo" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding NodeLabelEdit, UpdateSourceTrigger=PropertyChanged}"
+                       IsReadOnly="{Binding IsStartNodeSelected}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="{Binding ProducerRenameError}" Foreground="#DC2626" FontSize="11" Margin="0,0,0,8"
+                         Visibility="{Binding HasProducerRenameError, Converter={StaticResource BoolVis}}"/>
+              <Button Content="Excluir nó" Style="{StaticResource DangerPanelButton}" Margin="0,4,0,0"
+                      Command="{Binding DeleteNodeCommand}"
+                      Visibility="{Binding ShowDeleteNodeButton, Converter={StaticResource BoolVis}}"/>
+            </StackPanel>
+          </Expander>
 
-          <Button Content="Delete node" Style="{StaticResource DangerPanelButton}" Margin="0,10,0,12"
-                  Command="{Binding DeleteNodeCommand}"
-                  Visibility="{Binding ShowDeleteNodeButton, Converter={StaticResource BoolVis}}"/>
-
+          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+                    Visibility="{Binding ShowNodeLogicSection, Converter={StaticResource BoolVis}}">
+            <Expander.Header>
+              <TextBlock Text="Lógica e loops" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <StackPanel>
           <StackPanel Visibility="{Binding ShowIfSection, Converter={StaticResource BoolVis}}">
             <TextBlock Text="Left" Style="{StaticResource FieldLabel}"/>
             <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding IfLeft, UpdateSourceTrigger=PropertyChanged}"
@@ -152,9 +227,16 @@
           <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
                      Visibility="{Binding ShowNextExitLoopHint, Converter={StaticResource BoolVis}}"
                      Text="Coloque dentro do corpo de For each, While ou Repeat; uma saída main."/>
+            </StackPanel>
+          </Expander>
 
-          <StackPanel Visibility="{Binding ShowActionSection, Converter={StaticResource BoolVis}}">
-            <TextBlock Text="Action type" Style="{StaticResource FieldLabel}"/>
+          <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+                    Visibility="{Binding ShowActionSection, Converter={StaticResource BoolVis}}">
+            <Expander.Header>
+              <TextBlock Text="{Binding NodeActionSectionTitle, Mode=OneWay}" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <StackPanel>
+            <TextBlock Text="Tipo de ação" Style="{StaticResource FieldLabel}"/>
             <ComboBox ItemsSource="{Binding ActionTypeOptions}" SelectedItem="{Binding ActionType}" Margin="0,0,0,6"/>
             <TextBlock Text="{Binding CurrentActionSummary, Mode=OneWay, StringFormat=Current: {0}}"
                        Foreground="#64748B" FontSize="11" Margin="0,0,0,10"/>
@@ -325,46 +407,61 @@
                       Visibility="{Binding ShowRunFlowOpenSubflow, Converter={StaticResource BoolVis}}"/>
             </StackPanel>
 
-            <StackPanel Visibility="{Binding ShowLastRunValues, Converter={StaticResource BoolVis}}" Margin="0,12,0,0">
-              <TextBlock Text="Last run values" FontWeight="SemiBold" Margin="0,0,0,6"/>
-              <TextBox Text="{Binding LastRunVariablesText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
-                       MinHeight="56" TextWrapping="Wrap" FontFamily="Consolas" Background="#F9FAFB"/>
             </StackPanel>
+          </Expander>
 
-            <StackPanel Visibility="{Binding ShowOnErrorSection, Converter={StaticResource BoolVis}}" Margin="0,16,0,0">
-              <TextBlock Text="On error" FontWeight="SemiBold" Margin="0,0,0,8"/>
-              <TextBlock Text="Retry count (extra attempts)" Style="{StaticResource FieldLabel}"/>
+          <Expander Style="{StaticResource PropsSection}" IsExpanded="False"
+                    Visibility="{Binding ShowLastRunValues, Converter={StaticResource BoolVis}}">
+            <Expander.Header>
+              <TextBlock Text="Última execução" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <TextBox Text="{Binding LastRunVariablesText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                     MinHeight="56" TextWrapping="Wrap" FontFamily="Consolas" Background="#F9FAFB"/>
+          </Expander>
+
+          <Expander Style="{StaticResource PropsSection}" IsExpanded="False"
+                    Visibility="{Binding ShowOnErrorSection, Converter={StaticResource BoolVis}}">
+            <Expander.Header>
+              <TextBlock Text="Em caso de erro" FontWeight="SemiBold"/>
+            </Expander.Header>
+            <StackPanel>
+              <TextBlock Text="Tentativas extras" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding RetryCountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              <TextBlock Text="Retry delay (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBlock Text="Intervalo entre tentativas (ms)" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding RetryDelayText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              <TextBlock Text="If still failing" Style="{StaticResource FieldLabel}"/>
+              <TextBlock Text="Se ainda falhar" Style="{StaticResource FieldLabel}"/>
               <ComboBox SelectedValue="{Binding OnFailureMode}" SelectedValuePath="Content" Margin="0,0,0,4">
                 <ComboBoxItem Content="stop"/>
                 <ComboBoxItem Content="continue"/>
               </ComboBox>
             </StackPanel>
-          </StackPanel>
+          </Expander>
         </StackPanel>
 
-        <StackPanel Visibility="{Binding ShowConnectionProperties, Converter={StaticResource BoolVis}}"
-                    Margin="0,16,0,0" IsEnabled="{Binding IsEditing}">
-          <TextBlock Text="Ligação selecionada" FontWeight="SemiBold" Margin="0,0,0,8"/>
-          <TextBlock Text="From" Style="{StaticResource FieldLabel}"/>
-          <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding SelectedEdgeSourceId, UpdateSourceTrigger=PropertyChanged}"
-                    IsEditable="True" Margin="0,0,0,10"/>
-          <TextBlock Text="To" Style="{StaticResource FieldLabel}"/>
-          <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding SelectedEdgeTargetId, UpdateSourceTrigger=PropertyChanged}"
-                    IsEditable="True" Margin="0,0,0,10"/>
-          <TextBlock Text="Port" Style="{StaticResource FieldLabel}"/>
-          <ComboBox Text="{Binding SelectedEdgePort, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Margin="0,0,0,10">
-            <ComboBoxItem Content="main"/>
-            <ComboBoxItem Content="then"/>
-            <ComboBoxItem Content="else"/>
-            <ComboBoxItem Content="body"/>
-            <ComboBoxItem Content="after"/>
-          </ComboBox>
-          <Button Content="Remove connection" Command="{Binding RemoveEdgeCommand}" Style="{StaticResource DangerPanelButton}"/>
-        </StackPanel>
+        <Expander IsExpanded="True" Style="{StaticResource PropsSection}"
+                  Visibility="{Binding ShowConnectionProperties, Converter={StaticResource BoolVis}}"
+                  IsEnabled="{Binding IsEditing}">
+          <Expander.Header>
+            <TextBlock Text="Ligação" FontWeight="SemiBold"/>
+          </Expander.Header>
+          <StackPanel>
+            <TextBlock Text="Origem" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding SelectedEdgeSourceId, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="Destino" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding DiagramNodeIds}" Text="{Binding SelectedEdgeTargetId, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <TextBlock Text="Porta" Style="{StaticResource FieldLabel}"/>
+            <ComboBox Text="{Binding SelectedEdgePort, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Margin="0,0,0,10">
+              <ComboBoxItem Content="main"/>
+              <ComboBoxItem Content="then"/>
+              <ComboBoxItem Content="else"/>
+              <ComboBoxItem Content="body"/>
+              <ComboBoxItem Content="after"/>
+            </ComboBox>
+            <Button Content="Remover ligação" Command="{Binding RemoveEdgeCommand}" Style="{StaticResource DangerPanelButton}"/>
+          </StackPanel>
+        </Expander>
       </StackPanel>
     </ScrollViewer>
   </DockPanel>
