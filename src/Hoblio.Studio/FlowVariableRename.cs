@@ -168,6 +168,7 @@ public static class FlowVariableRename
 
         return new RunFlowAction
         {
+            Project = a.Project,
             FlowId = a.FlowId is null ? null : ReplaceTemplates(a.FlowId, oldName, newName),
             Path = a.Path is null ? null : ReplaceTemplates(a.Path, oldName, newName),
             Inputs = inputs ?? a.Inputs,

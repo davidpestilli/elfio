@@ -31,6 +31,7 @@ O **`manifest.json`** descreve o projeto e, além do grafo principal, lista **fl
 | `description` | Texto livre |
 | `entry_flow` | Id do fluxo principal quando há `flows` |
 | `flows` | Mapa id → `{ path, inputs?, outputs?, description? }` |
+| `linked_projects` | Mapa id → `{ path, flow?, description?, requires?, exports? }` — projetos externos chamáveis por `run_flow.project` (ver [composicao-superfluxos.md](./composicao-superfluxos.md)) |
 
 Variáveis iniciais de run ficam em **`flow.json`** → `variables`, não no manifest.
 

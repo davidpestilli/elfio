@@ -5,6 +5,8 @@
 | [conformidade/registro-auditoria-independencia-pad.md](conformidade/registro-auditoria-independencia-pad.md) | O que já foi verificado vs código PAD (anti-plágio; auditorias incrementais) |
 | [guia-construcao.md](guia-construcao.md) | Build, testes, Grok v2, pendências Elfio |
 | [construcao/README.md](construcao/README.md) | Runtime, catálogo de ações, telemetria, manifest |
+| [construcao/composicao-superfluxos.md](construcao/composicao-superfluxos.md) | Subfluxo × fluxo principal vinculado; encadear fluxos (`run_flow.project`, `linked_projects`) |
+| [construcao/fluxo-eproc-peticionamento.md](construcao/fluxo-eproc-peticionamento.md) | Exemplo eproc: peticionamento como fluxo chamado (etapas 1–2 de 4) |
 | [construcao/modulo-excel.md](construcao/modulo-excel.md) | Módulo Excel: 41 ações, paleta Básico/Avançado, runtime COM, demo |
 | [construcao/modulo-word.md](construcao/modulo-word.md) | Módulo Word: 8 ações PAD, runtime COM, `word-demo-flow` |
 | [construcao/modulo-variaveis.md](construcao/modulo-variaveis.md) | Módulo Variáveis PAD: 31 `variables_*`, runtime, Studio, demo, **pendências** |

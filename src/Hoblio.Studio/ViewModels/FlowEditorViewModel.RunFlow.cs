@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using Hoblio.Model;
+using Hoblio.Serde;
 
 namespace Hoblio.Studio.ViewModels;
 
@@ -9,6 +10,7 @@ public sealed partial class FlowEditorViewModel
 {
     public ObservableCollection<string> EmbeddedSubflowIds { get; } = [];
     public ObservableCollection<string> RunFlowTargetIds { get; } = [];
+    public ObservableCollection<string> RunFlowProjectIds { get; } = [];
 
     public bool ShowRunFlowSection => GetSelectedNode()?.Action is RunFlowAction;
     public bool ShowRunFlowOpenSubflow =>
@@ -16,12 +18,28 @@ public sealed partial class FlowEditorViewModel
         && !string.IsNullOrWhiteSpace(rf.FlowId)
         && EmbeddedSubflowIds.Contains(rf.FlowId!);
 
+    /// <summary>Projeto vinculado (<c>manifest.linked_projects</c>) onde o fluxo chamado vive.</summary>
+    public string RunFlowProject
+    {
+        get => GetRunFlow()?.Project ?? "";
+        set => PatchRunFlow(rf => new RunFlowAction
+        {
+            Project = string.IsNullOrWhiteSpace(value) ? null : value.Trim(),
+            FlowId = rf.FlowId,
+            Path = rf.Path,
+            Inputs = rf.Inputs,
+            Outputs = rf.Outputs,
+            ShareBrowser = rf.ShareBrowser,
+            VariableScope = rf.VariableScope,
+        });
+    }
 
     public string RunFlowId
     {
         get => GetRunFlow()?.FlowId ?? "";
         set => PatchRunFlow(rf => new RunFlowAction
         {
+            Project = rf.Project,
             FlowId = string.IsNullOrWhiteSpace(value) ? null : value.Trim(),
             Path = rf.Path,
             Inputs = rf.Inputs,
@@ -36,6 +54,7 @@ public sealed partial class FlowEditorViewModel
         get => GetRunFlow()?.Path ?? "";
         set => PatchRunFlow(rf => new RunFlowAction
         {
+            Project = rf.Project,
             FlowId = rf.FlowId,
             Path = string.IsNullOrWhiteSpace(value) ? null : value.Trim(),
             Inputs = rf.Inputs,
@@ -50,6 +69,7 @@ public sealed partial class FlowEditorViewModel
         get => GetRunFlow()?.VariableScope == RunFlowVariableScope.Isolated ? "isolated" : "inherit";
         set => PatchRunFlow(rf => new RunFlowAction
         {
+            Project = rf.Project,
             FlowId = rf.FlowId,
             Path = rf.Path,
             Inputs = rf.Inputs,
@@ -66,6 +86,7 @@ public sealed partial class FlowEditorViewModel
         get => GetRunFlow()?.ShareBrowser is not false;
         set => PatchRunFlow(rf => new RunFlowAction
         {
+            Project = rf.Project,
             FlowId = rf.FlowId,
             Path = rf.Path,
             Inputs = rf.Inputs,
@@ -109,6 +130,7 @@ public sealed partial class FlowEditorViewModel
             }
             PatchRunFlow(rf => new RunFlowAction
             {
+                Project = rf.Project,
                 FlowId = rf.FlowId,
                 Path = rf.Path,
                 Inputs = dict.Count > 0 ? dict : null,
@@ -128,6 +150,7 @@ public sealed partial class FlowEditorViewModel
         }
         set => PatchRunFlow(rf => new RunFlowAction
         {
+            Project = rf.Project,
             FlowId = rf.FlowId,
             Path = rf.Path,
             Inputs = rf.Inputs,
@@ -139,6 +162,34 @@ public sealed partial class FlowEditorViewModel
 
     public RelayCommand<string?> OpenEmbeddedSubflowCommand { get; private set; } = null!;
 
+    /// <summary>Declara em <c>manifest.linked_projects</c> uma pasta de projeto já existente.</summary>
+    public RelayCommand LinkRunFlowProjectCommand { get; private set; } = null!;
+
+    /// <summary>Cria um projeto novo (manifest + flow.json) ao lado deste e o vincula.</summary>
+    public RelayCommand CreateLinkedProjectCommand { get; private set; } = null!;
+
+    public string RunFlowProjectHint
+    {
+        get
+        {
+            var id = GetRunFlow()?.Project;
+            if (string.IsNullOrWhiteSpace(id))
+                return "Sem projeto vinculado: o fluxo é resolvido neste projeto (subflow embutido ou manifest.flows).";
+
+            id = id.Trim();
+            var links = _project.Manifest.LinkedProjects;
+            if (links is null || !links.TryGetValue(id, out var link))
+                return $"`{id}` ainda não está em manifest.linked_projects — use \"Vincular projeto…\".";
+
+            var text = $"{link.Path} (relativo a este projeto)";
+            if (link.Exports is { Count: > 0 })
+                text += $" · exporta: {string.Join(", ", link.Exports)}";
+            if (link.Requires is { Count: > 0 })
+                text += $" · requer: {string.Join(", ", link.Requires)}";
+            return text;
+        }
+    }
+
     void InitRunFlowCommands()
     {
         OpenEmbeddedSubflowCommand = new RelayCommand<string?>(id =>
@@ -149,6 +200,119 @@ public sealed partial class FlowEditorViewModel
         });
         OpenSelectedRunFlowSubflowCommand = new RelayCommand(OpenSelectedRunFlowSubflow, () =>
             ShowRunFlowOpenSubflow && CanEditDiagram);
+        LinkRunFlowProjectCommand = new RelayCommand(LinkRunFlowProject, () => CanEditDiagram);
+        CreateLinkedProjectCommand = new RelayCommand(CreateLinkedProject, () => CanEditDiagram);
+    }
+
+    void LinkRunFlowProject()
+    {
+        if (!EnsureProjectDirForLink())
+            return;
+
+        var dlg = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Pasta do projeto a vincular (com manifest.json e flow.json)",
+            Multiselect = false,
+        };
+        if (dlg.ShowDialog() != true || string.IsNullOrWhiteSpace(dlg.FolderName))
+            return;
+
+        AddLinkedProject(dlg.FolderName.Trim());
+    }
+
+    void CreateLinkedProject()
+    {
+        if (!EnsureProjectDirForLink())
+            return;
+
+        var input = new Hoblio.Runtime.UserInputDialog(
+            "Novo projeto vinculado",
+            "Nome da pasta do novo projeto (será criada ao lado deste projeto):",
+            "novo-fluxo",
+            UserInputKind.SingleLine,
+            topmost: true);
+        if (input.ShowDialog() != true)
+            return;
+
+        var parent = Path.GetDirectoryName(Path.GetFullPath(_projectDir!));
+        if (string.IsNullOrEmpty(parent))
+        {
+            SetStatus("Não foi possível resolver a pasta pai do projeto.", isError: true);
+            return;
+        }
+
+        string? target;
+        try
+        {
+            target = LinkedProjectOps.CreateScaffold(parent, input.InputText);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Falha ao criar projeto: {ex.Message}", isError: true);
+            MessageBox.Show(ex.Message, "Novo projeto vinculado", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (target is null)
+        {
+            SetStatus("Nome de pasta inválido.", isError: true);
+            return;
+        }
+
+        AddLinkedProject(target);
+        SetStatus($"Projeto `{Path.GetFileName(target)}` criado e vinculado. Abra-o por Abrir… → manifest.json para editar o fluxo.");
+    }
+
+    bool EnsureProjectDirForLink()
+    {
+        if (!string.IsNullOrWhiteSpace(_projectDir))
+            return true;
+        MessageBox.Show(
+            "Salve este projeto primeiro: o vínculo é gravado no manifest.json desta pasta.",
+            "Vincular projeto",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+        return false;
+    }
+
+    /// <summary>Adiciona/atualiza o vínculo e aponta o nó <c>run_flow</c> selecionado para ele.</summary>
+    void AddLinkedProject(string folder)
+    {
+        var callerDir = _projectDir!;
+        var planned = LinkedProjectOps.Plan(_project.Manifest.LinkedProjects, callerDir, folder);
+        if (planned is null)
+        {
+            MessageBox.Show(
+                $"Escolha uma pasta de projeto Elfio ({ProjectLayout.ManifestFile} + {ProjectLayout.FlowFile}) diferente deste projeto:\n{folder}",
+                "Vincular projeto",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        PushHistory();
+        LinkedProjectOps.Apply(_project.Manifest, planned);
+
+        var node = GetSelectedNode();
+        if (node?.Action is RunFlowAction current)
+        {
+            node.Action = new RunFlowAction
+            {
+                Project = planned.Id,
+                FlowId = current.FlowId,
+                Path = current.Path,
+                Inputs = current.Inputs,
+                Outputs = current.Outputs,
+                ShareBrowser = current.ShareBrowser,
+                VariableScope = current.VariableScope,
+            };
+            RefreshNodeSummary(node);
+        }
+
+        RefreshRunFlowTargets();
+        MarkDirty();
+        RefreshAllInspector();
+        SetStatus($"Projeto vinculado `{planned.Id}` → {planned.RelativePath} (salve para gravar em manifest.json)");
     }
 
     RunFlowAction? GetRunFlow() =>
@@ -181,6 +345,12 @@ public sealed partial class FlowEditorViewModel
         {
             if (!RunFlowTargetIds.Contains(id))
                 RunFlowTargetIds.Add(id);
+        }
+        RunFlowProjectIds.Clear();
+        if (_project.Manifest.LinkedProjects is not null)
+        {
+            foreach (var id in LinkedProjectOps.Ids(_project.Manifest))
+                RunFlowProjectIds.Add(id);
         }
         RebuildEmbeddedSubflowRows();
         ReloadFlowVariableProducers();

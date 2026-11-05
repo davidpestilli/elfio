@@ -1,0 +1,168 @@
+{
+  "start": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": {
+        "x": 80,
+        "y": 120
+      }
+    },
+    {
+      "id": "rf_login",
+      "kind": "action",
+      "label": "1. Fluxo login",
+      "action": {
+        "type": "run_flow",
+        "project": "login",
+        "outputs": ["ScreenText", "SessionUser"]
+      },
+      "ui": {
+        "x": 300,
+        "y": 120
+      }
+    },
+    {
+      "id": "sw_screen",
+      "kind": "switch",
+      "label": "Tela herdada?",
+      "control": {
+        "type": "switch",
+        "expression": "{ScreenText}",
+        "ignore_case": true
+      },
+      "ui": {
+        "x": 520,
+        "y": 120
+      }
+    },
+    {
+      "id": "case_painel",
+      "kind": "case",
+      "label": "Painel do advogado",
+      "control": {
+        "type": "case",
+        "value": "Painel",
+        "operator": "contains"
+      },
+      "ui": {
+        "x": 740,
+        "y": 120
+      }
+    },
+    {
+      "id": "def_screen",
+      "kind": "case_default",
+      "label": "Outra tela",
+      "control": {
+        "type": "case_default"
+      },
+      "ui": {
+        "x": 740,
+        "y": 320
+      }
+    },
+    {
+      "id": "rf_peticao",
+      "kind": "action",
+      "label": "2. Fluxo peticionamento",
+      "action": {
+        "type": "run_flow",
+        "project": "peticionar",
+        "inputs": {
+          "ScreenText": "{ScreenText}",
+          "SessionUser": "{SessionUser}"
+        },
+        "outputs": ["PetitionNumber"]
+      },
+      "ui": {
+        "x": 960,
+        "y": 120
+      }
+    },
+    {
+      "id": "log_ok",
+      "kind": "action",
+      "label": "Log protocolo",
+      "action": {
+        "type": "log",
+        "message": "superfluxo concluido: {PetitionNumber} na tela {ScreenText}"
+      },
+      "ui": {
+        "x": 1180,
+        "y": 120
+      }
+    },
+    {
+      "id": "log_fail",
+      "kind": "action",
+      "label": "Log tela inesperada",
+      "action": {
+        "type": "log",
+        "message": "superfluxo abortado: tela inesperada `{ScreenText}`"
+      },
+      "ui": {
+        "x": 960,
+        "y": 320
+      }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": {
+        "x": 1400,
+        "y": 120
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "rf_login",
+      "port": "main"
+    },
+    {
+      "from": "rf_login",
+      "to": "sw_screen",
+      "port": "main"
+    },
+    {
+      "from": "sw_screen",
+      "to": "case_painel",
+      "port": "then"
+    },
+    {
+      "from": "case_painel",
+      "to": "rf_peticao",
+      "port": "then"
+    },
+    {
+      "from": "case_painel",
+      "to": "def_screen",
+      "port": "else"
+    },
+    {
+      "from": "def_screen",
+      "to": "log_fail",
+      "port": "main"
+    },
+    {
+      "from": "rf_peticao",
+      "to": "log_ok",
+      "port": "main"
+    },
+    {
+      "from": "log_ok",
+      "to": "end",
+      "port": "main"
+    },
+    {
+      "from": "log_fail",
+      "to": "end",
+      "port": "main"
+    }
+  ]
+}

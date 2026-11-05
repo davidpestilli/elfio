@@ -18,12 +18,13 @@ Projetos de automação são **pastas versionáveis**: metadados em `manifest.js
 ## Capacidades (visão geral)
 
 - **Controle de fluxo** — condicionais, loops, subfluxos, composição de fluxos
+- **Superfluxos** — um fluxo principal pode chamar o fluxo principal de **outro projeto** (`run_flow.project` + `manifest.linked_projects`) herdando sessão de navegador e variáveis; veja [docs/construcao/composicao-superfluxos.md](docs/construcao/composicao-superfluxos.md)
 - **Variáveis** — tabelas, listas, CSV, transformações e referências `{nome}` entre nós
 - **Web** — navegação e automação via Chrome/Edge (CDP); anexar a instância já aberta
 - **Arquivos & UI** — leitura/escrita, seleção em lista, entrada de usuário (diálogos WPF)
 - **Excel & Word** — ações COM alinhadas a vocabulário de produto RPA (demos em `examples/`)
 
-Exemplos prontos: `flow-control-demo`, `browser-demo-flow`, `excel-demo-flow`, `word-demo-flow`, `variables-demo-flow`, `login-eproc`, entre outros em [`examples/`](examples/).
+Exemplos prontos: `flow-control-demo`, `browser-demo-flow`, `excel-demo-flow`, `word-demo-flow`, `variables-demo-flow`, `login-eproc`, `superflow-demo` (encadeia `superflow-login` → `superflow-petition`), entre outros em [`examples/`](examples/).
 
 ## Pré-requisitos
 

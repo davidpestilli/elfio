@@ -1,0 +1,28 @@
+{
+  "name": "eproc-peticionamento",
+  "version": "0.1.0",
+  "description": "Assume a tela logada do eproc (painel do advogado) e protocola. Espera rodar DEPOIS do login, na mesma sessao de navegador.",
+  "entry_flow": "flow.json",
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "Variables",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "WebAutomation",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

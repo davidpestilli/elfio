@@ -25,6 +25,8 @@ public enum ValidationErrorKind
     SetVariableNameMissing,
     InvalidRetryCount,
     UnknownTemplateReference,
+    UnknownLinkedProject,
+    InvalidLinkedProject,
 }
 
 public sealed class ValidationException(ValidationErrorKind kind, string message) : Exception(message)
@@ -43,7 +45,54 @@ public static class GraphValidator
         ValidateLoopControls(project.Flow);
         ValidateVariableProducers(project.Flow);
         ValidateErrorHandling(project.Flow);
+        ValidateLinkedProjects(project);
         TemplateReferenceValidator.Validate(project);
+    }
+
+    /// <summary>
+    /// Cada <c>run_flow</c> com <c>project</c> precisa apontar para uma entrada declarada em
+    /// <c>manifest.linked_projects</c>. Existência do caminho em disco é checada em <c>LinkedProjectValidator</c> (Hoblio.Serde).
+    /// </summary>
+    static void ValidateLinkedProjects(FlowProject project)
+    {
+        var links = project.Manifest.LinkedProjects;
+        foreach (var node in EnumerateNodes(project.Flow))
+        {
+            if (node.Action is not RunFlowAction { Project: { } projectId } || string.IsNullOrWhiteSpace(projectId))
+                continue;
+
+            var id = projectId.Trim();
+            if (links is null || !links.TryGetValue(id, out var link))
+                throw new ValidationException(
+                    ValidationErrorKind.UnknownLinkedProject,
+                    $"node `{node.Id}` run_flow references unknown project `{id}` (declare it in manifest.linked_projects)");
+
+            if (string.IsNullOrWhiteSpace(link.Path))
+                throw new ValidationException(
+                    ValidationErrorKind.InvalidLinkedProject,
+                    $"manifest.linked_projects.`{id}` requires a `path`");
+
+            foreach (var name in (link.Requires ?? []).Concat(link.Exports ?? []))
+            {
+                if (!IsValidVariableName(name?.Trim() ?? ""))
+                    throw new ValidationException(
+                        ValidationErrorKind.InvalidLinkedProject,
+                        $"manifest.linked_projects.`{id}` uses invalid variable name `{name}` in requires/exports");
+            }
+        }
+    }
+
+    static IEnumerable<Node> EnumerateNodes(FlowGraph graph)
+    {
+        foreach (var node in graph.Nodes)
+            yield return node;
+        if (graph.Subflows is null)
+            yield break;
+        foreach (var bundle in graph.Subflows.Values)
+        {
+            foreach (var node in EnumerateNodes(bundle.AsGraph(null)))
+                yield return node;
+        }
     }
 
     public static void ValidateGraph(FlowGraph graph)
@@ -194,8 +243,9 @@ public static class GraphValidator
                     VariablesActionValidator.Validate(va, node.Id);
                 if (action is RunFlowAction rf
                     && string.IsNullOrWhiteSpace(rf.FlowId)
-                    && string.IsNullOrWhiteSpace(rf.Path))
-                    throw new ValidationException(ValidationErrorKind.ActionNodeMissingAction, $"node `{node.Id}` run_flow requires flow_id or path");
+                    && string.IsNullOrWhiteSpace(rf.Path)
+                    && string.IsNullOrWhiteSpace(rf.Project))
+                    throw new ValidationException(ValidationErrorKind.ActionNodeMissingAction, $"node `{node.Id}` run_flow requires flow_id, path or project");
 
                 foreach (var name in action.ProducedVariables())
                 {

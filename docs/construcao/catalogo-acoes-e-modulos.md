@@ -48,7 +48,7 @@ Notas:
 
 - **`Web` vs `WebAutomation`**: `http_get` é requisição HTTP genérica; ações `browser_*` compartilham sessão CDP (`BrowserContext`).
 - **`Variables` / `Assign`**: atribuição é ação no grafo; listas vivem em `RunVariables` como JSON array serializado.
-- **`run_flow`**: `action_id` `CallFunction`; `flow_ref` no log deve ser `flow_id`, caminho relativo ou rótulo do subfluxo embutido.
+- **`run_flow`**: `action_id` `CallFunction`; `flow_ref` no log é `flow_id`, caminho relativo, rótulo do subfluxo embutido ou `projeto:fluxo` quando a chamada atravessa projeto (`project`). Ver [composicao-superfluxos.md](./composicao-superfluxos.md).
 
 ---
 

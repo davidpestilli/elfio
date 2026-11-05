@@ -1,0 +1,22 @@
+{
+  "name": "superflow-petition",
+  "version": "0.1.0",
+  "description": "Fluxo principal de peticionamento (simulado): assume a tela deixada pelo login e protocola",
+  "entry_flow": "flow.json",
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "Variables",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

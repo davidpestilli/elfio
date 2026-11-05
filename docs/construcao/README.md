@@ -5,6 +5,8 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 | Documento | Conteúdo |
 |-----------|----------|
 | [runtime-e-execucao.md](./runtime-e-execucao.md) | Camadas, pipeline de run, separação grafo × ações × serviços |
+| [composicao-superfluxos.md](./composicao-superfluxos.md) | Composição: subfluxo × fluxo principal vinculado (`run_flow.project`, `linked_projects`), superfluxo |
+| [fluxo-eproc-peticionamento.md](./fluxo-eproc-peticionamento.md) | Exemplo eproc: fluxo principal chamado (etapas 1–2), herança da tela, `by_index` 0-based, Enter via script |
 | [catalogo-acoes-e-modulos.md](./catalogo-acoes-e-modulos.md) | Identificadores estáveis (`module`, `action_id`), paleta e mapeamento JSON |
 | [modulo-excel.md](./modulo-excel.md) | Módulo Excel COM: paleta, JSON, runtime, exemplo, testes |
 | [modulo-word.md](./modulo-word.md) | Módulo Word COM: 8 ações PAD, JSON, runtime |
@@ -17,3 +19,5 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 **Estado:** telemetria enriquecida (`module`, `action_id`, índices) e `module_references` no manifest estão **implementadas** (`ActionCatalog`, `RunEventJson`, `ModuleManifestSync` no save). Projetos antigos sem esses campos continuam válidos até o próximo save.
 
 **Nov/2026:** Switch/Case no runtime e Studio; correção de stack overflow no save com subfluxos embutidos; registro completo em [guia-construcao.md](../guia-construcao.md) § *Rodada nov/2026 — Switch/Case, save e shell*.
+
+**Nov/2026 (composição):** `run_flow` pode chamar o fluxo principal de outro projeto (`project` + `manifest.linked_projects`), com contrato (`requires`/`exports`), validação de ciclo e herança de sessão/variáveis no mesmo run. Ver [composicao-superfluxos.md](./composicao-superfluxos.md).

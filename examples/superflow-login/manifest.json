@@ -1,0 +1,22 @@
+{
+  "name": "superflow-login",
+  "version": "0.1.0",
+  "description": "Fluxo principal de login (simulado): deixa a sessao na tela inicial e exporta o estado da tela",
+  "entry_flow": "flow.json",
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "Variables",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

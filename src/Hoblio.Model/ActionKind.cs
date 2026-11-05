@@ -168,6 +168,13 @@ public sealed class DecreaseVariableAction : ActionKind
 public sealed class RunFlowAction : ActionKind
 {
     public override string Type => "run_flow";
+
+    /// <summary>
+    /// Projeto vinculado (<c>manifest.linked_projects</c>) onde o fluxo será resolvido.
+    /// Quando ausente, o fluxo é resolvido no próprio projeto.
+    /// </summary>
+    public string? Project { get; init; }
+
     public string? FlowId { get; init; }
     public string? Path { get; init; }
     public Dictionary<string, string>? Inputs { get; init; }

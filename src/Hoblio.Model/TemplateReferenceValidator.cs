@@ -9,13 +9,14 @@ public static class TemplateReferenceValidator
     public static void Validate(FlowProject project)
     {
         var known = new HashSet<string>(project.Variables.Keys, StringComparer.Ordinal);
-        foreach (var node in project.Flow.Nodes)
+        AddLinkedProjectExports(project, known);
+        foreach (var node in EnumerateNodes(project.Flow))
         {
             foreach (var name in CollectProducerNames(node))
                 known.Add(name);
         }
 
-        foreach (var node in project.Flow.Nodes)
+        foreach (var node in EnumerateNodes(project.Flow))
         {
             foreach (var text in CollectTemplateStrings(node))
             {
@@ -26,10 +27,43 @@ public static class TemplateReferenceValidator
                     {
                         throw new ValidationException(
                             ValidationErrorKind.UnknownTemplateReference,
-                            $"node `{node.Id}` references unknown variable `{{{refName}}}` (not in project variables or flow producers)");
+                            $"node `{node.Id}` references unknown variable `{{{refName}}}` (not in project variables, flow producers or linked project exports)");
                     }
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Variáveis entregues por projetos vinculados (<c>manifest.linked_projects[].exports</c>) passam a ser
+    /// referenciáveis no fluxo chamador — é o contrato de herança entre fluxos principais.
+    /// </summary>
+    static void AddLinkedProjectExports(FlowProject project, HashSet<string> known)
+    {
+        if (project.Manifest.LinkedProjects is null)
+            return;
+        foreach (var link in project.Manifest.LinkedProjects.Values)
+        {
+            if (link.Exports is null)
+                continue;
+            foreach (var name in link.Exports)
+            {
+                if (!string.IsNullOrWhiteSpace(name))
+                    known.Add(name.Trim());
+            }
+        }
+    }
+
+    static IEnumerable<Node> EnumerateNodes(FlowGraph graph)
+    {
+        foreach (var node in graph.Nodes)
+            yield return node;
+        if (graph.Subflows is null)
+            yield break;
+        foreach (var bundle in graph.Subflows.Values)
+        {
+            foreach (var node in EnumerateNodes(bundle.AsGraph(null)))
+                yield return node;
         }
     }
 

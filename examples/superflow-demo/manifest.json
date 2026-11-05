@@ -1,0 +1,49 @@
+{
+  "name": "superflow-demo",
+  "version": "0.1.0",
+  "description": "Superfluxo: encadeia dois fluxos principais (login e peticionamento) no mesmo run e na mesma sessao",
+  "entry_flow": "flow.json",
+  "linked_projects": {
+    "login": {
+      "path": "../superflow-login",
+      "description": "Login: deixa a sessao na tela inicial e exporta o estado da tela",
+      "exports": [
+        "ScreenText",
+        "SessionUser"
+      ]
+    },
+    "peticionar": {
+      "path": "../superflow-petition",
+      "description": "Peticionamento: assume a tela deixada pelo login",
+      "requires": [
+        "ScreenText",
+        "SessionUser"
+      ],
+      "exports": [
+        "PetitionNumber"
+      ]
+    }
+  },
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "Conditionals",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "FlowControl",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

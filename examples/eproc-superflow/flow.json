@@ -1,0 +1,175 @@
+{
+  "start": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": {
+        "x": -460,
+        "y": 0
+      }
+    },
+    {
+      "id": "rf_login",
+      "kind": "action",
+      "label": "1. Login eproc (perfil advogado)",
+      "action": {
+        "type": "run_flow",
+        "project": "login",
+        "outputs": ["ScreenText", "EprocUrl", "EprocUser"]
+      },
+      "ui": {
+        "x": -240,
+        "y": 0
+      }
+    },
+    {
+      "id": "sw_tela",
+      "kind": "switch",
+      "label": "Chegou na tela de entrega?",
+      "control": {
+        "type": "switch",
+        "expression": "{ScreenText}",
+        "ignore_case": true
+      },
+      "ui": {
+        "x": -20,
+        "y": 0
+      }
+    },
+    {
+      "id": "case_painel",
+      "kind": "case",
+      "label": "Painel do advogado",
+      "control": {
+        "type": "case",
+        "value": "Painel",
+        "operator": "contains"
+      },
+      "ui": {
+        "x": 200,
+        "y": 0
+      }
+    },
+    {
+      "id": "def_tela",
+      "kind": "case_default",
+      "label": "Outra tela",
+      "control": {
+        "type": "case_default"
+      },
+      "ui": {
+        "x": 200,
+        "y": 200
+      }
+    },
+    {
+      "id": "rf_peticao",
+      "kind": "action",
+      "label": "2. Peticionamento (assume a tela)",
+      "action": {
+        "type": "run_flow",
+        "project": "peticionar",
+        "inputs": {
+          "ScreenText": "{ScreenText}",
+          "EprocUrl": "{EprocUrl}",
+          "EprocUser": "{EprocUser}"
+        },
+        "outputs": ["PetitionNumber"]
+      },
+      "ui": {
+        "x": 420,
+        "y": 0
+      }
+    },
+    {
+      "id": "log_ok",
+      "kind": "action",
+      "label": "Log protocolo",
+      "action": {
+        "type": "log",
+        "message": "superfluxo eproc concluido: protocolo {PetitionNumber} na tela `{ScreenText}`"
+      },
+      "ui": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "id": "log_abort",
+      "kind": "action",
+      "label": "Log tela inesperada",
+      "action": {
+        "type": "log",
+        "message": "superfluxo eproc abortado: tela inesperada `{ScreenText}`"
+      },
+      "ui": {
+        "x": 420,
+        "y": 200
+      }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": {
+        "x": 900,
+        "y": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "rf_login",
+      "port": "main"
+    },
+    {
+      "from": "rf_login",
+      "to": "sw_tela",
+      "port": "main"
+    },
+    {
+      "from": "sw_tela",
+      "to": "case_painel",
+      "port": "then"
+    },
+    {
+      "from": "case_painel",
+      "to": "rf_peticao",
+      "port": "then"
+    },
+    {
+      "from": "case_painel",
+      "to": "def_tela",
+      "port": "else"
+    },
+    {
+      "from": "def_tela",
+      "to": "log_abort",
+      "port": "main"
+    },
+    {
+      "from": "rf_peticao",
+      "to": "log_ok",
+      "port": "main"
+    },
+    {
+      "from": "log_ok",
+      "to": "end",
+      "port": "main"
+    },
+    {
+      "from": "log_abort",
+      "to": "end",
+      "port": "main"
+    }
+  ],
+  "variables": {
+    "ScreenText": "",
+    "EprocUrl": "",
+    "EprocUser": "",
+    "PetitionNumber": ""
+  }
+}

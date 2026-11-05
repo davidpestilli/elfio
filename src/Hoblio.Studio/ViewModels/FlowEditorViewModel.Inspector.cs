@@ -345,6 +345,8 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowRunFlowSection));
         OnPropertyChanged(nameof(ShowRunFlowOpenSubflow));
         OnPropertyChanged(nameof(RunFlowId));
+        OnPropertyChanged(nameof(RunFlowProject));
+        OnPropertyChanged(nameof(RunFlowProjectHint));
         OnPropertyChanged(nameof(RunFlowPath));
         OnPropertyChanged(nameof(RunFlowScopeMode));
         OnPropertyChanged(nameof(RunFlowShareBrowser));
@@ -551,6 +553,7 @@ public sealed partial class FlowEditorViewModel
         {
             RunFlowAction a => new RunFlowAction
             {
+                Project = a.Project,
                 FlowId = index == 1 ? value : a.FlowId,
                 Path = index == 2 ? value : a.Path,
                 Outputs = index == 3

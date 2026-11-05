@@ -260,11 +260,10 @@
     {
       "id": "action_mvsnv0r6",
       "kind": "action",
-      "label": "show message",
+      "label": "Painel do Advogado (handoff)",
       "action": {
-        "type": "show_message",
-        "title": "Hoblio",
-        "text": "Painel do Advogado"
+        "type": "log",
+        "message": "Painel do Advogado — tela pronta para o proximo fluxo"
       },
       "ui": {
         "x": 140,

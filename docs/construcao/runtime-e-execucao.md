@@ -56,7 +56,7 @@ flowchart TB
 1. Carregar projeto (`ProjectLoader.LoadProject`).
 2. Validar grafo e projeto (`GraphValidator.ValidateProject` — inclui refs `{variável}` conhecidas).
 3. Reset de cancelamento (`RunCancel.Reset`).
-4. Abrir contexto de browser único por run (`BrowserContext`), compartilhável com subfluxos quando `run_flow.share_browser` não isola sessão.
+4. Abrir contexto de browser único por run (`BrowserContext`). **Todo `run_flow` — subfluxo ou fluxo de outro projeto — executa nesse mesmo contexto**, portanto na mesma sessão/tela; `share_browser` ainda não é lido pelo runtime.
 5. Emitir `RunStarted`.
 6. Percorrer o grafo a partir de `start`, nó a nó:
    - **Start / End** — marca entrada/saída.
@@ -77,7 +77,7 @@ Limite de segurança: **10 000 visitas de nó** (`MaxNodeVisits`) para detecta
 | **Controle de fluxo** | `if`, `switch`, `case`, `case_default`, `for_each`, `while_loop`, `repeat`, `next_loop`, `exit_loop` | Lógica em `FlowExecutor` + `ExpressionEvaluator` | Não requer módulo externo |
 | **Ação** | `kind: action` | `ActionExecutor.Execute` (+ política de erro) | Catálogo fixo hoje; extensível via módulos |
 
-Subfluxo (`run_flow`) é **ação especial**: resolvida em `FlowExecutor` (profundidade máxima, escopo de variáveis `inherit` vs `isolated`, merge de inputs/outputs).
+Subfluxo (`run_flow`) é **ação especial**: resolvida em `FlowExecutor` (profundidade máxima, escopo de variáveis `inherit` vs `isolated`, merge de inputs/outputs). Com `project`, o alvo é o fluxo principal de outro projeto declarado em `manifest.linked_projects` — mesma execução, mesmo browser/variáveis, raiz de arquivos e manifest do projeto chamado. Ver [composicao-superfluxos.md](./composicao-superfluxos.md).
 
 ---
 

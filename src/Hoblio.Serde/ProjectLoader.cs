@@ -124,6 +124,7 @@ public static class ProjectLoader
     {
         var project = LoadProject(dir);
         GraphValidator.ValidateProject(project);
+        LinkedProjectValidator.Validate(project, dir);
     }
 
     /// <summary>Recompute <see cref="FlowManifest.ModuleReferences"/> from graphs on disk and save manifest if changed.</summary>

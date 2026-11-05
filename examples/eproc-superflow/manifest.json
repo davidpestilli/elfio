@@ -1,0 +1,51 @@
+{
+  "name": "eproc-superflow",
+  "version": "0.1.0",
+  "description": "Superfluxo eproc: login (sessao e perfil) e peticionamento no MESMO run, na mesma sessao de navegador",
+  "entry_flow": "flow.json",
+  "linked_projects": {
+    "login": {
+      "path": "../login-eproc",
+      "description": "Login e selecao de perfil; termina no painel do advogado",
+      "exports": [
+        "ScreenText",
+        "EprocUrl",
+        "EprocUser"
+      ]
+    },
+    "peticionar": {
+      "path": "../eproc-peticionamento",
+      "description": "Assume o painel logado e protocola",
+      "requires": [
+        "ScreenText",
+        "EprocUrl",
+        "EprocUser"
+      ],
+      "exports": [
+        "PetitionNumber"
+      ]
+    }
+  },
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "Conditionals",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "FlowControl",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

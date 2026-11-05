@@ -31,6 +31,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Excel COM (`excel_*`, 41 ações) | — | ✓ | `excel-demo-flow` (manual + Excel instalado) |
 | Word COM (`word_*`, 8 ações) | — | ✓ | `word-demo-flow` (manual + Word instalado) |
 | HOBLIO_CHROME_PATH / HOBLIO_BROWSER_DEBUG_* | ✓ | ✓ | ChromiumLocator / attach CDP |
+| Composição de fluxos principais (`run_flow.project` + `linked_projects`) | — | ✓ | `SuperflowTests`, `superflow-demo` |
 | Cancel run | ✓ | ✓ | API `RunCancel` (Studio a expor) |
 
 ## CLI

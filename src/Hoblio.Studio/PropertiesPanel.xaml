@@ -692,7 +692,16 @@
             </StackPanel>
 
             <StackPanel Visibility="{Binding ShowRunFlowSection, Converter={StaticResource BoolVis}}">
-              <TextBlock Text="Flow id (manifest.flows)" Style="{StaticResource FieldLabel}"/>
+              <TextBlock Text="Projeto vinculado (manifest.linked_projects)" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding RunFlowProjectIds}"
+                        Text="{Binding RunFlowProject, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,4"/>
+              <TextBlock Text="{Binding RunFlowProjectHint}" TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,6"/>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Button Content="Vincular projeto…" Command="{Binding LinkRunFlowProjectCommand}" Margin="0,0,6,0" Padding="6,2"/>
+                <Button Content="Novo vinculado…" Command="{Binding CreateLinkedProjectCommand}" Padding="6,2"/>
+              </StackPanel>
+              <TextBlock Text="Flow id (manifest.flows do projeto, ou subfluxo embutido)" Style="{StaticResource FieldLabel}"/>
               <ComboBox ItemsSource="{Binding RunFlowTargetIds}"
                         Text="{Binding RunFlowId, UpdateSourceTrigger=PropertyChanged}"
                         IsEditable="True" Margin="0,0,0,10"/>

@@ -198,6 +198,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 VariablesActionJson.Write(writer, a);
                 break;
             case RunFlowAction a:
+                WriteOptionalString(writer, "project", a.Project);
                 WriteOptionalString(writer, "flow_id", a.FlowId);
                 WriteOptionalString(writer, "path", a.Path);
                 if (a.Inputs is { Count: > 0 })
@@ -254,6 +255,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
         }
         return new RunFlowAction
         {
+            Project = GetString(root, "project"),
             FlowId = GetString(root, "flow_id"),
             Path = GetString(root, "path"),
             Inputs = inputs,

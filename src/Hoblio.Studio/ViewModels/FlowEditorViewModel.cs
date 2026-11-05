@@ -762,12 +762,20 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Validação de projeto: grafo/modelo + vínculos <c>linked_projects</c> (disco).</summary>
+    void ValidateProjectGraph()
+    {
+        GraphValidator.ValidateProject(_project);
+        if (!string.IsNullOrWhiteSpace(_projectDir))
+            LinkedProjectValidator.Validate(_project, _projectDir);
+    }
+
     void Validate()
     {
         try
         {
             SyncUiToProject();
-            GraphValidator.ValidateProject(_project);
+            ValidateProjectGraph();
             SetStatus("Fluxo válido");
             MessageBox.Show("Fluxo válido.", "Validação", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -785,7 +793,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         SyncUiToProject();
         try
         {
-            GraphValidator.ValidateProject(_project);
+            ValidateProjectGraph();
         }
         catch (ValidationException ex)
         {

@@ -46,6 +46,7 @@ try {
         "resilience-demo",
         "flow-compose-subflow",
         "flow-compose-demo",
+        "superflow-demo",
         "web-demo-flow",
         "browser-demo-flow"
     )

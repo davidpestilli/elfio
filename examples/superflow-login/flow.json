@@ -1,0 +1,90 @@
+{
+  "start": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": {
+        "x": 80,
+        "y": 120
+      }
+    },
+    {
+      "id": "set_screen",
+      "kind": "action",
+      "label": "Tela inicial logada",
+      "action": {
+        "type": "set_variable",
+        "variable": "ScreenText",
+        "value": "Painel do Advogado"
+      },
+      "ui": {
+        "x": 300,
+        "y": 120
+      }
+    },
+    {
+      "id": "set_user",
+      "kind": "action",
+      "label": "Usuario da sessao",
+      "action": {
+        "type": "set_variable",
+        "variable": "SessionUser",
+        "value": "advogado.demo"
+      },
+      "ui": {
+        "x": 520,
+        "y": 120
+      }
+    },
+    {
+      "id": "log_ready",
+      "kind": "action",
+      "label": "Log login",
+      "action": {
+        "type": "log",
+        "message": "sessao pronta em `{ScreenText}` (usuario {SessionUser})"
+      },
+      "ui": {
+        "x": 740,
+        "y": 120
+      }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": {
+        "x": 960,
+        "y": 120
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "set_screen",
+      "port": "main"
+    },
+    {
+      "from": "set_screen",
+      "to": "set_user",
+      "port": "main"
+    },
+    {
+      "from": "set_user",
+      "to": "log_ready",
+      "port": "main"
+    },
+    {
+      "from": "log_ready",
+      "to": "end",
+      "port": "main"
+    }
+  ],
+  "variables": {
+    "ScreenText": "",
+    "SessionUser": ""
+  }
+}

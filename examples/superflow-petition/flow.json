@@ -1,0 +1,90 @@
+{
+  "start": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": {
+        "x": 80,
+        "y": 120
+      }
+    },
+    {
+      "id": "log_assume",
+      "kind": "action",
+      "label": "Assume a tela recebida",
+      "action": {
+        "type": "log",
+        "message": "assumindo a tela `{ScreenText}` do usuario {SessionUser}"
+      },
+      "ui": {
+        "x": 300,
+        "y": 120
+      }
+    },
+    {
+      "id": "set_petition",
+      "kind": "action",
+      "label": "Protocola peticao",
+      "action": {
+        "type": "set_variable",
+        "variable": "PetitionNumber",
+        "value": "PET-2026-0001"
+      },
+      "ui": {
+        "x": 520,
+        "y": 120
+      }
+    },
+    {
+      "id": "log_done",
+      "kind": "action",
+      "label": "Log protocolo",
+      "action": {
+        "type": "log",
+        "message": "peticionamento protocolado: {PetitionNumber}"
+      },
+      "ui": {
+        "x": 740,
+        "y": 120
+      }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": {
+        "x": 960,
+        "y": 120
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "log_assume",
+      "port": "main"
+    },
+    {
+      "from": "log_assume",
+      "to": "set_petition",
+      "port": "main"
+    },
+    {
+      "from": "set_petition",
+      "to": "log_done",
+      "port": "main"
+    },
+    {
+      "from": "log_done",
+      "to": "end",
+      "port": "main"
+    }
+  ],
+  "variables": {
+    "ScreenText": "",
+    "SessionUser": "",
+    "PetitionNumber": ""
+  }
+}

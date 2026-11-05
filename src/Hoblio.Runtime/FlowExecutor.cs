@@ -43,6 +43,8 @@ public static partial class FlowExecutor
         CancellationToken cancellationToken = default)
     {
         GraphValidator.ValidateProject(project);
+        if (!string.IsNullOrWhiteSpace(projectRoot))
+            LinkedProjectValidator.Validate(project, projectRoot);
         RunCancel.Reset();
         using var browser = new BrowserContext();
         using var excel = new ExcelContext();
@@ -69,7 +71,7 @@ public static partial class FlowExecutor
         Emit(new RunEvent.RunStarted(project.Manifest.Name));
 
         var runVars = RunVariables.SeedFromProject(project.Variables);
-        var flowCache = new Dictionary<string, LoadedFlowFile>(StringComparer.OrdinalIgnoreCase);
+        var flowCache = new ChildFlowCache();
         var visits = 0;
         var telemetry = new RunTelemetry();
         var endNode = ExecuteGraph(
@@ -105,7 +107,7 @@ public static partial class FlowExecutor
         WordContext word,
         RunVariables runVars,
         List<object> loopFrames,
-        Dictionary<string, LoadedFlowFile> flowCache,
+        ChildFlowCache flowCache,
         ref int visits,
         RunTelemetry telemetry,
         Action<RunEvent> emit,
@@ -151,9 +153,8 @@ public static partial class FlowExecutor
                     if (node.Action is RunFlowAction runFlow)
                     {
                         var resolved = ChildFlowResolver.Resolve(projectRoot, manifest, resolveGraph, runFlow, flowCache);
-                        var childLabel = !string.IsNullOrWhiteSpace(runFlow.FlowId)
-                            ? runFlow.FlowId.Trim()
-                            : resolved.Label;
+                        // Label do resolvedor: `subflow:x`, `flow_id`, caminho, ou `projeto:fluxo` para projeto vinculado.
+                        var childLabel = resolved.Label;
                         var scope = runFlow.VariableScope ?? RunFlowVariableScope.Inherit;
                         emit(new RunEvent.FlowStarted(childLabel, node.Id));
                         string endNode;
@@ -169,8 +170,8 @@ public static partial class FlowExecutor
                                 resolved.Graph,
                                 childLabel,
                                 depth + 1,
-                                manifest,
-                                projectRoot,
+                                resolved.Manifest,
+                                resolved.ProjectRoot,
                                 browser,
                                 excel,
                                 word,
@@ -191,8 +192,8 @@ public static partial class FlowExecutor
                                 resolved.Graph,
                                 childLabel,
                                 depth + 1,
-                                manifest,
-                                projectRoot,
+                                resolved.Manifest,
+                                resolved.ProjectRoot,
                                 browser,
                                 excel,
                                 word,

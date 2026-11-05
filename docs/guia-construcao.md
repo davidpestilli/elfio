@@ -180,6 +180,49 @@ dotnet run --project src/Hoblio.Studio
 
 Detalhe de interpretação Switch/Case: [construcao/runtime-e-execucao.md](construcao/runtime-e-execucao.md). Catálogo `Conditionals`: [construcao/catalogo-acoes-e-modulos.md](construcao/catalogo-acoes-e-modulos.md).
 
+## Rodada nov/2026 — Composição de fluxos principais (superfluxo)
+
+`run_flow` passou a resolver o fluxo principal de **outro projeto** (`project` + `manifest.linked_projects`), no mesmo run e na mesma sessão do navegador. Estudo, alternativas e roteiro: [construcao/composicao-superfluxos.md](construcao/composicao-superfluxos.md).
+
+### Modelo, serde e runtime
+
+| Área | Mudança |
+|------|---------|
+| **Modelo** | `RunFlowAction.Project`; `FlowManifest.LinkedProjects` (`LinkedProject { path, flow?, description?, requires?, exports? }`). |
+| **Validação** | `GraphValidator.ValidateLinkedProjects` (id declarado, nomes do contrato); `TemplateReferenceValidator` aceita `exports` como variáveis conhecidas e varre subfluxos embutidos. |
+| **Serde** | `ChildFlowResolver` resolve projeto vinculado (path relativo, fluxo de entrada, cache `ChildFlowCache`); novo `LinkedProjectValidator` (disco, ciclo, profundidade). |
+| **Runtime** | `ResolvedChildFlow` carrega `Manifest`/`ProjectRoot` do filho — antes o filho herdava manifest e raiz do pai; rótulo de log `projeto:fluxo`. |
+| **Studio** | Campo **Projeto vinculado** no inspector de `run_flow` + botões **Vincular projeto…** (pasta existente) e **Novo vinculado…** (cria projeto mínimo Start→End e vincula); dica mostrando caminho/contrato. Lógica pura em `LinkedProjectOps`. |
+
+### Exemplo e testes
+
+| Área | Mudança |
+|------|---------|
+| **`examples/superflow-demo`** | Superfluxo que chama `superflow-login` e `superflow-petition` (fluxos principais separados), com `switch` sobre a tela herdada. |
+| **`examples/eproc-superflow` + `examples/eproc-peticionamento`** | Encadeamento real: `login-eproc` (chamado) → peticionamento (chamado). O peticionamento executa as etapas 1–2 de 4 (menu → localidade/rito/área/classe → "Não se aplica" → próxima → filtro de assunto + Enter → seleciona → Incluir → próxima) e para antes de protocolar. Ver [construcao/fluxo-eproc-peticionamento.md](construcao/fluxo-eproc-peticionamento.md). |
+| **`examples/login-eproc`** | Nó final `show_message` → `log`: modal bloqueava qualquer cadeia (ponto de handoff). |
+| **Testes** | `SuperflowTests` (herança, `isolated`, vínculo ausente, caminho inválido, ciclo, `exports`, JSON, `entry_flow`), `LinkedProjectManifestTests`, `LinkedProjectOpsTests` (caminho relativo, id único, scaffold). |
+
+### Verificação
+
+```powershell
+dotnet build Hoblio.sln
+dotnet test
+dotnet run --project src/Hoblio.Cli -- validate examples/superflow-demo
+dotnet run --project src/Hoblio.Cli -- run examples/superflow-demo
+dotnet run --project src/Hoblio.Cli -- validate examples/eproc-superflow
+```
+
+Notas de motor descobertas ao montar o fluxo eproc (valem para qualquer `browser_*`):
+
+| Armadilha | Regra |
+|-----------|-------|
+| `browser_execute_script` + interpolador `{var}` | o script **não pode conter `{` nem `}`** — usar arrays/`Object.fromEntries` no lugar de object literals |
+| `dropdown_mode: by_index` | índice **0-based**: `option:nth-child(N)` → `N-1`; preferir `by_value`/`by_text` quando o valor é conhecido |
+| tecla (Enter, Tab) | **não existe ação de teclado**; `browser_press_button` é clique. Alternativa: `browser_execute_script` com `KeyboardEvent` |
+| `browser_click` com `wait_for_navigation` | retorna cedo se a página já está estável — usar sempre `wait_selector_after` como sinal real |
+| selects encadeados (AJAX) | `browser_set_dropdown` dispara `change`; ainda assim usar `error_handling.retry_*` para listas que populam depois |
+
 ## Projetos de fluxo
 
 Os demos ficam em `examples/` (mesmo JSON do [Hoblio Rust](https://github.com/davidpestilli/hoblio)). Variável opcional `HOBLIO_EXAMPLES_ROOT` para apontar outra pasta.

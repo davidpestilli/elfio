@@ -21,6 +21,7 @@ public static class SubflowDocumentOps
                 continue;
             node.Action = new RunFlowAction
             {
+                Project = rf.Project,
                 FlowId = newId,
                 Path = rf.Path,
                 Inputs = rf.Inputs,

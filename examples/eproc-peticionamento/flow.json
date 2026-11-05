@@ -1,0 +1,428 @@
+{
+  "start": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start (sessao herdada do login)",
+      "ui": {
+        "x": -500,
+        "y": 0
+      }
+    },
+    {
+      "id": "wait_menu",
+      "kind": "action",
+      "label": "Assume a tela (menu do painel)",
+      "action": {
+        "type": "browser_wait_for",
+        "selector": "#main-menu > li:nth-child(16) > a",
+        "timeout_ms": 20000
+      },
+      "ui": {
+        "x": -260,
+        "y": 0
+      }
+    },
+    {
+      "id": "log_handoff",
+      "kind": "action",
+      "label": "Log handoff",
+      "action": {
+        "type": "log",
+        "message": "peticionamento: assumi a tela `{ScreenText}` (usuario {EprocUser})"
+      },
+      "ui": {
+        "x": -20,
+        "y": 0
+      }
+    },
+    {
+      "id": "click_menu",
+      "kind": "action",
+      "label": "1. Abre o peticionamento",
+      "action": {
+        "type": "browser_click",
+        "selector": "#main-menu > li:nth-child(16) > a",
+        "timeout_ms": 20000,
+        "wait_for_navigation": true,
+        "wait_selector_after": "#selLocalidadeJudicial",
+        "wait_after_timeout_ms": 20000
+      },
+      "ui": {
+        "x": 220,
+        "y": 0
+      }
+    },
+    {
+      "id": "sel_localidade",
+      "kind": "action",
+      "label": "2. Localidade: Sao Paulo - Regional VIII - Tatuape",
+      "action": {
+        "type": "browser_set_dropdown",
+        "selector": "#selLocalidadeJudicial",
+        "dropdown_mode": "by_value",
+        "dropdown_value": "8",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 460,
+        "y": 0
+      }
+    },
+    {
+      "id": "sel_rito",
+      "kind": "action",
+      "label": "3. Rito (option 3)",
+      "action": {
+        "type": "browser_set_dropdown",
+        "selector": "#selRitoProcesso",
+        "dropdown_mode": "by_index",
+        "dropdown_value": "2",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 700,
+        "y": 0
+      },
+      "error_handling": {
+        "retry_count": 2,
+        "retry_delay_ms": 1200
+      }
+    },
+    {
+      "id": "sel_area",
+      "kind": "action",
+      "label": "4. Area: Civel (option 3)",
+      "action": {
+        "type": "browser_set_dropdown",
+        "selector": "#selIdGrupoCompetencia",
+        "dropdown_mode": "by_index",
+        "dropdown_value": "2",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 940,
+        "y": 0
+      },
+      "error_handling": {
+        "retry_count": 2,
+        "retry_delay_ms": 1200
+      }
+    },
+    {
+      "id": "sel_classe",
+      "kind": "action",
+      "label": "5. Classe: Peticao Civel (option 56)",
+      "action": {
+        "type": "browser_set_dropdown",
+        "selector": "#selIdClasseJudicial",
+        "dropdown_mode": "by_index",
+        "dropdown_value": "55",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 1180,
+        "y": 0
+      },
+      "error_handling": {
+        "retry_count": 4,
+        "retry_delay_ms": 1500
+      }
+    },
+    {
+      "id": "wait_load_classe",
+      "kind": "action",
+      "label": "Aguarda carga da classe",
+      "action": {
+        "type": "delay",
+        "milliseconds": 2500
+      },
+      "ui": {
+        "x": 1420,
+        "y": 0
+      }
+    },
+    {
+      "id": "check_nao_aplica",
+      "kind": "action",
+      "label": "6. Marca Nao se aplica",
+      "action": {
+        "type": "browser_set_checkbox",
+        "selector": "#chkNaoAplicaValor",
+        "checked": true,
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 1660,
+        "y": 0
+      },
+      "error_handling": {
+        "retry_count": 2,
+        "retry_delay_ms": 1000
+      }
+    },
+    {
+      "id": "click_proxima",
+      "kind": "action",
+      "label": "7. Proxima (btnSalvar)",
+      "action": {
+        "type": "browser_click",
+        "selector": "#btnSalvar",
+        "timeout_ms": 20000,
+        "wait_for_navigation": true,
+        "wait_selector_after": "#txtFiltroPesquisa",
+        "wait_after_timeout_ms": 20000
+      },
+      "ui": {
+        "x": 1900,
+        "y": 0
+      }
+    },
+    {
+      "id": "fill_filtro",
+      "kind": "action",
+      "label": "8. Filtra assunto 02200307",
+      "action": {
+        "type": "browser_fill",
+        "selector": "#txtFiltroPesquisa",
+        "text": "02200307",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 2140,
+        "y": 0
+      }
+    },
+    {
+      "id": "press_enter",
+      "kind": "action",
+      "label": "8b. Enter no filtro",
+      "action": {
+        "type": "browser_execute_script",
+        "timeout_ms": 15000,
+        "script": "(el => (el.focus(), ['keydown','keypress','keyup'].forEach(t => el.dispatchEvent(new KeyboardEvent(t, Object.fromEntries([['key','Enter'],['code','Enter'],['keyCode',13],['which',13],['bubbles',true],['cancelable',true]])))), 'enter enviado'))(document.querySelector('#txtFiltroPesquisa'))",
+        "variable": "FiltroAssuntoResultado"
+      },
+      "ui": {
+        "x": 2380,
+        "y": 0
+      }
+    },
+    {
+      "id": "wait_assunto",
+      "kind": "action",
+      "label": "8c. Aguarda assunto na arvore",
+      "action": {
+        "type": "browser_wait_for",
+        "selector": "[id='02200307_anchor'] > span > span",
+        "timeout_ms": 30000,
+        "wait_visible": true
+      },
+      "ui": {
+        "x": 2620,
+        "y": 0
+      }
+    },
+    {
+      "id": "click_assunto",
+      "kind": "action",
+      "label": "8d. Seleciona o assunto",
+      "action": {
+        "type": "browser_click",
+        "selector": "[id='02200307_anchor'] > span > span",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 2860,
+        "y": 0
+      }
+    },
+    {
+      "id": "click_incluir",
+      "kind": "action",
+      "label": "9. Incluir assunto",
+      "action": {
+        "type": "browser_click",
+        "selector": "#btnIncluirAssunto",
+        "timeout_ms": 15000
+      },
+      "ui": {
+        "x": 3100,
+        "y": 0
+      }
+    },
+    {
+      "id": "wait_incluir",
+      "kind": "action",
+      "label": "Aguarda load do Incluir",
+      "action": {
+        "type": "delay",
+        "milliseconds": 1500
+      },
+      "ui": {
+        "x": 3340,
+        "y": 0
+      }
+    },
+    {
+      "id": "click_etapa2",
+      "kind": "action",
+      "label": "10. Proxima (sbmProcessoEtapa2)",
+      "action": {
+        "type": "browser_click",
+        "selector": "#sbmProcessoEtapa2",
+        "timeout_ms": 20000,
+        "wait_for_navigation": true
+      },
+      "ui": {
+        "x": 3580,
+        "y": 0
+      }
+    },
+    {
+      "id": "shot_etapa2",
+      "kind": "action",
+      "label": "Screenshot da fase 3 (debug)",
+      "action": {
+        "type": "browser_screenshot",
+        "path": "output/eproc-fase3.png"
+      },
+      "ui": {
+        "x": 3820,
+        "y": 0
+      }
+    },
+    {
+      "id": "log_parcial",
+      "kind": "action",
+      "label": "Log: fases 3-4 pendentes",
+      "action": {
+        "type": "log",
+        "message": "eproc: etapas 1-2 concluidas — peticao NAO protocolada (fases 3 e 4 ainda nao mapeadas)"
+      },
+      "ui": {
+        "x": 4060,
+        "y": 0
+      }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": {
+        "x": 4300,
+        "y": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "wait_menu",
+      "port": "main"
+    },
+    {
+      "from": "wait_menu",
+      "to": "log_handoff",
+      "port": "main"
+    },
+    {
+      "from": "log_handoff",
+      "to": "click_menu",
+      "port": "main"
+    },
+    {
+      "from": "click_menu",
+      "to": "sel_localidade",
+      "port": "main"
+    },
+    {
+      "from": "sel_localidade",
+      "to": "sel_rito",
+      "port": "main"
+    },
+    {
+      "from": "sel_rito",
+      "to": "sel_area",
+      "port": "main"
+    },
+    {
+      "from": "sel_area",
+      "to": "sel_classe",
+      "port": "main"
+    },
+    {
+      "from": "sel_classe",
+      "to": "wait_load_classe",
+      "port": "main"
+    },
+    {
+      "from": "wait_load_classe",
+      "to": "check_nao_aplica",
+      "port": "main"
+    },
+    {
+      "from": "check_nao_aplica",
+      "to": "click_proxima",
+      "port": "main"
+    },
+    {
+      "from": "click_proxima",
+      "to": "fill_filtro",
+      "port": "main"
+    },
+    {
+      "from": "fill_filtro",
+      "to": "press_enter",
+      "port": "main"
+    },
+    {
+      "from": "press_enter",
+      "to": "wait_assunto",
+      "port": "main"
+    },
+    {
+      "from": "wait_assunto",
+      "to": "click_assunto",
+      "port": "main"
+    },
+    {
+      "from": "click_assunto",
+      "to": "click_incluir",
+      "port": "main"
+    },
+    {
+      "from": "click_incluir",
+      "to": "wait_incluir",
+      "port": "main"
+    },
+    {
+      "from": "wait_incluir",
+      "to": "click_etapa2",
+      "port": "main"
+    },
+    {
+      "from": "click_etapa2",
+      "to": "shot_etapa2",
+      "port": "main"
+    },
+    {
+      "from": "shot_etapa2",
+      "to": "log_parcial",
+      "port": "main"
+    },
+    {
+      "from": "log_parcial",
+      "to": "end",
+      "port": "main"
+    }
+  ],
+  "variables": {
+    "ScreenText": "",
+    "EprocUrl": "",
+    "EprocUser": "",
+    "PetitionNumber": "",
+    "FiltroAssuntoResultado": ""
+  }
+}
