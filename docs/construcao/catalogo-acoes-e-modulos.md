@@ -33,12 +33,7 @@ Convenções:
 | `file_write` | Arquivos | `File` | `WriteText` | — |
 | `file_append` | Arquivos | `File` | `AppendLine` | — |
 | `file_read` | Arquivos | `File` | `ReadText` | `variable` |
-| `browser_navigate` | Browser | `WebAutomation` | `LaunchChromeBase` | — |
-| `browser_click` | Browser | `WebAutomation` | `ClickBase` | — |
-| `browser_wait_navigation` | Browser | `WebAutomation` | `WaitForPageToLoadBase` | — |
-| `browser_fill` | Browser | `WebAutomation` | `PopulateTextFieldBase` | — |
-| `browser_wait_for` | Browser | `WebAutomation` | `WaitForElementBase` | — |
-| `browser_get_text` | Browser | `WebAutomation` | `GetDetailsOfElementBase` | `variable` (opcional) |
+| `browser_*` (29 tipos) | Automação do navegador | `WebAutomation` | `LaunchChromeBase`, `AttachToChromeByUrl`, … | ver [modulo-web-automation.md](./modulo-web-automation.md) |
 | `set_variable` | Variáveis | `Variables` | `Assign` | `variable` |
 | `increase_variable` | Variáveis | `Variables` | `IncreaseVariable` | — |
 | `decrease_variable` | Variáveis | `Variables` | `DecreaseVariable` | — |

@@ -52,7 +52,7 @@ public class FlowJsonTests
     {
         var json = """{"type":"browser_get_text","selector":"h1","variable":"title"}""";
         var action = JsonSerializer.Deserialize<ActionKind>(json, HoblioJson.Options);
-        Assert.IsType<BrowserGetTextAction>(action);
+        Assert.IsType<WebAutomationAction>(action);
         var back = JsonSerializer.Serialize(action, HoblioJson.Options);
         Assert.Contains("browser_get_text", back);
     }

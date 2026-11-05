@@ -18,16 +18,32 @@ public class ActionKindTests
     [Fact]
     public void Browser_actions_roundtrip_json()
     {
-        Roundtrip(new BrowserClickAction
+        Roundtrip(new WebAutomationAction
         {
+            Operation = WebAutomationActionTypes.Click,
             Selector = "#go",
             TimeoutMs = 5000,
             WaitForNavigation = true,
         });
-        Roundtrip(new BrowserWaitNavigationAction { TimeoutMs = 8000 });
-        Roundtrip(new BrowserFillAction { Selector = "input[name=q]", Text = "hello" });
-        Roundtrip(new BrowserWaitForAction { Selector = "h1", TimeoutMs = 3000 });
-        Roundtrip(new BrowserGetTextAction { Selector = "h1", Variable = "title" });
+        Roundtrip(new WebAutomationAction { Operation = WebAutomationActionTypes.WaitNavigation, TimeoutMs = 8000 });
+        Roundtrip(new WebAutomationAction
+        {
+            Operation = WebAutomationActionTypes.Fill,
+            Selector = "input[name=q]",
+            Text = "hello",
+        });
+        Roundtrip(new WebAutomationAction
+        {
+            Operation = WebAutomationActionTypes.WaitFor,
+            Selector = "h1",
+            TimeoutMs = 3000,
+        });
+        Roundtrip(new WebAutomationAction
+        {
+            Operation = WebAutomationActionTypes.GetText,
+            Selector = "h1",
+            Variable = "title",
+        });
     }
 
     [Fact]
@@ -35,13 +51,14 @@ public class ActionKindTests
     {
         var json = """{"type":"browser_navigate","url":"https://example.com"}""";
         var action = JsonSerializer.Deserialize<ActionKind>(json, HoblioJson.Options);
-        var nav = Assert.IsType<BrowserNavigateAction>(action);
+        var nav = Assert.IsType<WebAutomationAction>(action);
         Assert.Equal("https://example.com", nav.Url);
         Assert.Null(nav.WaitMs);
         Assert.Null(nav.ShowOnScreen);
 
-        var withFlag = new BrowserNavigateAction
+        var withFlag = new WebAutomationAction
         {
+            Operation = WebAutomationActionTypes.Navigate,
             Url = "https://example.com",
             WaitMs = 100,
             ShowOnScreen = false,
@@ -57,10 +74,28 @@ public class ActionKindTests
     {
         var json = """{"type":"browser_get_text","selector":"h1"}""";
         var action = JsonSerializer.Deserialize<ActionKind>(json, HoblioJson.Options);
-        var getText = Assert.IsType<BrowserGetTextAction>(action);
+        var getText = Assert.IsType<WebAutomationAction>(action);
         Assert.Equal("h1", getText.Selector);
         Assert.Null(getText.TimeoutMs);
         Assert.Null(getText.Variable);
+    }
+
+    [Fact]
+    public void Web_automation_new_actions_roundtrip()
+    {
+        Roundtrip(new WebAutomationAction
+        {
+            Operation = WebAutomationActionTypes.ExecuteScript,
+            Script = "1+1",
+            Variable = "r",
+        });
+        Roundtrip(new WebAutomationAction
+        {
+            Operation = WebAutomationActionTypes.SetDropdown,
+            Selector = "select",
+            DropdownMode = WebAutomationEnums.DropdownMode.ByIndex,
+            DropdownValue = "0",
+        });
     }
 
     [Fact]

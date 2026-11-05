@@ -7,7 +7,6 @@ static class WordPaletteCatalog
     public static PaletteGroup Group => new()
     {
         Name = "Word",
-        DefaultExpanded = true,
         Items =
         [
             Entry(WordActionTypes.Launch, "Iniciar o Word", "LaunchWord Launch", "Novo documento ou abrir ficheiro"),

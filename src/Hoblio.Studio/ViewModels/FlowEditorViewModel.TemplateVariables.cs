@@ -93,11 +93,11 @@ public sealed partial class FlowEditorViewModel
             case "SelectFromListItems":
                 SelectFromListItems = SelectFromListItems + token;
                 break;
-            case "BrowserFillText":
-                BrowserFillText = BrowserFillText + token;
+            case "WebText":
+                WebText = WebText + token;
                 break;
-            case "BrowserNavigateUrl":
-                BrowserNavigateUrl = BrowserNavigateUrl + token;
+            case "WebUrl":
+                WebUrl = WebUrl + token;
                 break;
             case "RunFlowInputsText":
                 RunFlowInputsText = RunFlowInputsText + token;

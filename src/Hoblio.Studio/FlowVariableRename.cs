@@ -57,38 +57,10 @@ public static class FlowVariableRename
     static ActionKind RenameInAction(ActionKind action, string oldName, string newName) => action switch
     {
         LogAction a => new LogAction { Message = ReplaceTemplates(a.Message, oldName, newName) },
-        BrowserNavigateAction a => new BrowserNavigateAction
-        {
-            Url = ReplaceTemplates(a.Url, oldName, newName),
-            WaitMs = a.WaitMs,
-            ShowOnScreen = a.ShowOnScreen,
-            StartMaximized = a.StartMaximized,
-        },
-        BrowserClickAction a => new BrowserClickAction
-        {
-            Selector = ReplaceTemplates(a.Selector, oldName, newName),
-            TimeoutMs = a.TimeoutMs,
-            WaitForNavigation = a.WaitForNavigation,
-            WaitSelectorAfter = a.WaitSelectorAfter is null ? null : ReplaceTemplates(a.WaitSelectorAfter, oldName, newName),
-            WaitAfterTimeoutMs = a.WaitAfterTimeoutMs,
-        },
-        BrowserFillAction a => new BrowserFillAction
-        {
-            Selector = ReplaceTemplates(a.Selector, oldName, newName),
-            Text = ReplaceTemplates(a.Text, oldName, newName),
-            TimeoutMs = a.TimeoutMs,
-        },
-        BrowserWaitForAction a => new BrowserWaitForAction
-        {
-            Selector = ReplaceTemplates(a.Selector, oldName, newName),
-            TimeoutMs = a.TimeoutMs,
-        },
-        BrowserGetTextAction a => new BrowserGetTextAction
-        {
-            Selector = ReplaceTemplates(a.Selector, oldName, newName),
-            TimeoutMs = a.TimeoutMs,
-            Variable = ReplaceVarName(a.Variable, oldName, newName),
-        },
+        WebAutomationAction w => WebAutomationActionMutator.RenameReferences(
+            w,
+            s => ReplaceTemplates(s, oldName, newName),
+            v => ReplaceVarName(v, oldName, newName)),
         FileWriteAction a => new FileWriteAction
         {
             Path = ReplaceTemplates(a.Path, oldName, newName),

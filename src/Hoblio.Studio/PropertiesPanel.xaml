@@ -388,47 +388,55 @@
               <TextBlock Text="Amount (optional, default 1)" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding AdjustVariableAmountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
             </StackPanel>
-            <StackPanel Visibility="{Binding ShowActionBrowserNavigate, Converter={StaticResource BoolVis}}">
+            <StackPanel Visibility="{Binding ShowActionWebAutomation, Converter={StaticResource BoolVis}}">
               <TextBlock Text="URL" Style="{StaticResource FieldLabel}"/>
-              <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding BrowserNavigateUrl, UpdateSourceTrigger=PropertyChanged}"
-                        IsEditable="True" Margin="0,0,0,10"/>
-              <local:TemplateVariableChips FieldKey="BrowserNavigateUrl" DataContext="{Binding}"/>
-              <TextBlock Text="Wait (ms)" Style="{StaticResource FieldLabel}"/>
-              <TextBox Text="{Binding BrowserNavigateWaitMsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              <CheckBox Content="Abrir o navegador na tela" IsChecked="{Binding BrowserNavigateShowOnScreen}" Margin="0,0,0,6"/>
-              <CheckBox Content="Maximizar janela" IsChecked="{Binding BrowserNavigateStartMaximized}" Margin="0,0,0,6"
-                        Visibility="{Binding ShowBrowserNavigateMaximizeOption, Converter={StaticResource BoolVis}}"/>
-            </StackPanel>
-            <StackPanel Visibility="{Binding ShowActionBrowserWaitNav, Converter={StaticResource BoolVis}}">
+              <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding WebUrl, UpdateSourceTrigger=PropertyChanged}"
+                        IsEditable="True" Margin="0,0,0,6"/>
+              <local:TemplateVariableChips FieldKey="WebUrl" DataContext="{Binding}"/>
+              <TextBlock Text="Seletor CSS" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebSelector, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
               <TextBlock Text="Timeout (ms)" Style="{StaticResource FieldLabel}"/>
-              <TextBox Text="{Binding BrowserWaitNavTimeoutText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBox Text="{Binding WebTimeoutMsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Espera extra (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebWaitMsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Abrir navegador na tela" IsChecked="{Binding WebShowOnScreen}" Margin="0,4,0,4"/>
+              <CheckBox Content="Maximizar janela" IsChecked="{Binding WebStartMaximized}" Margin="0,0,0,4"
+                        Visibility="{Binding ShowWebMaximizeOption, Converter={StaticResource BoolVis}}"/>
+              <CheckBox Content="Esperar navegação após clique" IsChecked="{Binding WebWaitForNavigation}" Margin="0,0,0,4"/>
+              <CheckBox Content="Esperar elemento visível" IsChecked="{Binding WebWaitVisible}" Margin="0,0,0,4"/>
+              <CheckBox Content="Marcar caixa de seleção" IsChecked="{Binding WebChecked}" Margin="0,0,0,6"/>
+              <TextBlock Text="Texto / conteúdo" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="JavaScript" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebScript, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" FontFamily="Consolas" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Caminho (screenshot / download)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Detalhe (page: url|title|all; element: text|value|href…)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebDetail, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Modo preenchimento (replace|append)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebPopulateMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Modo espera conteúdo (contains_text|not_contains_text|contains_element|not_contains_element)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebWaitContentMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Lista suspensa (by_text|by_index|by_value)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebDropdownMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Valor da lista suspensa" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebDropdownValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Motor (chrome|edge)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebBrowserEngine, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Anexar: modo (by_url|by_title|foreground)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebAttachMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Porta CDP (opcional, ex. 9222)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebDebuggingPortText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Seletor após clique (opcional)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebWaitSelectorAfter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Timeout pós-clique (ms)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebWaitAfterTimeoutText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variável de saída" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WebVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
             </StackPanel>
             <StackPanel Visibility="{Binding ShowActionDelay, Converter={StaticResource BoolVis}}">
               <TextBlock Text="Milliseconds" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding DelayMillisecondsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-            </StackPanel>
-            <StackPanel Visibility="{Binding ShowActionBrowserDom, Converter={StaticResource BoolVis}}">
-              <TextBlock Text="CSS selector" Style="{StaticResource FieldLabel}"/>
-              <TextBox Text="{Binding BrowserSelector, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              <TextBlock Text="Timeout (ms)" Style="{StaticResource FieldLabel}"/>
-              <TextBox Text="{Binding BrowserTimeoutMsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              <CheckBox Content="Wait for navigation after click" IsChecked="{Binding BrowserClickWaitForNavigation}" Margin="0,0,0,6"
-                        Visibility="{Binding ShowActionBrowserClick, Converter={StaticResource BoolVis}}"/>
-              <StackPanel Visibility="{Binding ShowActionBrowserClick, Converter={StaticResource BoolVis}}">
-                <TextBlock Text="Wait selector after click (optional)" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding BrowserClickWaitSelectorAfter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-                <TextBlock Text="Wait after timeout (ms)" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding BrowserClickWaitAfterTimeoutText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              </StackPanel>
-              <StackPanel Visibility="{Binding ShowActionBrowserFillExtra, Converter={StaticResource BoolVis}}">
-                <TextBlock Text="Text" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding BrowserFillText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
-                <local:TemplateVariableChips FieldKey="BrowserFillText" DataContext="{Binding}"/>
-              </StackPanel>
-              <StackPanel Visibility="{Binding ShowActionBrowserGetTextExtra, Converter={StaticResource BoolVis}}">
-                <TextBlock Text="Output variable" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding BrowserGetTextVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
-              </StackPanel>
             </StackPanel>
 
             <StackPanel Visibility="{Binding ShowActionExcel, Converter={StaticResource BoolVis}}">

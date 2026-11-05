@@ -7,19 +7,16 @@ static class ExcelPaletteCatalog
     public static PaletteGroup Group => new()
     {
         Name = "Excel",
-        DefaultExpanded = true,
         Sections =
         [
             new PaletteSection
             {
                 Name = "Básico",
-                DefaultExpanded = true,
                 Items = BasicItems,
             },
             new PaletteSection
             {
                 Name = "Avançado",
-                DefaultExpanded = false,
                 Items = AdvancedItems,
             },
         ],

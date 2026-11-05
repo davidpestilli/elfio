@@ -25,11 +25,11 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | HTTP GET | ✓ | ✓ | web-demo-flow (manual); C# opcional `variable` no JSON |
 | If / ForEach / While / Repeat | ✓ | ✓ | DemoFlowTests |
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
-| Browser CDP (navigate, click, fill, wait, get_text) | ✓ | ✓ | browser-demo-flow (manual + Chrome) |
+| Browser CDP (`browser_*`, 29 ações PAD + attach) | ✓ | ✓ | browser-demo-flow (manual + Chrome); attach manual + `--remote-debugging-port` |
 | show_message / show_get_user_input / show_select_from_list | ✓ | ✓ | message-timer-demo (manual) |
 | Excel COM (`excel_*`, 41 ações) | — | ✓ | `excel-demo-flow` (manual + Excel instalado) |
 | Word COM (`word_*`, 8 ações) | — | ✓ | `word-demo-flow` (manual + Word instalado) |
-| HOBLIO_CHROME_PATH | ✓ | ✓ | ChromiumLocator |
+| HOBLIO_CHROME_PATH / HOBLIO_BROWSER_DEBUG_* | ✓ | ✓ | ChromiumLocator / attach CDP |
 | Cancel run | ✓ | ✓ | API `RunCancel` (Studio a expor) |
 
 ## CLI
@@ -92,7 +92,7 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | `action.rs` (5 JSON roundtrips) | `ActionKindTests` (5 facts) |
 | `expr` / `variables` / `lists` / `adjust_var` unit | `UnitBehaviorTests` (+3) |
 
-Contagem atual: **54** testes automatizados (`dotnet test` na solution).
+Contagem atual: **78** testes automatizados (`dotnet test` na solution).
 
 Verificação local: `.\scripts\verify-parity.ps1` (Release build + 45 testes + validate nos 9 demos + probe browser).
 

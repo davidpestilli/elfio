@@ -33,8 +33,7 @@ public static class PaletteVisuals
             "http_get" => new Visual("⇄", Parse("#2563EB")),
             "show_message" or "show_get_user_input" or "show_select_from_list" => new Visual("💬", Parse("#8B5CF6")),
             "file_write" or "file_append" or "file_read" => new Visual("📄", Parse("#475569")),
-            "browser_navigate" or "browser_click" or "browser_wait_navigation" or "browser_fill"
-                or "browser_wait_for" or "browser_get_text" => new Visual("🌐", Parse("#2563EB")),
+            var t when t.StartsWith("browser_", StringComparison.Ordinal) => new Visual("🌐", Parse("#2563EB")),
             "set_variable" or "increase_variable" or "decrease_variable" or "list_clear" or "list_append"
                 => new Visual("{}", Parse("#0F766E")),
             "run_flow" => new Visual("⎇", Parse("#4F46E5")),

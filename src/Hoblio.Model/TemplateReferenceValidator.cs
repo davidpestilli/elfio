@@ -82,11 +82,8 @@ public static class TemplateReferenceValidator
     static IEnumerable<string> ActionTemplateStrings(ActionKind action) => action switch
     {
         LogAction a => [a.Message],
-        BrowserNavigateAction a => [a.Url],
-        BrowserClickAction a => Yield(a.Selector, a.WaitSelectorAfter),
-        BrowserFillAction a => [a.Selector, a.Text],
-        BrowserWaitForAction a => [a.Selector],
-        BrowserGetTextAction a => [a.Selector],
+        WebAutomationAction w => Yield(
+            w.Url, w.Selector, w.WaitSelectorAfter, w.Text, w.Script, w.Path, w.DropdownValue, w.Detail),
         FileWriteAction a => [a.Path, a.Content],
         FileAppendAction a => [a.Path, a.Content],
         FileReadAction a => [a.Path],

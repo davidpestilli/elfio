@@ -17,42 +17,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
         {
             "log" => new LogAction { Message = root.GetProperty("message").GetString() ?? "" },
             "no_op" => new NoOpAction(),
-            "browser_navigate" => new BrowserNavigateAction
-            {
-                Url = root.GetProperty("url").GetString() ?? "",
-                WaitMs = GetUInt64(root, "wait_ms"),
-                ShowOnScreen = GetBool(root, "show_on_screen"),
-                StartMaximized = GetBool(root, "start_maximized"),
-            },
-            "browser_click" => new BrowserClickAction
-            {
-                Selector = root.GetProperty("selector").GetString() ?? "",
-                TimeoutMs = GetUInt64(root, "timeout_ms"),
-                WaitForNavigation = GetBool(root, "wait_for_navigation"),
-                WaitSelectorAfter = GetString(root, "wait_selector_after"),
-                WaitAfterTimeoutMs = GetUInt64(root, "wait_after_timeout_ms"),
-            },
-            "browser_wait_navigation" => new BrowserWaitNavigationAction
-            {
-                TimeoutMs = GetUInt64(root, "timeout_ms"),
-            },
-            "browser_fill" => new BrowserFillAction
-            {
-                Selector = root.GetProperty("selector").GetString() ?? "",
-                Text = root.GetProperty("text").GetString() ?? "",
-                TimeoutMs = GetUInt64(root, "timeout_ms"),
-            },
-            "browser_wait_for" => new BrowserWaitForAction
-            {
-                Selector = root.GetProperty("selector").GetString() ?? "",
-                TimeoutMs = GetUInt64(root, "timeout_ms"),
-            },
-            "browser_get_text" => new BrowserGetTextAction
-            {
-                Selector = root.GetProperty("selector").GetString() ?? "",
-                TimeoutMs = GetUInt64(root, "timeout_ms"),
-                Variable = GetString(root, "variable"),
-            },
+            _ when WebAutomationActionTypes.IsWebAutomationType(type) => WebAutomationActionJson.Read(root, type),
             "file_write" => new FileWriteAction
             {
                 Path = root.GetProperty("path").GetString() ?? "",
@@ -150,35 +115,8 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 break;
             case NoOpAction:
                 break;
-            case BrowserNavigateAction a:
-                writer.WriteString("url", a.Url);
-                WriteOptionalUInt64(writer, "wait_ms", a.WaitMs);
-                WriteOptionalBool(writer, "show_on_screen", a.ShowOnScreen);
-                WriteOptionalBool(writer, "start_maximized", a.StartMaximized);
-                break;
-            case BrowserClickAction a:
-                writer.WriteString("selector", a.Selector);
-                WriteOptionalUInt64(writer, "timeout_ms", a.TimeoutMs);
-                WriteOptionalBool(writer, "wait_for_navigation", a.WaitForNavigation);
-                WriteOptionalString(writer, "wait_selector_after", a.WaitSelectorAfter);
-                WriteOptionalUInt64(writer, "wait_after_timeout_ms", a.WaitAfterTimeoutMs);
-                break;
-            case BrowserWaitNavigationAction a:
-                WriteOptionalUInt64(writer, "timeout_ms", a.TimeoutMs);
-                break;
-            case BrowserFillAction a:
-                writer.WriteString("selector", a.Selector);
-                writer.WriteString("text", a.Text);
-                WriteOptionalUInt64(writer, "timeout_ms", a.TimeoutMs);
-                break;
-            case BrowserWaitForAction a:
-                writer.WriteString("selector", a.Selector);
-                WriteOptionalUInt64(writer, "timeout_ms", a.TimeoutMs);
-                break;
-            case BrowserGetTextAction a:
-                writer.WriteString("selector", a.Selector);
-                WriteOptionalUInt64(writer, "timeout_ms", a.TimeoutMs);
-                WriteOptionalString(writer, "variable", a.Variable);
+            case WebAutomationAction a:
+                WebAutomationActionJson.Write(writer, a);
                 break;
             case FileWriteAction a:
                 writer.WriteString("path", a.Path);

@@ -28,4 +28,26 @@ public sealed class PaletteCatalogStructureTests
         Assert.Empty(word.Sections);
         Assert.Equal(8, word.Items.Count);
     }
+
+    [Fact]
+    public void All_palette_groups_and_sections_start_collapsed()
+    {
+        foreach (var group in ActionPaletteCatalog.Groups)
+        {
+            Assert.False(group.DefaultExpanded, $"group `{group.Name}` must start collapsed");
+            foreach (var section in group.Sections)
+                Assert.False(section.DefaultExpanded, $"section `{group.Name}/{section.Name}` must start collapsed");
+        }
+    }
+
+    [Fact]
+    public void Web_automation_group_matches_pad_sections()
+    {
+        var groups = ActionPaletteCatalog.Groups.Where(g => g.Name == "Automação do navegador").ToList();
+        Assert.Single(groups);
+        var web = groups[0];
+        Assert.Empty(web.Items);
+        Assert.Equal(3, web.Sections.Count);
+        Assert.Equal(29, web.Sections.Sum(s => s.Items.Count));
+    }
 }

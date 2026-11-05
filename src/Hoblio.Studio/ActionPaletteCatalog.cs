@@ -5,7 +5,7 @@ public sealed record PaletteEntry(string Key, string Title, string? Hint = null,
 public sealed class PaletteSection
 {
     public required string Name { get; init; }
-    public bool DefaultExpanded { get; init; } = true;
+    public bool DefaultExpanded { get; init; }
     public IList<PaletteEntry> Items { get; init; } = [];
 }
 
@@ -62,22 +62,7 @@ public static class ActionPaletteCatalog
         },
         ExcelPaletteCatalog.Group,
         WordPaletteCatalog.Group,
-        new PaletteGroup
-        {
-            Name = "Browser",
-            Items =
-            [
-                new("action:browser_navigate", "Abrir URL", "Abre URL no Chrome/Edge",
-                    "BrowserNavigate navigate url chrome"),
-                new("action:browser_click", "Clicar elemento", "Clique em seletor CSS",
-                    "BrowserClick click css selector"),
-                new("action:browser_wait_navigation", "Esperar navegação", "Espera navegação",
-                    "Wait navigation browser"),
-                new("action:browser_fill", "Preencher campo", "Preenche campo", "BrowserFill fill input"),
-                new("action:browser_wait_for", "Esperar elemento", "Espera elemento", "BrowserWaitFor wait"),
-                new("action:browser_get_text", "Capturar texto", "Captura texto", "BrowserGetText get text"),
-            ],
-        },
+        BrowserPaletteCatalog.Group,
         new PaletteGroup
         {
             Name = "Variáveis",

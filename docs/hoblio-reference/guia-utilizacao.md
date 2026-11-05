@@ -116,16 +116,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\eval-flow-control.ps
 
 ### Navegador (Chrome/Edge via CDP)
 
-Ordem típica: **`browser_navigate`** primeiro; depois passos DOM na **mesma execução**.
+Paleta **Automação do navegador** — **29** ações `browser_*` (grupo PAD). Referência completa: [modulo-web-automation.md](../construcao/modulo-web-automation.md).
 
-| Ação | Uso |
+Ordem típica: **`browser_navigate`** ou **`browser_attach_chrome` / `browser_attach_edge`** primeiro; depois passos DOM na **mesma execução**.
+
+| Ação (exemplos) | Uso |
 |------|-----|
-| `browser_navigate` | Abrir URL; `wait_ms?`; `show_on_screen?` (padrão visível); `start_maximized?` (padrão maximizar janela) |
-| `browser_wait_for` | Esperar seletor CSS |
-| `browser_click` | Clique; opcional `wait_for_navigation`, `wait_selector_after` |
-| `browser_wait_navigation` | Esperar navegação da aba |
-| `browser_fill` | Digitar em campo; **`text` aceita `{variavel}`** |
-| `browser_get_text` | Ler texto → variável (`variable`); use `{nome}` depois |
+| `browser_navigate` | Abrir URL (lança Chromium se necessário); `wait_ms?`, `show_on_screen?`, `start_maximized?` |
+| `browser_attach_chrome` / `browser_attach_edge` | Anexar a browser **já aberto** (CDP); `attach_mode`: `by_url` \| `by_title` \| `foreground`; requer `--remote-debugging-port=9222` |
+| `browser_click`, `browser_fill`, `browser_wait_for`, … | DOM via seletor CSS; `{variavel}` em textos/URLs |
+| `browser_get_text`, `browser_execute_script`, … | Saída em `variable` quando aplicável |
 Nós de ação podem ter **`error_handling`**: `retry_count`, `retry_delay_ms`, `on_failure` (`stop` \| `continue`). Ver [slice 8](mvp/fase-mvp-slice8-browser-resilience.md).
 
 **Variáveis:** objeto `variables` no `flow.json` ou painel do Studio; `{nome}` em `log`, `file_write`, `file_append`, `browser_fill`, `show_message`, `set_variable`, etc.
@@ -134,7 +134,7 @@ Após **Run**, nós que **produzem** variáveis (`show_get_user_input`, `show_se
 
 Detalhes do exemplo eproc (lista de ambiente, probes `detect_screen`): [notas-release-2026-11-05.md](../construcao/notas-release-2026-11-05.md).
 
-**Chrome / Edge:** detecção automática no Windows; override: `HOBLIO_CHROME_PATH`.
+**Chrome / Edge:** detecção automática no Windows; `HOBLIO_CHROME_PATH`. Anexar: `HOBLIO_BROWSER_DEBUG_PORT` ou `HOBLIO_BROWSER_DEBUG_URL`.
 
 ---
 

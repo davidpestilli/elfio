@@ -507,11 +507,7 @@ public sealed partial class FlowEditorViewModel
     (string label1, string label2, string label3) GenericLabels() => GetSelectedNode()?.Action switch
     {
         RunFlowAction => ("flow_id", "path (alternativo)", "outputs (vírgula)"),
-        BrowserNavigateAction => ("URL", "wait_ms", "show_on_screen (true/false)"),
-        BrowserClickAction => ("selector", "timeout_ms", "wait_for_navigation (true/false)"),
-        BrowserFillAction => ("selector", "text", "timeout_ms"),
-        BrowserWaitForAction => ("selector", "timeout_ms", ""),
-        BrowserGetTextAction => ("selector", "variable", "timeout_ms"),
+        WebAutomationAction => ("url/selector", "text/timeout_ms", "variable/detail"),
         SetVariableAction => ("variable", "value", ""),
         FileWriteAction => ("path", "content", ""),
         FileReadAction => ("path", "variable", ""),
@@ -530,11 +526,13 @@ public sealed partial class FlowEditorViewModel
             3 => a.Outputs is null ? "" : string.Join(", ", a.Outputs),
             _ => "",
         },
-        BrowserNavigateAction a => index switch { 1 => a.Url, 2 => a.WaitMs?.ToString() ?? "", 3 => a.ShowOnScreen?.ToString() ?? "", _ => "" },
-        BrowserClickAction a => index switch { 1 => a.Selector, 2 => a.TimeoutMs?.ToString() ?? "", 3 => a.WaitForNavigation?.ToString() ?? "", _ => "" },
-        BrowserFillAction a => index switch { 1 => a.Selector, 2 => a.Text, 3 => a.TimeoutMs?.ToString() ?? "", _ => "" },
-        BrowserWaitForAction a => index switch { 1 => a.Selector, 2 => a.TimeoutMs?.ToString() ?? "", _ => "" },
-        BrowserGetTextAction a => index switch { 1 => a.Selector, 2 => a.Variable ?? "", 3 => a.TimeoutMs?.ToString() ?? "", _ => "" },
+        WebAutomationAction a => index switch
+        {
+            1 => a.Url ?? a.Selector ?? "",
+            2 => a.Text ?? a.TimeoutMs?.ToString() ?? "",
+            3 => a.Variable ?? a.Detail ?? "",
+            _ => "",
+        },
         SetVariableAction a => index switch { 1 => a.Variable, 2 => a.Value, _ => "" },
         FileWriteAction a => index switch { 1 => a.Path, 2 => a.Content, _ => "" },
         FileReadAction a => index switch { 1 => a.Path, 2 => a.Variable, _ => "" },
@@ -562,38 +560,17 @@ public sealed partial class FlowEditorViewModel
                 ShareBrowser = a.ShareBrowser,
                 VariableScope = a.VariableScope,
             },
-            BrowserNavigateAction a => new BrowserNavigateAction
+            WebAutomationAction a => WebAutomationActionMutator.With(a, index switch
             {
-                Url = index == 1 ? value : a.Url,
-                WaitMs = index == 2 && ulong.TryParse(value, out var w) ? w : a.WaitMs,
-                ShowOnScreen = index == 3 && bool.TryParse(value, out var b) ? b : a.ShowOnScreen,
-                StartMaximized = a.StartMaximized,
-            },
-            BrowserClickAction a => new BrowserClickAction
-            {
-                Selector = index == 1 ? value : a.Selector,
-                TimeoutMs = index == 2 && ulong.TryParse(value, out var t1) ? t1 : a.TimeoutMs,
-                WaitForNavigation = index == 3 && bool.TryParse(value, out var b1) ? b1 : a.WaitForNavigation,
-                WaitSelectorAfter = a.WaitSelectorAfter,
-                WaitAfterTimeoutMs = a.WaitAfterTimeoutMs,
-            },
-            BrowserFillAction a => new BrowserFillAction
-            {
-                Selector = index == 1 ? value : a.Selector,
-                Text = index == 2 ? value : a.Text,
-                TimeoutMs = index == 3 && ulong.TryParse(value, out var t2) ? t2 : a.TimeoutMs,
-            },
-            BrowserWaitForAction a => new BrowserWaitForAction
-            {
-                Selector = index == 1 ? value : a.Selector,
-                TimeoutMs = index == 2 && ulong.TryParse(value, out var t3) ? t3 : a.TimeoutMs,
-            },
-            BrowserGetTextAction a => new BrowserGetTextAction
-            {
-                Selector = index == 1 ? value : a.Selector,
-                Variable = index == 2 ? value : a.Variable,
-                TimeoutMs = index == 3 && ulong.TryParse(value, out var t4) ? t4 : a.TimeoutMs,
-            },
+                1 => WebAutomationUsesUrlField(a)
+                    ? new WebAutomationActionPatch { Url = value }
+                    : new WebAutomationActionPatch { Selector = value },
+                2 => ulong.TryParse(value, out var t)
+                    ? new WebAutomationActionPatch { TimeoutMs = t }
+                    : new WebAutomationActionPatch { Text = value },
+                3 => new WebAutomationActionPatch { Variable = value, Detail = value },
+                _ => new WebAutomationActionPatch(),
+            }),
             SetVariableAction a => new SetVariableAction
             {
                 Variable = index == 1 ? value : a.Variable,
@@ -625,4 +602,9 @@ public sealed partial class FlowEditorViewModel
         MarkDirty();
         RefreshAllInspector();
     }
+
+    static bool WebAutomationUsesUrlField(WebAutomationAction a) =>
+        a.Type is WebAutomationActionTypes.Navigate or WebAutomationActionTypes.GoTo
+            or WebAutomationActionTypes.NewTab or WebAutomationActionTypes.LaunchChrome
+            or WebAutomationActionTypes.LaunchEdge;
 }

@@ -69,6 +69,7 @@ Com **menos de ~5 GB livres no C:**, o `setup-dev.bat` define automaticamente `C
 | `HOBLIO_VS_INSTALL_PATH` | Ex.: `E:\VS\BuildTools` — destino das Build Tools quando o C: está cheio |
 | `HOBLIO_CARGO_TARGET_DIR` | Pasta de `target` do Cargo fora do C: |
 | `HOBLIO_CHROME_PATH` | Override se Chrome/Edge não for detectado automaticamente |
+| `HOBLIO_BROWSER_DEBUG_PORT` / `HOBLIO_BROWSER_DEBUG_URL` | Anexar a Chrome/Edge já aberto (`browser_attach_*`) via CDP |
 
 ---
 
@@ -78,6 +79,14 @@ Com **menos de ~5 GB livres no C:**, o `setup-dev.bat` define automaticamente `C
 - Se a detecção falhar: `$env:HOBLIO_CHROME_PATH = "C:\Program Files\Google\Chrome\Application\chrome.exe"`
 
 Detalhes de detecção automática: [guia de construção](guia-construcao.md) (variáveis de ambiente).
+
+### Anexar (`browser_attach_chrome` / `browser_attach_edge`) falha
+
+- O browser **precisa** ter sido iniciado com depuração remota, por exemplo:  
+  `chrome.exe --remote-debugging-port=9222`
+- Modo **`foreground`**: deixe a janela do Chrome/Edge em foco antes do passo de anexar.
+- Erro “no response” na porta 9222: nenhuma instância escutando CDP — feche Chrome “normal” e use o atalho com a flag acima.
+- Ver [modulo-web-automation.md](../construcao/modulo-web-automation.md) (secção *Anexar*).
 
 ### Janela maximizada mas página numa faixa (resto cinza)
 

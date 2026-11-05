@@ -20,7 +20,11 @@ public sealed class ModuleManifestSyncTests
                 {
                     Id = "b",
                     Kind = NodeKind.Action,
-                    Action = new BrowserNavigateAction { Url = "https://example.com" },
+                    Action = new WebAutomationAction
+                    {
+                        Operation = WebAutomationActionTypes.Navigate,
+                        Url = "https://example.com",
+                    },
                 },
                 new Node { Id = "e", Kind = NodeKind.End },
             ],

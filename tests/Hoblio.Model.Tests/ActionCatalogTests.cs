@@ -7,7 +7,11 @@ public sealed class ActionCatalogTests
     [Fact]
     public void Describe_browser_navigate_uses_web_automation_module()
     {
-        var d = ActionCatalog.Describe(new BrowserNavigateAction { Url = "https://example.com" });
+        var d = ActionCatalog.Describe(new WebAutomationAction
+        {
+            Operation = WebAutomationActionTypes.Navigate,
+            Url = "https://example.com",
+        });
         Assert.Equal("WebAutomation", d.Module);
         Assert.Equal("LaunchChromeBase", d.ActionId);
     }

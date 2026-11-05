@@ -14,10 +14,7 @@ public sealed partial class FlowEditorViewModel
             return node.Action switch
             {
                 LogAction a => $"Log: {Truncate(a.Message, 40)}",
-                BrowserNavigateAction a => $"Navigate: {Truncate(a.Url, 40)}",
-                BrowserClickAction a => $"Click: {Truncate(a.Selector, 40)}",
-                BrowserFillAction a => $"Fill: {Truncate(a.Selector, 40)}",
-                BrowserGetTextAction a => $"GetText → {a.Variable ?? "?"}",
+                WebAutomationAction w => $"Web: {WebAutomationActionTypes.ModuleActionId(w.Type)}",
                 RunFlowAction a => $"RunFlow: {a.FlowId ?? a.Path ?? "?"}",
                 SetVariableAction a => $"Set {a.Variable}",
                 ShowGetUserInputAction a => $"Input: {Truncate(a.Title, 30)}",
@@ -49,17 +46,9 @@ public sealed partial class FlowEditorViewModel
     public bool ShowActionShowMessage => GetSelectedNode()?.Action is ShowMessageAction;
     public bool ShowActionShowGetUserInput => GetSelectedNode()?.Action is ShowGetUserInputAction;
     public bool ShowActionShowSelectFromList => GetSelectedNode()?.Action is ShowSelectFromListAction;
-    public bool ShowActionBrowserNavigate => GetSelectedNode()?.Action is BrowserNavigateAction;
-    public bool ShowActionBrowserWaitNav => GetSelectedNode()?.Action is BrowserWaitNavigationAction;
     public bool ShowActionDelay => GetSelectedNode()?.Action is DelayAction;
-    public bool ShowActionBrowserDom => GetSelectedNode()?.Action is BrowserClickAction or BrowserFillAction or BrowserWaitForAction or BrowserGetTextAction;
-    public bool ShowActionBrowserClick => GetSelectedNode()?.Action is BrowserClickAction;
-    public bool ShowActionBrowserFillExtra => GetSelectedNode()?.Action is BrowserFillAction;
-    public bool ShowActionBrowserGetTextExtra => GetSelectedNode()?.Action is BrowserGetTextAction;
     public bool ShowActionAdjustVariable => GetSelectedNode()?.Action is IncreaseVariableAction or DecreaseVariableAction;
     public bool ShowActionSetVariable => GetSelectedNode()?.Action is SetVariableAction;
-    public bool ShowBrowserNavigateMaximizeOption =>
-        GetSelectedNode()?.Action is BrowserNavigateAction n && (n.ShowOnScreen ?? true);
 
     public string FileWritePath { get => A<FileWriteAction>()?.Path ?? ""; set => SetAction(A<FileWriteAction>() is { } a ? new FileWriteAction { Path = value, Content = a.Content } : null); }
     public string FileWriteContent { get => A<FileWriteAction>()?.Content ?? ""; set => SetAction(A<FileWriteAction>() is { } a ? new FileWriteAction { Path = a.Path, Content = value } : null); }
@@ -197,109 +186,10 @@ public sealed partial class FlowEditorViewModel
         }
     }
 
-    public string BrowserNavigateUrl { get => A<BrowserNavigateAction>()?.Url ?? ""; set => PatchNavigate(a => new BrowserNavigateAction { Url = value, WaitMs = a.WaitMs, ShowOnScreen = a.ShowOnScreen, StartMaximized = a.StartMaximized }); }
-    public string BrowserNavigateWaitMsText
-    {
-        get => A<BrowserNavigateAction>()?.WaitMs?.ToString() ?? "";
-        set => PatchNavigate(a => new BrowserNavigateAction
-        {
-            Url = a.Url,
-            WaitMs = string.IsNullOrWhiteSpace(value) ? null : ulong.TryParse(value, out var ms) ? ms : a.WaitMs,
-            ShowOnScreen = a.ShowOnScreen,
-            StartMaximized = a.StartMaximized,
-        });
-    }
-    public bool BrowserNavigateShowOnScreen { get => A<BrowserNavigateAction>()?.ShowOnScreen ?? true; set => PatchNavigate(a => new BrowserNavigateAction { Url = a.Url, WaitMs = a.WaitMs, ShowOnScreen = value, StartMaximized = a.StartMaximized }); }
-    public bool BrowserNavigateStartMaximized { get => A<BrowserNavigateAction>()?.StartMaximized ?? true; set => PatchNavigate(a => new BrowserNavigateAction { Url = a.Url, WaitMs = a.WaitMs, ShowOnScreen = a.ShowOnScreen, StartMaximized = value }); }
-
-    public string BrowserWaitNavTimeoutText
-    {
-        get => A<BrowserWaitNavigationAction>()?.TimeoutMs?.ToString() ?? "";
-        set => SetAction(new BrowserWaitNavigationAction
-        {
-            TimeoutMs = string.IsNullOrWhiteSpace(value) ? null : ulong.TryParse(value, out var ms) ? ms : A<BrowserWaitNavigationAction>()?.TimeoutMs,
-        });
-    }
-
     public string DelayMillisecondsText
     {
         get => A<DelayAction>()?.Milliseconds.ToString() ?? "0";
         set => SetAction(new DelayAction { Milliseconds = ulong.TryParse(value, out var ms) ? ms : 0 });
-    }
-
-    public string BrowserSelector
-    {
-        get => GetSelectedNode()?.Action switch
-        {
-            BrowserClickAction a => a.Selector,
-            BrowserFillAction a => a.Selector,
-            BrowserWaitForAction a => a.Selector,
-            BrowserGetTextAction a => a.Selector,
-            _ => "",
-        };
-        set => SetAction(GetSelectedNode()?.Action switch
-        {
-            BrowserClickAction a => new BrowserClickAction { Selector = value, TimeoutMs = a.TimeoutMs, WaitForNavigation = a.WaitForNavigation, WaitSelectorAfter = a.WaitSelectorAfter, WaitAfterTimeoutMs = a.WaitAfterTimeoutMs },
-            BrowserFillAction a => new BrowserFillAction { Selector = value, Text = a.Text, TimeoutMs = a.TimeoutMs },
-            BrowserWaitForAction a => new BrowserWaitForAction { Selector = value, TimeoutMs = a.TimeoutMs },
-            BrowserGetTextAction a => new BrowserGetTextAction { Selector = value, TimeoutMs = a.TimeoutMs, Variable = a.Variable },
-            _ => null,
-        });
-    }
-
-    public string BrowserTimeoutMsText
-    {
-        get => GetSelectedNode()?.Action switch
-        {
-            BrowserClickAction a => a.TimeoutMs?.ToString() ?? "",
-            BrowserFillAction a => a.TimeoutMs?.ToString() ?? "",
-            BrowserWaitForAction a => a.TimeoutMs?.ToString() ?? "",
-            BrowserGetTextAction a => a.TimeoutMs?.ToString() ?? "",
-            _ => "",
-        };
-        set
-        {
-            ulong? ms = string.IsNullOrWhiteSpace(value) ? null : ulong.TryParse(value, out var n) ? n : null;
-            SetAction(GetSelectedNode()?.Action switch
-            {
-                BrowserClickAction a => new BrowserClickAction { Selector = a.Selector, TimeoutMs = ms, WaitForNavigation = a.WaitForNavigation, WaitSelectorAfter = a.WaitSelectorAfter, WaitAfterTimeoutMs = a.WaitAfterTimeoutMs },
-                BrowserFillAction a => new BrowserFillAction { Selector = a.Selector, Text = a.Text, TimeoutMs = ms },
-                BrowserWaitForAction a => new BrowserWaitForAction { Selector = a.Selector, TimeoutMs = ms },
-                BrowserGetTextAction a => new BrowserGetTextAction { Selector = a.Selector, TimeoutMs = ms, Variable = a.Variable },
-                _ => null,
-            });
-        }
-    }
-
-    public bool BrowserClickWaitForNavigation { get => A<BrowserClickAction>()?.WaitForNavigation ?? false; set => PatchClick(a => new BrowserClickAction { Selector = a.Selector, TimeoutMs = a.TimeoutMs, WaitForNavigation = value, WaitSelectorAfter = a.WaitSelectorAfter, WaitAfterTimeoutMs = a.WaitAfterTimeoutMs }); }
-    public string BrowserClickWaitSelectorAfter { get => A<BrowserClickAction>()?.WaitSelectorAfter ?? ""; set => PatchClick(a => new BrowserClickAction { Selector = a.Selector, TimeoutMs = a.TimeoutMs, WaitForNavigation = a.WaitForNavigation, WaitSelectorAfter = string.IsNullOrWhiteSpace(value) ? null : value, WaitAfterTimeoutMs = a.WaitAfterTimeoutMs }); }
-    public string BrowserClickWaitAfterTimeoutText
-    {
-        get => A<BrowserClickAction>()?.WaitAfterTimeoutMs?.ToString() ?? "";
-        set => PatchClick(a => new BrowserClickAction
-        {
-            Selector = a.Selector,
-            TimeoutMs = a.TimeoutMs,
-            WaitForNavigation = a.WaitForNavigation,
-            WaitSelectorAfter = a.WaitSelectorAfter,
-            WaitAfterTimeoutMs = string.IsNullOrWhiteSpace(value) ? null : ulong.TryParse(value, out var ms) ? ms : a.WaitAfterTimeoutMs,
-        });
-    }
-
-    public string BrowserFillText { get => A<BrowserFillAction>()?.Text ?? ""; set => SetAction(A<BrowserFillAction>() is { } a ? new BrowserFillAction { Selector = a.Selector, Text = value, TimeoutMs = a.TimeoutMs } : null); }
-    public string BrowserGetTextVariable
-    {
-        get => A<BrowserGetTextAction>()?.Variable ?? "";
-        set
-        {
-            if (GetSelectedNode() is not { } node || A<BrowserGetTextAction>() is not { } a)
-                return;
-            var trimmed = string.IsNullOrWhiteSpace(value) ? null : value;
-            ApplyProducerRenameOr(node, () => node.Action = new BrowserGetTextAction
-            {
-                Selector = a.Selector, TimeoutMs = a.TimeoutMs, Variable = trimmed,
-            }, a.Variable, trimmed ?? "", allowEmptyProducer: true);
-        }
     }
 
     public string SetVariableName
@@ -341,20 +231,6 @@ public sealed partial class FlowEditorViewModel
     }
 
     T? A<T>() where T : ActionKind => GetSelectedNode()?.Action as T;
-
-    void PatchNavigate(Func<BrowserNavigateAction, BrowserNavigateAction> map)
-    {
-        if (A<BrowserNavigateAction>() is not { } a)
-            return;
-        SetAction(map(a));
-    }
-
-    void PatchClick(Func<BrowserClickAction, BrowserClickAction> map)
-    {
-        if (A<BrowserClickAction>() is not { } a)
-            return;
-        SetAction(map(a));
-    }
 
     void PatchUserInput(Func<ShowGetUserInputAction, ShowGetUserInputAction> map)
     {
@@ -436,18 +312,12 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionShowMessage));
         OnPropertyChanged(nameof(ShowActionShowGetUserInput));
         OnPropertyChanged(nameof(ShowActionShowSelectFromList));
-        OnPropertyChanged(nameof(ShowActionBrowserNavigate));
-        OnPropertyChanged(nameof(ShowActionBrowserWaitNav));
         OnPropertyChanged(nameof(ShowActionDelay));
-        OnPropertyChanged(nameof(ShowActionBrowserDom));
-        OnPropertyChanged(nameof(ShowActionBrowserClick));
-        OnPropertyChanged(nameof(ShowActionBrowserFillExtra));
-        OnPropertyChanged(nameof(ShowActionBrowserGetTextExtra));
         OnPropertyChanged(nameof(ShowActionAdjustVariable));
         OnPropertyChanged(nameof(ShowActionSetVariable));
-        OnPropertyChanged(nameof(ShowBrowserNavigateMaximizeOption));
         RefreshExcelInspector();
         RefreshWordInspector();
+        RefreshWebAutomationInspector();
         NotifyAllActionFieldProperties();
     }
 
@@ -464,11 +334,8 @@ public sealed partial class FlowEditorViewModel
             nameof(SelectFromListTopmost), nameof(SelectFromListLimitToList), nameof(SelectFromListAllowEmpty),
             nameof(SelectFromListAllowMultiple), nameof(SelectFromListSelectedItemVariable),
             nameof(SelectFromListSelectedIndexVariable), nameof(SelectFromListButtonPressedVariable),
-            nameof(BrowserNavigateUrl), nameof(BrowserNavigateWaitMsText), nameof(BrowserNavigateShowOnScreen),
-            nameof(BrowserNavigateStartMaximized), nameof(BrowserWaitNavTimeoutText), nameof(DelayMillisecondsText),
-            nameof(BrowserSelector), nameof(BrowserTimeoutMsText), nameof(BrowserClickWaitForNavigation),
-            nameof(BrowserClickWaitSelectorAfter), nameof(BrowserClickWaitAfterTimeoutText), nameof(BrowserFillText),
-            nameof(BrowserGetTextVariable), nameof(SetVariableName), nameof(SetVariableValue),
+            nameof(DelayMillisecondsText),
+            nameof(SetVariableName), nameof(SetVariableValue),
             nameof(AdjustVariableName), nameof(AdjustVariableAmountText), nameof(LogMessageEdit),
         })
             OnPropertyChanged(name);

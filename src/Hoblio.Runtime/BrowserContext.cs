@@ -2,19 +2,30 @@ using PuppeteerSharp;
 
 namespace Hoblio.Runtime;
 
-public sealed class BrowserContext : IDisposable
+public sealed partial class BrowserContext : IDisposable
 {
     const int DefaultTimeoutMs = 10_000;
 
     IBrowser? _browser;
     IPage? _page;
+    bool _ownsBrowser;
 
-    public void Dispose()
+    public void Dispose() => EndSession(closeBrowserWindow: _ownsBrowser);
+
+    void EndSession(bool closeBrowserWindow)
     {
-        _browser?.CloseAsync().GetAwaiter().GetResult();
-        _browser?.Dispose();
+        if (_browser is null)
+            return;
+
+        if (_ownsBrowser && closeBrowserWindow)
+            _browser.CloseAsync().GetAwaiter().GetResult();
+        else
+            _browser.Disconnect();
+
+        _browser.Dispose();
         _browser = null;
         _page = null;
+        _ownsBrowser = false;
     }
 
     public string Navigate(string url, ulong? waitMs, bool? showOnScreen, bool? startMaximized)
@@ -22,7 +33,7 @@ public sealed class BrowserContext : IDisposable
         var visible = showOnScreen ?? true;
         var maximized = startMaximized ?? true;
         if (_page is null)
-            LaunchSession(url, visible, maximized).GetAwaiter().GetResult();
+            LaunchSession(url, visible, maximized, _preferredEngine).GetAwaiter().GetResult();
         else
             NavigateExisting(url).GetAwaiter().GetResult();
 
@@ -182,9 +193,9 @@ public sealed class BrowserContext : IDisposable
         return false;
     }
 
-    async Task LaunchSession(string url, bool showOnScreen, bool startMaximized)
+    async Task LaunchSession(string url, bool showOnScreen, bool startMaximized, string? browserEngine = null)
     {
-        var exe = ChromiumLocator.ResolveExecutable();
+        var exe = ChromiumLocator.ResolveExecutable(browserEngine ?? _preferredEngine);
         var args = new List<string>
         {
             "--remote-allow-origins=*",
@@ -201,6 +212,7 @@ public sealed class BrowserContext : IDisposable
             DefaultViewport = showOnScreen ? null : new ViewPortOptions { Width = 1280, Height = 720 },
         };
         _browser = await Puppeteer.LaunchAsync(options);
+        _ownsBrowser = true;
         _page = await _browser.NewPageAsync();
         await GoToCompatAsync(_page, url);
     }
@@ -218,14 +230,14 @@ public sealed class BrowserContext : IDisposable
         await WaitForDomStableAsync(page, 5000);
     }
 
-    static async Task<IElementHandle> WaitForSelectorAsync(IPage page, string selector, int timeoutMs)
+    static async Task<IElementHandle> WaitForSelectorAsync(IPage page, string selector, int timeoutMs, bool visible = false)
     {
         var handle = await page.WaitForSelectorAsync(
             selector,
             new WaitForSelectorOptions
             {
                 Timeout = Math.Max(1, timeoutMs),
-                Visible = false,
+                Visible = visible,
             });
         if (handle is null)
             throw new TimeoutException($"timeout ({timeoutMs}ms) waiting for selector `{selector}`");

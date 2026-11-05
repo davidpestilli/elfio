@@ -22,64 +22,6 @@ public sealed class NoOpAction : ActionKind
     public override IEnumerable<string> ProducedVariables() => [];
 }
 
-public sealed class BrowserNavigateAction : ActionKind
-{
-    public override string Type => "browser_navigate";
-    public required string Url { get; init; }
-    public ulong? WaitMs { get; init; }
-    public bool? ShowOnScreen { get; init; }
-    public bool? StartMaximized { get; init; }
-    public override IEnumerable<string> ProducedVariables() => [];
-}
-
-public sealed class BrowserClickAction : ActionKind
-{
-    public override string Type => "browser_click";
-    public required string Selector { get; init; }
-    public ulong? TimeoutMs { get; init; }
-    public bool? WaitForNavigation { get; init; }
-    public string? WaitSelectorAfter { get; init; }
-    public ulong? WaitAfterTimeoutMs { get; init; }
-    public override IEnumerable<string> ProducedVariables() => [];
-}
-
-public sealed class BrowserWaitNavigationAction : ActionKind
-{
-    public override string Type => "browser_wait_navigation";
-    public ulong? TimeoutMs { get; init; }
-    public override IEnumerable<string> ProducedVariables() => [];
-}
-
-public sealed class BrowserFillAction : ActionKind
-{
-    public override string Type => "browser_fill";
-    public required string Selector { get; init; }
-    public required string Text { get; init; }
-    public ulong? TimeoutMs { get; init; }
-    public override IEnumerable<string> ProducedVariables() => [];
-}
-
-public sealed class BrowserWaitForAction : ActionKind
-{
-    public override string Type => "browser_wait_for";
-    public required string Selector { get; init; }
-    public ulong? TimeoutMs { get; init; }
-    public override IEnumerable<string> ProducedVariables() => [];
-}
-
-public sealed class BrowserGetTextAction : ActionKind
-{
-    public override string Type => "browser_get_text";
-    public required string Selector { get; init; }
-    public ulong? TimeoutMs { get; init; }
-    public string? Variable { get; init; }
-    public override IEnumerable<string> ProducedVariables()
-    {
-        if (!string.IsNullOrEmpty(Variable))
-            yield return Variable;
-    }
-}
-
 public sealed class FileWriteAction : ActionKind
 {
     public override string Type => "file_write";

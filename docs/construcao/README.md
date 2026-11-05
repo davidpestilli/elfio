@@ -8,6 +8,7 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 | [catalogo-acoes-e-modulos.md](./catalogo-acoes-e-modulos.md) | Identificadores estáveis (`module`, `action_id`), paleta e mapeamento JSON |
 | [modulo-excel.md](./modulo-excel.md) | Módulo Excel COM: paleta, JSON, runtime, exemplo, testes |
 | [modulo-word.md](./modulo-word.md) | Módulo Word COM: 8 ações PAD, JSON, runtime |
+| [modulo-web-automation.md](./modulo-web-automation.md) | Automação do navegador (CDP): 27 ações PAD, PuppeteerSharp |
 | [notas-release-2026-11-05.md](./notas-release-2026-11-05.md) | Rodada nov/2025: lista, login-eproc, Excel, Studio |
 | [telemetria-e-logs.md](./telemetria-e-logs.md) | Eventos de run, JSONL, correlação Studio ↔ CLI |
 | [manifest-e-capacidades.md](./manifest-e-capacidades.md) | `manifest.json` atual e extensão `module_references` |
