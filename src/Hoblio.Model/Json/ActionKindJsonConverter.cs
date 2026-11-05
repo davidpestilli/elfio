@@ -104,6 +104,19 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 UserInputVariable = GetString(root, "user_input_variable") ?? "UserInput",
                 ButtonPressedVariable = GetString(root, "button_pressed_variable") ?? "ButtonPressed",
             },
+            "show_select_from_list" => new ShowSelectFromListAction
+            {
+                Title = root.GetProperty("title").GetString() ?? "",
+                Message = root.GetProperty("message").GetString() ?? "",
+                List = root.GetProperty("list").GetString() ?? "",
+                Topmost = GetBool(root, "topmost"),
+                LimitToList = GetBool(root, "limit_to_list") ?? true,
+                AllowEmptySelection = GetBool(root, "allow_empty_selection"),
+                AllowMultipleSelections = GetBool(root, "allow_multiple_selections"),
+                SelectedItemVariable = GetString(root, "selected_item_variable") ?? "SelectedItem",
+                SelectedIndexVariable = GetString(root, "selected_index_variable") ?? "SelectedIndex",
+                ButtonPressedVariable = GetString(root, "button_pressed_variable") ?? "ButtonPressed",
+            },
             "set_variable" => new SetVariableAction
             {
                 Variable = root.GetProperty("variable").GetString() ?? "",
@@ -120,6 +133,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 Amount = GetString(root, "amount"),
             },
             "run_flow" => ReadRunFlow(root),
+            _ when ExcelActionTypes.IsExcelType(type) => ExcelActionJson.Read(root, type),
             _ => throw new JsonException($"unknown action type `{type}`"),
         };
     }
@@ -210,6 +224,18 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 writer.WriteString("user_input_variable", a.UserInputVariable);
                 writer.WriteString("button_pressed_variable", a.ButtonPressedVariable);
                 break;
+            case ShowSelectFromListAction a:
+                writer.WriteString("title", a.Title);
+                writer.WriteString("message", a.Message);
+                writer.WriteString("list", a.List);
+                WriteOptionalBool(writer, "topmost", a.Topmost);
+                WriteOptionalBool(writer, "limit_to_list", a.LimitToList);
+                WriteOptionalBool(writer, "allow_empty_selection", a.AllowEmptySelection);
+                WriteOptionalBool(writer, "allow_multiple_selections", a.AllowMultipleSelections);
+                writer.WriteString("selected_item_variable", a.SelectedItemVariable);
+                writer.WriteString("selected_index_variable", a.SelectedIndexVariable);
+                writer.WriteString("button_pressed_variable", a.ButtonPressedVariable);
+                break;
             case SetVariableAction a:
                 writer.WriteString("variable", a.Variable);
                 writer.WriteString("value", a.Value);
@@ -221,6 +247,9 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
             case DecreaseVariableAction a:
                 writer.WriteString("variable", a.Variable);
                 WriteOptionalString(writer, "amount", a.Amount);
+                break;
+            case ExcelAction a:
+                ExcelActionJson.Write(writer, a);
                 break;
             case RunFlowAction a:
                 WriteOptionalString(writer, "flow_id", a.FlowId);

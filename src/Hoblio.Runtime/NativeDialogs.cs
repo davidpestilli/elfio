@@ -5,6 +5,8 @@ namespace Hoblio.Runtime;
 
 public sealed record UserInputResult(string UserInput, string ButtonPressed);
 
+public sealed record SelectFromListResult(string SelectedItem, string SelectedIndex, string ButtonPressed);
+
 public static class NativeDialogs
 {
     /// <summary>Blocks until the user closes the dialog or the optional timeout elapses (same as Hoblio <c>run_show_message</c>).</summary>
@@ -64,6 +66,37 @@ public static class NativeDialogs
                 result = new UserInputResult(dlg.InputText, "Cancel");
         });
         return result ?? new UserInputResult("", "Cancel");
+    }
+
+    public static SelectFromListResult RunShowSelectFromList(
+        string title,
+        string message,
+        IReadOnlyList<string> items,
+        bool topmost,
+        bool limitToList,
+        bool allowEmptySelection,
+        bool allowMultipleSelections)
+    {
+        SelectFromListResult? result = null;
+        RunSta(() =>
+        {
+            var dlg = new SelectFromListDialog(
+                title,
+                message,
+                items,
+                topmost,
+                limitToList,
+                allowEmptySelection,
+                allowMultipleSelections);
+            if (dlg.ShowDialog() == true && dlg.Confirmed)
+                result = new SelectFromListResult(dlg.SelectedItemText, dlg.SelectedIndexText, "OK");
+            else
+                result = new SelectFromListResult(
+                    allowMultipleSelections ? "[]" : "",
+                    allowMultipleSelections ? "[]" : "-1",
+                    "Cancel");
+        });
+        return result ?? new SelectFromListResult("", "-1", "Cancel");
     }
 
     static void RunSta(Action action)

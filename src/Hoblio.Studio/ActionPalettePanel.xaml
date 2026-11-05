@@ -51,31 +51,67 @@
             <DataTemplate>
               <Expander Header="{Binding HeaderText}" IsExpanded="{Binding StartsExpanded, Mode=OneWay}"
                         Style="{StaticResource PaletteSection}">
-                <ItemsControl ItemsSource="{Binding Items}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Button Style="{StaticResource PaletteActionButton}"
-                              Command="{Binding DataContext.AddPaletteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                              CommandParameter="{Binding Key}"
-                              ToolTip="{Binding Hint}">
-                        <Grid>
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                          </Grid.ColumnDefinitions>
-                          <Border Grid.Column="0" Background="{Binding AccentBrush}" CornerRadius="6,0,0,6"/>
-                          <TextBlock Grid.Column="1" Text="{Binding Glyph}" FontSize="13"
-                                     VerticalAlignment="Center" Margin="8,0,4,0" Foreground="#64748B"/>
-                          <StackPanel Grid.Column="2" Margin="0,6,8,6">
-                            <TextBlock Text="{Binding Title}" Style="{StaticResource PaletteActionTitle}"/>
-                            <TextBlock Text="{Binding Hint}" Style="{StaticResource PaletteActionHint}"/>
-                          </StackPanel>
-                        </Grid>
-                      </Button>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <StackPanel>
+                  <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Button Style="{StaticResource PaletteActionButton}"
+                                Command="{Binding DataContext.AddPaletteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding Key}"
+                                ToolTip="{Binding Hint}">
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="3"/>
+                              <ColumnDefinition Width="Auto"/>
+                              <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="{Binding AccentBrush}" CornerRadius="6,0,0,6"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Glyph}" FontSize="13"
+                                       VerticalAlignment="Center" Margin="8,0,4,0" Foreground="#64748B"/>
+                            <StackPanel Grid.Column="2" Margin="0,6,8,6">
+                              <TextBlock Text="{Binding Title}" Style="{StaticResource PaletteActionTitle}"/>
+                              <TextBlock Text="{Binding Hint}" Style="{StaticResource PaletteActionHint}"/>
+                            </StackPanel>
+                          </Grid>
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <ItemsControl ItemsSource="{Binding Sections}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Expander Header="{Binding HeaderText}" IsExpanded="{Binding StartsExpanded, Mode=OneWay}"
+                                  Style="{StaticResource PaletteSubSection}">
+                          <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <Button Style="{StaticResource PaletteActionButton}"
+                                        Command="{Binding DataContext.AddPaletteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding Key}"
+                                        ToolTip="{Binding Hint}">
+                                  <Grid>
+                                    <Grid.ColumnDefinitions>
+                                      <ColumnDefinition Width="3"/>
+                                      <ColumnDefinition Width="Auto"/>
+                                      <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="{Binding AccentBrush}" CornerRadius="6,0,0,6"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Glyph}" FontSize="13"
+                                               VerticalAlignment="Center" Margin="8,0,4,0" Foreground="#64748B"/>
+                                    <StackPanel Grid.Column="2" Margin="0,6,8,6">
+                                      <TextBlock Text="{Binding Title}" Style="{StaticResource PaletteActionTitle}"/>
+                                      <TextBlock Text="{Binding Hint}" Style="{StaticResource PaletteActionHint}"/>
+                                    </StackPanel>
+                                  </Grid>
+                                </Button>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </Expander>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
               </Expander>
             </DataTemplate>
           </ItemsControl.ItemTemplate>

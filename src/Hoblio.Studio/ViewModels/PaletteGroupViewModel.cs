@@ -8,6 +8,20 @@ public sealed class PaletteGroupViewModel
     public required string Name { get; init; }
     public bool StartsExpanded { get; init; }
     public ObservableCollection<PaletteEntryViewModel> Items { get; init; } = [];
+    public ObservableCollection<PaletteSectionViewModel> Sections { get; init; } = [];
+
+    public bool HasSections => Sections.Count > 0;
+
+    int ItemCount => Items.Count + Sections.Sum(s => s.Items.Count);
+
+    public string HeaderText => ItemCount == 0 ? Name : $"{Name} ({ItemCount})";
+}
+
+public sealed class PaletteSectionViewModel
+{
+    public required string Name { get; init; }
+    public bool StartsExpanded { get; init; }
+    public ObservableCollection<PaletteEntryViewModel> Items { get; init; } = [];
 
     public string HeaderText => Items.Count == 0 ? Name : $"{Name} ({Items.Count})";
 }

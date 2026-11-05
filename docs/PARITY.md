@@ -26,7 +26,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | If / ForEach / While / Repeat | ✓ | ✓ | DemoFlowTests |
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
 | Browser CDP (navigate, click, fill, wait, get_text) | ✓ | ✓ | browser-demo-flow (manual + Chrome) |
-| show_message / show_get_user_input | ✓ | ✓ | message-timer-demo (manual) |
+| show_message / show_get_user_input / show_select_from_list | ✓ | ✓ | message-timer-demo (manual) |
 | HOBLIO_CHROME_PATH | ✓ | ✓ | ChromiumLocator |
 | Cancel run | ✓ | ✓ | API `RunCancel` (Studio a expor) |
 

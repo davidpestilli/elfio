@@ -25,6 +25,15 @@ public static class FlowVariableProducers
                 if (!string.IsNullOrWhiteSpace(ui.ButtonPressedVariable))
                     list.Add(new(ui.ButtonPressedVariable.Trim(), node.Id, title, "ShowGetUserInput (ButtonPressed)"));
             }
+            if (node.Action is ShowSelectFromListAction sl)
+            {
+                if (!string.IsNullOrWhiteSpace(sl.SelectedItemVariable))
+                    list.Add(new(sl.SelectedItemVariable.Trim(), node.Id, title, "ShowSelectFromList (SelectedItem)"));
+                if (!string.IsNullOrWhiteSpace(sl.SelectedIndexVariable))
+                    list.Add(new(sl.SelectedIndexVariable.Trim(), node.Id, title, "ShowSelectFromList (SelectedIndex)"));
+                if (!string.IsNullOrWhiteSpace(sl.ButtonPressedVariable))
+                    list.Add(new(sl.ButtonPressedVariable.Trim(), node.Id, title, "ShowSelectFromList (ButtonPressed)"));
+            }
             if (node.Kind == NodeKind.ForEach && node.Control is ForEachControlKind fe && !string.IsNullOrWhiteSpace(fe.ItemVariable))
                 list.Add(new(fe.ItemVariable.Trim(), node.Id, title, "for_each item"));
             if (node.Kind == NodeKind.Repeat && node.Control is RepeatControlKind rp && !string.IsNullOrWhiteSpace(rp.IndexVariable))

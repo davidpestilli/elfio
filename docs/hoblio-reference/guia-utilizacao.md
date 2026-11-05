@@ -62,6 +62,7 @@ cargo run -p hoblio-cli -- run examples\flow-control-demo
 | `examples/web-demo-flow` | HTTP GET → grava `output/example-fetch.txt` → log |
 | `examples/message-timer-demo` | Janela **`show_message`** com timer 2s (Windows) |
 | `examples/browser-demo-flow` | Browser CDP → texto → `output/heading.txt` |
+| `examples/excel-demo-flow` | Excel COM → grava planilha → filtro → `output/excel-demo.xlsx` |
 
 Validar antes de rodar:
 
@@ -100,6 +101,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\eval-flow-control.ps
 | `set_variable` / `increase_variable` / `decrease_variable` | Variáveis de run |
 | `http_get` | URL |
 | `show_message` | Janela nativa (Windows) |
+| `show_get_user_input` | Diálogo de entrada (Windows) |
+| `show_select_from_list` | Diálogo de lista (Windows) |
 | `browser_*` | Navegação e DOM via Chrome/Edge (CDP) |
 
 ### Janela (Windows)
@@ -107,6 +110,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\eval-flow-control.ps
 | Ação | Parâmetros |
 |------|------------|
 | `show_message` | `title`, `text`, `timeout_seconds` (opcional) |
+| `show_get_user_input` | `title`, `message`, `default_value?`, `input_kind?`, `topmost?`, `user_input_variable`, `button_pressed_variable` |
+| `show_select_from_list` | `title`, `message`, `list`, `topmost?`, `limit_to_list?`, `allow_empty_selection?`, `allow_multiple_selections?`, `selected_item_variable`, `selected_index_variable`, `button_pressed_variable` |
 
 ### Navegador (Chrome/Edge via CDP)
 
@@ -120,13 +125,13 @@ Ordem típica: **`browser_navigate`** primeiro; depois passos DOM na **mesma exe
 | `browser_wait_navigation` | Esperar navegação da aba |
 | `browser_fill` | Digitar em campo; **`text` aceita `{variavel}`** |
 | `browser_get_text` | Ler texto → variável (`variable`); use `{nome}` depois |
-| `show_get_user_input` | Diálogo nativo (Windows); grava variáveis de saída configuradas |
-
 Nós de ação podem ter **`error_handling`**: `retry_count`, `retry_delay_ms`, `on_failure` (`stop` \| `continue`). Ver [slice 8](mvp/fase-mvp-slice8-browser-resilience.md).
 
 **Variáveis:** objeto `variables` no `flow.json` ou painel do Studio; `{nome}` em `log`, `file_write`, `file_append`, `browser_fill`, `show_message`, `set_variable`, etc.
 
-Após **Run**, nós que **produzem** variáveis (`show_get_user_input`, `browser_get_text`, …) exibem **Last run values** no painel Properties (antes de *On error*).
+Após **Run**, nós que **produzem** variáveis (`show_get_user_input`, `show_select_from_list`, `browser_get_text`, …) exibem **Last run values** no painel Properties (antes de *On error*).
+
+Detalhes do exemplo eproc (lista de ambiente, probes `detect_screen`): [notas-release-2026-11-05.md](../construcao/notas-release-2026-11-05.md).
 
 **Chrome / Edge:** detecção automática no Windows; override: `HOBLIO_CHROME_PATH`.
 

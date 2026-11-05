@@ -353,6 +353,28 @@
               <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,8,0,0"
                          Text="Blocks the flow until OK/Cancel (Windows). The dialog runs only during Run."/>
             </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionShowSelectFromList, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Dialog title" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectFromListTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Message" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectFromListMessage, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="SelectFromListMessage" DataContext="{Binding}"/>
+              <TextBlock Text="List (one item per line, or JSON array)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectFromListItems, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="96" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="SelectFromListItems" DataContext="{Binding}"/>
+              <CheckBox Content="Keep dialog always on top" IsChecked="{Binding SelectFromListTopmost}" Margin="0,0,0,6"/>
+              <CheckBox Content="Limit to list" IsChecked="{Binding SelectFromListLimitToList}" Margin="0,0,0,6"/>
+              <CheckBox Content="Allow empty selection" IsChecked="{Binding SelectFromListAllowEmpty}" Margin="0,0,0,6"/>
+              <CheckBox Content="Allow multiple selections" IsChecked="{Binding SelectFromListAllowMultiple}" Margin="0,0,0,10"/>
+              <TextBlock Text="SelectedItem variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectFromListSelectedItemVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="SelectedIndex variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectFromListSelectedIndexVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="ButtonPressed variable" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SelectFromListButtonPressedVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,8,0,0"
+                         Text="Blocks the flow until OK/Cancel (Windows). With multiple selections, item and index are JSON arrays."/>
+            </StackPanel>
             <StackPanel Visibility="{Binding ShowActionSetVariable, Converter={StaticResource BoolVis}}">
               <TextBlock Text="Output variable" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding SetVariableName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
@@ -407,6 +429,78 @@
                 <TextBlock Text="Output variable" Style="{StaticResource FieldLabel}"/>
                 <TextBox Text="{Binding BrowserGetTextVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
               </StackPanel>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowActionExcel, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Variável de instância Excel" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelInstance, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Caminho do arquivo (.xlsx)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Excel visível" IsChecked="{Binding ExcelVisible}" Margin="0,0,0,6"/>
+              <CheckBox Content="Salvar ao fechar" IsChecked="{Binding ExcelSaveOnClose}" Margin="0,0,0,6"/>
+              <TextBlock Text="Documento (anexar)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelDocumentName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Planilha (nome)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelWorksheetName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Planilha (índice)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelWorksheetIndex, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Célula nomeada" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelCellName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Linha / coluna início" Style="{StaticResource FieldLabel}"/>
+              <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding ExcelStartRow, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Width="80" Margin="0,0,8,0"/>
+                <TextBox Text="{Binding ExcelStartColumn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Width="80"/>
+              </StackPanel>
+              <TextBlock Text="Linha / coluna fim (opcional)" Style="{StaticResource FieldLabel}"/>
+              <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding ExcelEndRow, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Width="80" Margin="0,0,8,0"/>
+                <TextBox Text="{Binding ExcelEndColumn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Width="80"/>
+              </StackPanel>
+              <TextBlock Text="Valor / texto" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelValue, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variável de saída" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelOutputVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variável de saída 2" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelOutputVariable2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Índice (linha/coluna/planilha)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelIndex, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Macro VBA" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelMacro, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Novo nome (planilha)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelNewName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Localizar / substituir" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelFindText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBox Text="{Binding ExcelReplaceText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <TextBlock Text="Cor (#RRGGBB)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelColorHex, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Modo (sort/paste/lookup/shift…)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Instância destino (copiar planilha)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelTargetInstance, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Planilha origem / destino (cópia)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelSourceWorksheetName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBox Text="{Binding ExcelTargetWorksheetName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <TextBlock Text="Posição nova planilha (after|before|begin|end)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelWorksheetPosition, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Filtro avançado (2 condições)" IsChecked="{Binding ExcelAdvancedFilter}" Margin="0,0,0,6"/>
+              <TextBlock Text="Filtro: operador1 / valor1 / operador2 / valor2 / lógica (and|or)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelFilterOperator1, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBox Text="{Binding ExcelFilterValue1, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <TextBox Text="{Binding ExcelFilterOperator2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <TextBox Text="{Binding ExcelFilterValue2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <TextBox Text="{Binding ExcelFilterLogic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <TextBlock Text="Colar como (all|values|formulas|formats)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelPasteMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Excluir (cells|rows|columns) + modo shift (left|up)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelDeleteScope, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Limpar filtro (all|column|table)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelClearFilterScope, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Ordenar 2ª coluna / ordem (asc|desc)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding ExcelSortColumn2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBox Text="{Binding ExcelSortOrder2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <CheckBox Content="Localizar: diferenciar maiúsculas" IsChecked="{Binding ExcelMatchCase}" Margin="0,0,0,4"/>
+              <CheckBox Content="Localizar: célula inteira" IsChecked="{Binding ExcelMatchEntireCell}" Margin="0,0,0,4"/>
+              <CheckBox Content="PROCV: correspondência exata" IsChecked="{Binding ExcelMatchExactLookup}" Margin="0,0,0,6"/>
             </StackPanel>
 
             <StackPanel Visibility="{Binding ShowRunFlowSection, Converter={StaticResource BoolVis}}">

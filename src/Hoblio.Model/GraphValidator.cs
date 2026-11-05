@@ -178,6 +178,14 @@ public static class GraphValidator
                 if (action is ShowGetUserInputAction { UserInputVariable: var u, ButtonPressedVariable: var b }
                     && (string.IsNullOrWhiteSpace(u) || string.IsNullOrWhiteSpace(b)))
                     throw new ValidationException(ValidationErrorKind.SetVariableNameMissing, $"node `{node.Id}` set_variable requires a non-empty variable name");
+                if (action is ShowSelectFromListAction
+                    {
+                        SelectedItemVariable: var si,
+                        SelectedIndexVariable: var sx,
+                        ButtonPressedVariable: var sb,
+                    }
+                    && (string.IsNullOrWhiteSpace(si) || string.IsNullOrWhiteSpace(sx) || string.IsNullOrWhiteSpace(sb)))
+                    throw new ValidationException(ValidationErrorKind.SetVariableNameMissing, $"node `{node.Id}` set_variable requires a non-empty variable name");
                 if (action is ListAppendAction { ListVariable: var lv } && string.IsNullOrWhiteSpace(lv))
                     throw new ValidationException(ValidationErrorKind.InvalidListVariable, $"for_each node `{node.Id}` has invalid list variable name ``");
                 if (action is ListClearAction { ListVariable: var lc } && string.IsNullOrWhiteSpace(lc))

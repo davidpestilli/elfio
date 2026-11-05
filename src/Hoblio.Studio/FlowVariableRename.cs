@@ -126,6 +126,19 @@ public static class FlowVariableRename
             UserInputVariable = ReplaceVarName(a.UserInputVariable, oldName, newName),
             ButtonPressedVariable = ReplaceVarName(a.ButtonPressedVariable, oldName, newName),
         },
+        ShowSelectFromListAction a => new ShowSelectFromListAction
+        {
+            Title = ReplaceTemplates(a.Title, oldName, newName),
+            Message = ReplaceTemplates(a.Message, oldName, newName),
+            List = ReplaceTemplates(a.List, oldName, newName),
+            Topmost = a.Topmost,
+            LimitToList = a.LimitToList,
+            AllowEmptySelection = a.AllowEmptySelection,
+            AllowMultipleSelections = a.AllowMultipleSelections,
+            SelectedItemVariable = ReplaceVarName(a.SelectedItemVariable, oldName, newName),
+            SelectedIndexVariable = ReplaceVarName(a.SelectedIndexVariable, oldName, newName),
+            ButtonPressedVariable = ReplaceVarName(a.ButtonPressedVariable, oldName, newName),
+        },
         SetVariableAction a => new SetVariableAction
         {
             Variable = ReplaceVarName(a.Variable, oldName, newName),
@@ -147,6 +160,10 @@ public static class FlowVariableRename
             Url = ReplaceTemplates(a.Url, oldName, newName),
             Variable = ReplaceVarName(a.Variable, oldName, newName),
         },
+        ExcelAction e => ExcelActionMutator.RenameReferences(
+            e,
+            text => ReplaceTemplates(text, oldName, newName),
+            value => ReplaceVarName(value, oldName, newName)),
         _ => action,
     };
 

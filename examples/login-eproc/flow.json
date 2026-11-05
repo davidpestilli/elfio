@@ -468,7 +468,7 @@
             "timeout_ms": 1000
           },
           "ui": {
-            "x": 440,
+            "x": 410,
             "y": -170
           }
         },
@@ -483,7 +483,7 @@
             "timeout_ms": 1000
           },
           "ui": {
-            "x": 230,
+            "x": 190,
             "y": -170
           }
         },
@@ -497,7 +497,7 @@
             "wait_for_navigation": true
           },
           "ui": {
-            "x": 640,
+            "x": 820,
             "y": -170
           }
         },
@@ -515,22 +515,29 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 880,
+            "x": 1040,
+            "y": -170
+          }
+        },
+        {
+          "id": "node_a88b129",
+          "kind": "action",
+          "label": "Aguarda 1s",
+          "action": {
+            "type": "delay",
+            "milliseconds": 1000
+          },
+          "ui": {
+            "x": 620,
             "y": -170
           }
         }
       ],
       "edges": [
         {
-          "from": "action_mvzsjpb3",
-          "to": "action_8s5e8dyl",
-          "ui": {
-            "targetHandle": "left"
-          }
-        },
-        {
           "from": "action_mvzsjpb4",
           "to": "action_mvzsjpb3",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -538,6 +545,7 @@
         {
           "from": "action_8s5e8dyl",
           "to": "end_mvzsjw3z",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -545,9 +553,20 @@
         {
           "from": "start",
           "to": "action_mvzsjpb4",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
+        },
+        {
+          "from": "node_a88b129",
+          "to": "action_8s5e8dyl",
+          "port": "main"
+        },
+        {
+          "from": "action_mvzsjpb3",
+          "to": "node_a88b129",
+          "port": "main"
         }
       ],
       "variables": {}
@@ -594,6 +613,7 @@
           "action": {
             "type": "browser_get_text",
             "selector": "#kc-form-buttons \u003E div.my-3.border-bottom.d-flex \u003E div.w-100.text-left.font-weight-light",
+            "timeout_ms": 1000,
             "variable": "ScreenText"
           },
           "ui": {
@@ -612,7 +632,7 @@
           "action": {
             "type": "browser_get_text",
             "selector": "#kc-otp-login-form \u003E div:nth-child(1) \u003E div:nth-child(1) \u003E label",
-            "timeout_ms": 3000,
+            "timeout_ms": 1000,
             "variable": "ScreenText"
           },
           "ui": {
@@ -631,7 +651,7 @@
           "action": {
             "type": "browser_get_text",
             "selector": "#divInfraBarraLocalizacao \u003E div \u003E h1",
-            "timeout_ms": 3000,
+            "timeout_ms": 1000,
             "variable": "ScreenText"
           },
           "ui": {
@@ -648,6 +668,7 @@
         {
           "from": "start",
           "to": "action_clear_screen",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -655,6 +676,7 @@
         {
           "from": "action_clear_screen",
           "to": "action_probe_login",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -662,6 +684,7 @@
         {
           "from": "action_probe_login",
           "to": "action_probe_otp",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -669,6 +692,7 @@
         {
           "from": "action_probe_otp",
           "to": "action_probe_panel",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -676,6 +700,7 @@
         {
           "from": "action_probe_panel",
           "to": "end_detect",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -791,15 +816,16 @@
         {
           "id": "action_mw1envask",
           "kind": "action",
-          "label": "Pergunta ambiente",
+          "label": "Escolhe ambiente",
           "action": {
-            "type": "show_get_user_input",
+            "type": "show_select_from_list",
             "title": "Ambiente eproc",
-            "message": "Digite hml (homologa\u00E7\u00E3o) ou prd (produ\u00E7\u00E3o).",
-            "default_value": "hml",
-            "input_kind": "single_line",
+            "message": "Selecione homologa\u00E7\u00E3o (hml) ou produ\u00E7\u00E3o (prd).",
+            "list": "hml\nprd",
             "topmost": true,
-            "user_input_variable": "EprocEnvChoice",
+            "limit_to_list": true,
+            "selected_item_variable": "EprocEnvChoice",
+            "selected_index_variable": "EprocEnvIndex",
             "button_pressed_variable": "EprocEnvButton"
           },
           "ui": {
@@ -926,6 +952,7 @@
         {
           "from": "start",
           "to": "action_mw1envask",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -933,6 +960,7 @@
         {
           "from": "action_mw1envask",
           "to": "sw_mw1env",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -957,6 +985,7 @@
         {
           "from": "action_mw1prdurl",
           "to": "action_mw1prduser",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -964,6 +993,7 @@
         {
           "from": "action_mw1prduser",
           "to": "end_mw1pickenv",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -979,6 +1009,7 @@
         {
           "from": "def_mw1env",
           "to": "action_mw1hmlurl",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -986,6 +1017,7 @@
         {
           "from": "action_mw1hmlurl",
           "to": "action_mw1hmluser",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }
@@ -993,6 +1025,7 @@
         {
           "from": "action_mw1hmluser",
           "to": "end_mw1pickenv",
+          "port": "main",
           "ui": {
             "targetHandle": "left"
           }

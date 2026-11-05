@@ -82,6 +82,25 @@ public class ActionKindTests
     }
 
     [Fact]
+    public void Show_select_from_list_roundtrip_and_produced()
+    {
+        var action = new ShowSelectFromListAction
+        {
+            Title = "Escolher",
+            Message = "Pick one",
+            List = "A\nB",
+            SelectedItemVariable = "SelectedItem",
+            SelectedIndexVariable = "SelectedIndex",
+            ButtonPressedVariable = "ButtonPressed",
+        };
+        var json = JsonSerializer.Serialize(action, HoblioJson.Options);
+        Assert.Contains("show_select_from_list", json);
+        var back = JsonSerializer.Deserialize<ActionKind>(json, HoblioJson.Options);
+        Roundtrip(action);
+        Assert.Equal(["SelectedItem", "SelectedIndex", "ButtonPressed"], back!.ProducedVariables().ToArray());
+    }
+
+    [Fact]
     public void Set_variable_roundtrip_and_produced()
     {
         var action = new SetVariableAction { Variable = "flag", Value = "{other}" };
@@ -98,5 +117,60 @@ public class ActionKindTests
         var withVar = new HttpGetAction { Url = "https://example.com", Variable = "body" };
         Roundtrip(withVar);
         Assert.Equal(["body"], withVar.ProducedVariables().ToArray());
+    }
+
+    [Fact]
+    public void Excel_actions_roundtrip_and_catalog_id()
+    {
+        var launch = new ExcelAction
+        {
+            Operation = ExcelActionTypes.Launch,
+            Instance = "ExcelInstance1",
+            Path = "dados.xlsx",
+            Visible = true,
+        };
+        Roundtrip(launch);
+        var read = new ExcelAction
+        {
+            Operation = ExcelActionTypes.Read,
+            Instance = "ExcelInstance1",
+            StartRow = "2",
+            StartColumn = "B",
+            OutputVariable = "Valor",
+        };
+        Roundtrip(read);
+        Assert.Equal(["Valor"], read.ProducedVariables().ToArray());
+        var desc = ActionCatalog.Describe(read);
+        Assert.Equal("Excel", desc.Module);
+        Assert.Equal("ReadFromExcel", desc.ActionId);
+    }
+
+    [Fact]
+    public void Excel_extended_fields_roundtrip_json()
+    {
+        var filter = new ExcelAction
+        {
+            Operation = ExcelActionTypes.FilterCells,
+            Instance = "ExcelInstance1",
+            AdvancedFilter = true,
+            FilterOperator1 = ExcelEnums.FilterOperator.GreaterThan,
+            FilterValue1 = "10",
+            FilterOperator2 = ExcelEnums.FilterOperator.LessThan,
+            FilterValue2 = "99",
+            FilterLogic = ExcelEnums.FilterLogic.And,
+        };
+        Roundtrip(filter);
+
+        var copy = new ExcelAction
+        {
+            Operation = ExcelActionTypes.CopyWorksheet,
+            Instance = "ExcelA",
+            TargetInstance = "ExcelB",
+            SourceWorksheetName = "Dados",
+            TargetWorksheetName = "Dados_copia",
+            WorksheetPosition = ExcelEnums.WorksheetPosition.After,
+            PasteMode = ExcelEnums.PasteMode.Values,
+        };
+        Roundtrip(copy);
     }
 }

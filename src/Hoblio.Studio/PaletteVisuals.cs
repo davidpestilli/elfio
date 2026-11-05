@@ -31,7 +31,7 @@ public static class PaletteVisuals
             "no_op" => new Visual("○", Parse("#94A3B8")),
             "delay" => new Visual("⏱", Parse("#64748B")),
             "http_get" => new Visual("⇄", Parse("#2563EB")),
-            "show_message" or "show_get_user_input" => new Visual("💬", Parse("#8B5CF6")),
+            "show_message" or "show_get_user_input" or "show_select_from_list" => new Visual("💬", Parse("#8B5CF6")),
             "file_write" or "file_append" or "file_read" => new Visual("📄", Parse("#475569")),
             "browser_navigate" or "browser_click" or "browser_wait_navigation" or "browser_fill"
                 or "browser_wait_for" or "browser_get_text" => new Visual("🌐", Parse("#2563EB")),
@@ -39,6 +39,7 @@ public static class PaletteVisuals
                 => new Visual("{}", Parse("#0F766E")),
             "run_flow" => new Visual("⎇", Parse("#4F46E5")),
             "create_subflow" => new Visual("+", Parse("#4F46E5")),
+            _ when k.StartsWith("excel_", StringComparison.Ordinal) => new Visual("📊", Parse("#217346")),
             _ => new Visual("•", Parse("#CBD5E1")),
         };
     }

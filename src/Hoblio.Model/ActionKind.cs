@@ -171,6 +171,30 @@ public sealed class ShowGetUserInputAction : ActionKind
     }
 }
 
+public sealed class ShowSelectFromListAction : ActionKind
+{
+    public override string Type => "show_select_from_list";
+    public required string Title { get; init; }
+    public required string Message { get; init; }
+    public required string List { get; init; }
+    public bool? Topmost { get; init; }
+    public bool? LimitToList { get; init; } = true;
+    public bool? AllowEmptySelection { get; init; }
+    public bool? AllowMultipleSelections { get; init; }
+    public string SelectedItemVariable { get; init; } = "SelectedItem";
+    public string SelectedIndexVariable { get; init; } = "SelectedIndex";
+    public string ButtonPressedVariable { get; init; } = "ButtonPressed";
+    public override IEnumerable<string> ProducedVariables()
+    {
+        if (!string.IsNullOrEmpty(SelectedItemVariable))
+            yield return SelectedItemVariable;
+        if (!string.IsNullOrEmpty(SelectedIndexVariable))
+            yield return SelectedIndexVariable;
+        if (!string.IsNullOrEmpty(ButtonPressedVariable))
+            yield return ButtonPressedVariable;
+    }
+}
+
 public sealed class SetVariableAction : ActionKind
 {
     public override string Type => "set_variable";

@@ -24,6 +24,12 @@
       "type": 1
     },
     {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
       "name": "Variables",
       "assembly_name": "Hoblio.Runtime",
       "version": "0.1.0",

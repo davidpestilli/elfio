@@ -1,0 +1,21 @@
+{
+  "name": "excel-demo-flow",
+  "version": "0.1.0",
+  "description": "Excel COM: Launch \u2192 Write \u2192 Filter \u2192 Save \u2192 Close (requer Microsoft Excel no Windows)",
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "Excel",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

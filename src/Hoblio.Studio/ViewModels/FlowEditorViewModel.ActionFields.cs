@@ -21,6 +21,8 @@ public sealed partial class FlowEditorViewModel
                 RunFlowAction a => $"RunFlow: {a.FlowId ?? a.Path ?? "?"}",
                 SetVariableAction a => $"Set {a.Variable}",
                 ShowGetUserInputAction a => $"Input: {Truncate(a.Title, 30)}",
+                ShowSelectFromListAction a => $"Lista: {Truncate(a.Title, 30)}",
+                ExcelAction a => $"Excel: {ExcelActionTypes.ModuleActionId(a.Type)}",
                 _ => node.Action.Type,
             };
         }
@@ -45,6 +47,7 @@ public sealed partial class FlowEditorViewModel
     public bool ShowActionHttpGet => GetSelectedNode()?.Action is HttpGetAction;
     public bool ShowActionShowMessage => GetSelectedNode()?.Action is ShowMessageAction;
     public bool ShowActionShowGetUserInput => GetSelectedNode()?.Action is ShowGetUserInputAction;
+    public bool ShowActionShowSelectFromList => GetSelectedNode()?.Action is ShowSelectFromListAction;
     public bool ShowActionBrowserNavigate => GetSelectedNode()?.Action is BrowserNavigateAction;
     public bool ShowActionBrowserWaitNav => GetSelectedNode()?.Action is BrowserWaitNavigationAction;
     public bool ShowActionDelay => GetSelectedNode()?.Action is DelayAction;
@@ -152,6 +155,44 @@ public sealed partial class FlowEditorViewModel
                 Title = a.Title, Message = a.Message, DefaultValue = a.DefaultValue, InputKind = a.InputKind, Topmost = a.Topmost,
                 UserInputVariable = a.UserInputVariable, ButtonPressedVariable = value,
             }, a.ButtonPressedVariable, value);
+        }
+    }
+
+    public string SelectFromListTitle { get => A<ShowSelectFromListAction>()?.Title ?? ""; set => PatchSelectFromList(a => CopySelectFromList(a, title: value)); }
+    public string SelectFromListMessage { get => A<ShowSelectFromListAction>()?.Message ?? ""; set => PatchSelectFromList(a => CopySelectFromList(a, message: value)); }
+    public string SelectFromListItems { get => A<ShowSelectFromListAction>()?.List ?? ""; set => PatchSelectFromList(a => CopySelectFromList(a, list: value)); }
+    public bool SelectFromListTopmost { get => A<ShowSelectFromListAction>()?.Topmost ?? false; set => PatchSelectFromList(a => CopySelectFromList(a, topmost: value)); }
+    public bool SelectFromListLimitToList { get => A<ShowSelectFromListAction>()?.LimitToList ?? true; set => PatchSelectFromList(a => CopySelectFromList(a, limitToList: value)); }
+    public bool SelectFromListAllowEmpty { get => A<ShowSelectFromListAction>()?.AllowEmptySelection ?? false; set => PatchSelectFromList(a => CopySelectFromList(a, allowEmptySelection: value)); }
+    public bool SelectFromListAllowMultiple { get => A<ShowSelectFromListAction>()?.AllowMultipleSelections ?? false; set => PatchSelectFromList(a => CopySelectFromList(a, allowMultipleSelections: value)); }
+    public string SelectFromListSelectedItemVariable
+    {
+        get => A<ShowSelectFromListAction>()?.SelectedItemVariable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<ShowSelectFromListAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node, () => node.Action = CopySelectFromList(a, selectedItemVariable: value), a.SelectedItemVariable, value);
+        }
+    }
+    public string SelectFromListSelectedIndexVariable
+    {
+        get => A<ShowSelectFromListAction>()?.SelectedIndexVariable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<ShowSelectFromListAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node, () => node.Action = CopySelectFromList(a, selectedIndexVariable: value), a.SelectedIndexVariable, value);
+        }
+    }
+    public string SelectFromListButtonPressedVariable
+    {
+        get => A<ShowSelectFromListAction>()?.ButtonPressedVariable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<ShowSelectFromListAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node, () => node.Action = CopySelectFromList(a, buttonPressedVariable: value), a.ButtonPressedVariable, value);
         }
     }
 
@@ -321,6 +362,39 @@ public sealed partial class FlowEditorViewModel
         SetAction(map(a));
     }
 
+    void PatchSelectFromList(Func<ShowSelectFromListAction, ShowSelectFromListAction> map)
+    {
+        if (A<ShowSelectFromListAction>() is not { } a)
+            return;
+        SetAction(map(a));
+    }
+
+    static ShowSelectFromListAction CopySelectFromList(
+        ShowSelectFromListAction a,
+        string? title = null,
+        string? message = null,
+        string? list = null,
+        bool? topmost = null,
+        bool? limitToList = null,
+        bool? allowEmptySelection = null,
+        bool? allowMultipleSelections = null,
+        string? selectedItemVariable = null,
+        string? selectedIndexVariable = null,
+        string? buttonPressedVariable = null) =>
+        new()
+        {
+            Title = title ?? a.Title,
+            Message = message ?? a.Message,
+            List = list ?? a.List,
+            Topmost = topmost ?? a.Topmost,
+            LimitToList = limitToList ?? a.LimitToList,
+            AllowEmptySelection = allowEmptySelection ?? a.AllowEmptySelection,
+            AllowMultipleSelections = allowMultipleSelections ?? a.AllowMultipleSelections,
+            SelectedItemVariable = selectedItemVariable ?? a.SelectedItemVariable,
+            SelectedIndexVariable = selectedIndexVariable ?? a.SelectedIndexVariable,
+            ButtonPressedVariable = buttonPressedVariable ?? a.ButtonPressedVariable,
+        };
+
     void SetAction(ActionKind? next)
     {
         if (next is null)
@@ -360,6 +434,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionHttpGet));
         OnPropertyChanged(nameof(ShowActionShowMessage));
         OnPropertyChanged(nameof(ShowActionShowGetUserInput));
+        OnPropertyChanged(nameof(ShowActionShowSelectFromList));
         OnPropertyChanged(nameof(ShowActionBrowserNavigate));
         OnPropertyChanged(nameof(ShowActionBrowserWaitNav));
         OnPropertyChanged(nameof(ShowActionDelay));
@@ -370,6 +445,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionAdjustVariable));
         OnPropertyChanged(nameof(ShowActionSetVariable));
         OnPropertyChanged(nameof(ShowBrowserNavigateMaximizeOption));
+        RefreshExcelInspector();
         NotifyAllActionFieldProperties();
     }
 
@@ -382,6 +458,10 @@ public sealed partial class FlowEditorViewModel
             nameof(ListAppendItem), nameof(HttpGetUrl), nameof(HttpGetVariable), nameof(ShowMessageTitle), nameof(ShowMessageText),
             nameof(ShowMessageTimeoutText), nameof(UserInputTitle), nameof(UserInputMessage), nameof(UserInputDefault),
             nameof(UserInputKindMode), nameof(UserInputTopmost), nameof(UserInputVariable), nameof(ButtonPressedVariable),
+            nameof(SelectFromListTitle), nameof(SelectFromListMessage), nameof(SelectFromListItems),
+            nameof(SelectFromListTopmost), nameof(SelectFromListLimitToList), nameof(SelectFromListAllowEmpty),
+            nameof(SelectFromListAllowMultiple), nameof(SelectFromListSelectedItemVariable),
+            nameof(SelectFromListSelectedIndexVariable), nameof(SelectFromListButtonPressedVariable),
             nameof(BrowserNavigateUrl), nameof(BrowserNavigateWaitMsText), nameof(BrowserNavigateShowOnScreen),
             nameof(BrowserNavigateStartMaximized), nameof(BrowserWaitNavTimeoutText), nameof(DelayMillisecondsText),
             nameof(BrowserSelector), nameof(BrowserTimeoutMsText), nameof(BrowserClickWaitForNavigation),

@@ -87,6 +87,12 @@ public sealed partial class FlowEditorViewModel
             case "UserInputMessage":
                 UserInputMessage = UserInputMessage + token;
                 break;
+            case "SelectFromListMessage":
+                SelectFromListMessage = SelectFromListMessage + token;
+                break;
+            case "SelectFromListItems":
+                SelectFromListItems = SelectFromListItems + token;
+                break;
             case "BrowserFillText":
                 BrowserFillText = BrowserFillText + token;
                 break;

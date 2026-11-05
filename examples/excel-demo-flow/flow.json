@@ -1,0 +1,184 @@
+{
+  "start": "start",
+  "variables": {},
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": { "x": 40, "y": 220 }
+    },
+    {
+      "id": "launch",
+      "kind": "action",
+      "label": "Iniciar Excel",
+      "action": {
+        "type": "excel_launch",
+        "instance": "ExcelInstance1",
+        "visible": true
+      },
+      "ui": { "x": 200, "y": 220 }
+    },
+    {
+      "id": "write_header",
+      "kind": "action",
+      "label": "Cabeçalhos",
+      "action": {
+        "type": "excel_write",
+        "instance": "ExcelInstance1",
+        "start_row": "1",
+        "start_column": "A",
+        "value": "Produto"
+      },
+      "ui": { "x": 360, "y": 120 }
+    },
+    {
+      "id": "write_header_b",
+      "kind": "action",
+      "label": "Coluna Qtd",
+      "action": {
+        "type": "excel_write",
+        "instance": "ExcelInstance1",
+        "start_row": "1",
+        "start_column": "B",
+        "value": "Qtd"
+      },
+      "ui": { "x": 360, "y": 220 }
+    },
+    {
+      "id": "write_row2",
+      "kind": "action",
+      "label": "Linha Maçã",
+      "action": {
+        "type": "excel_write",
+        "instance": "ExcelInstance1",
+        "start_row": "2",
+        "start_column": "A",
+        "value": "Maçã"
+      },
+      "ui": { "x": 520, "y": 120 }
+    },
+    {
+      "id": "write_row2_q",
+      "kind": "action",
+      "label": "Qtd Maçã",
+      "action": {
+        "type": "excel_write",
+        "instance": "ExcelInstance1",
+        "start_row": "2",
+        "start_column": "B",
+        "value": "10"
+      },
+      "ui": { "x": 520, "y": 220 }
+    },
+    {
+      "id": "write_row3",
+      "kind": "action",
+      "label": "Linha Banana",
+      "action": {
+        "type": "excel_write",
+        "instance": "ExcelInstance1",
+        "start_row": "3",
+        "start_column": "A",
+        "value": "Banana"
+      },
+      "ui": { "x": 680, "y": 120 }
+    },
+    {
+      "id": "write_row3_q",
+      "kind": "action",
+      "label": "Qtd Banana",
+      "action": {
+        "type": "excel_write",
+        "instance": "ExcelInstance1",
+        "start_row": "3",
+        "start_column": "B",
+        "value": "5"
+      },
+      "ui": { "x": 680, "y": 220 }
+    },
+    {
+      "id": "filter_banana",
+      "kind": "action",
+      "label": "Filtrar Banana",
+      "action": {
+        "type": "excel_filter_cells",
+        "instance": "ExcelInstance1",
+        "start_row": "1",
+        "start_column": "A",
+        "end_row": "3",
+        "end_column": "B",
+        "advanced_filter": true,
+        "filter_operator1": "eq",
+        "filter_value1": "Banana"
+      },
+      "ui": { "x": 840, "y": 220 }
+    },
+    {
+      "id": "read_visible",
+      "kind": "action",
+      "label": "Ler linha Banana",
+      "action": {
+        "type": "excel_read",
+        "instance": "ExcelInstance1",
+        "start_row": "3",
+        "start_column": "A",
+        "output_variable": "FilteredProduct"
+      },
+      "ui": { "x": 1000, "y": 220 }
+    },
+    {
+      "id": "log_result",
+      "kind": "action",
+      "label": "Log produto",
+      "action": {
+        "type": "log",
+        "message": "Excel demo: produto filtrado={FilteredProduct}; salvo em output/excel-demo.xlsx"
+      },
+      "ui": { "x": 1160, "y": 220 }
+    },
+    {
+      "id": "save",
+      "kind": "action",
+      "label": "Salvar xlsx",
+      "action": {
+        "type": "excel_save",
+        "instance": "ExcelInstance1",
+        "path": "output/excel-demo.xlsx"
+      },
+      "ui": { "x": 1320, "y": 220 }
+    },
+    {
+      "id": "close",
+      "kind": "action",
+      "label": "Fechar Excel",
+      "action": {
+        "type": "excel_close",
+        "instance": "ExcelInstance1",
+        "save_on_close": false
+      },
+      "ui": { "x": 1480, "y": 220 }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": { "x": 1640, "y": 220 }
+    }
+  ],
+  "edges": [
+    { "from": "start", "to": "launch" },
+    { "from": "launch", "to": "write_header" },
+    { "from": "write_header", "to": "write_header_b" },
+    { "from": "write_header_b", "to": "write_row2" },
+    { "from": "write_row2", "to": "write_row2_q" },
+    { "from": "write_row2_q", "to": "write_row3" },
+    { "from": "write_row3", "to": "write_row3_q" },
+    { "from": "write_row3_q", "to": "filter_banana" },
+    { "from": "filter_banana", "to": "read_visible" },
+    { "from": "read_visible", "to": "log_result" },
+    { "from": "log_result", "to": "save" },
+    { "from": "save", "to": "close" },
+    { "from": "close", "to": "end" }
+  ]
+}

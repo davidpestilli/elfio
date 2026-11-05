@@ -10,6 +10,7 @@ public static class ActionExecutor
     public static string Execute(
         ActionKind action,
         BrowserContext browser,
+        ExcelContext excel,
         RunVariables vars,
         string? projectRoot)
     {
@@ -48,8 +49,10 @@ public static class ActionExecutor
             BrowserGetTextAction gt => browser.GetText(gt.Selector, gt.TimeoutMs, gt.Variable, vars),
             ShowMessageAction sm => ShowMessage(sm, vars),
             ShowGetUserInputAction ui => ShowGetUserInput(ui, vars),
+            ShowSelectFromListAction sl => ShowSelectFromList(sl, vars),
             SetVariableAction sv => SetVariable(sv, vars),
             IncreaseVariableAction or DecreaseVariableAction => AdjustVariable.ExecuteAdjust(action, vars, 1.0),
+            ExcelAction ex => excel.Execute(ex, vars, projectRoot),
             _ => throw new InvalidOperationException($"unknown action {action.Type}"),
         };
     }
@@ -114,6 +117,32 @@ public static class ActionExecutor
         vars[userVar] = result.UserInput;
         vars[buttonVar] = result.ButtonPressed;
         return $"show_get_user_input: button={result.ButtonPressed} user_input=\"{result.UserInput}\"";
+    }
+
+    static string ShowSelectFromList(ShowSelectFromListAction sl, RunVariables vars)
+    {
+        var itemVar = sl.SelectedItemVariable.Trim();
+        var indexVar = sl.SelectedIndexVariable.Trim();
+        var buttonVar = sl.ButtonPressedVariable.Trim();
+        if (string.IsNullOrEmpty(itemVar) || string.IsNullOrEmpty(indexVar) || string.IsNullOrEmpty(buttonVar))
+            throw new InvalidOperationException("show_select_from_list: output variable names must not be empty");
+
+        var title = RunVariables.Interpolate(sl.Title, vars);
+        var message = RunVariables.Interpolate(sl.Message, vars);
+        var items = SelectFromListItems.Parse(sl.List, vars);
+        var result = NativeDialogs.RunShowSelectFromList(
+            title,
+            message,
+            items,
+            sl.Topmost ?? false,
+            sl.LimitToList ?? true,
+            sl.AllowEmptySelection ?? false,
+            sl.AllowMultipleSelections ?? false);
+
+        vars[itemVar] = result.SelectedItem;
+        vars[indexVar] = result.SelectedIndex;
+        vars[buttonVar] = result.ButtonPressed;
+        return $"show_select_from_list: button={result.ButtonPressed} item=\"{result.SelectedItem}\" index={result.SelectedIndex}";
     }
 
     static string SetVariable(SetVariableAction sv, RunVariables vars)

@@ -29,6 +29,7 @@ Convenções:
 | `http_get` | Utilitários | `Web` | `InvokeWebServiceBase` | `variable` (opcional) |
 | `show_message` | Caixa de mensagens | `Display` | `ShowMessage` | — |
 | `show_get_user_input` | Caixa de mensagens | `Display` | `DisplayInputDialog` | `user_input_variable`, `button_pressed_variable` |
+| `show_select_from_list` | Caixa de mensagens | `Display` | `SelectFromList` | `selected_item_variable`, `selected_index_variable`, `button_pressed_variable` |
 | `file_write` | Arquivos | `File` | `WriteText` | — |
 | `file_append` | Arquivos | `File` | `AppendLine` | — |
 | `file_read` | Arquivos | `File` | `ReadText` | `variable` |
@@ -44,6 +45,7 @@ Convenções:
 | `list_append` | Variáveis | `Variables` | `AddItemToList` | — |
 | `list_clear` | Variáveis | `Variables` | `ClearList` | — |
 | `run_flow` | Fluxos | `FlowControl` | `CallFunction` | `outputs[]` |
+| `excel_*` (41 tipos) | Excel → Básico / Avançado | `Excel` | `LaunchExcel`, `ReadFromExcel`, … | ver `ExcelActionTypes` |
 
 Notas:
 

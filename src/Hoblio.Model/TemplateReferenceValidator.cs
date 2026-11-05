@@ -94,10 +94,15 @@ public static class TemplateReferenceValidator
         HttpGetAction a => [a.Url],
         ShowMessageAction a => [a.Title, a.Text],
         ShowGetUserInputAction a => [a.Title, a.Message, a.DefaultValue],
+        ShowSelectFromListAction a => [a.Title, a.Message, a.List],
         SetVariableAction a => [a.Value],
         IncreaseVariableAction a => Yield(a.Amount),
         DecreaseVariableAction a => Yield(a.Amount),
         RunFlowAction a => RunFlowStrings(a),
+        ExcelAction e => Yield(
+            e.Path, e.WorksheetName, e.WorksheetIndex, e.DocumentName, e.StartRow, e.StartColumn, e.EndRow, e.EndColumn,
+            e.CellName, e.Value, e.Index, e.Macro, e.NewName, e.FindText, e.ReplaceText, e.ColorHex, e.Mode, e.TableName,
+            e.SourceWorksheetName, e.TargetWorksheetName, e.FilterValue1, e.FilterValue2, e.SortColumn2),
         _ => [],
     };
 

@@ -125,6 +125,14 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
                 StartsExpanded = g.DefaultExpanded,
                 Items = new ObservableCollection<PaletteEntryViewModel>(
                     g.Items.Select(PaletteEntryViewModel.FromCatalogEntry)),
+                Sections = new ObservableCollection<PaletteSectionViewModel>(
+                    g.Sections.Select(s => new PaletteSectionViewModel
+                    {
+                        Name = s.Name,
+                        StartsExpanded = s.DefaultExpanded,
+                        Items = new ObservableCollection<PaletteEntryViewModel>(
+                            s.Items.Select(PaletteEntryViewModel.FromCatalogEntry)),
+                    })),
             });
         }
         return groups;
@@ -483,16 +491,45 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         var q = _paletteFilter.Trim();
         foreach (var group in PaletteGroups)
         {
-            var items = group.Items
+            if (group.HasSections)
+            {
+                var sections = new List<PaletteSectionViewModel>();
+                foreach (var section in group.Sections)
+                {
+                    var items = section.Items
+                        .Where(i => PaletteSearch.Matches(i.SearchIndex, q))
+                        .ToList();
+                    if (items.Count == 0)
+                        continue;
+                    sections.Add(new PaletteSectionViewModel
+                    {
+                        Name = section.Name,
+                        StartsExpanded = q.Length > 0 || section.StartsExpanded,
+                        Items = new ObservableCollection<PaletteEntryViewModel>(items),
+                    });
+                }
+
+                if (sections.Count == 0)
+                    continue;
+                FilteredPaletteGroups.Add(new PaletteGroupViewModel
+                {
+                    Name = group.Name,
+                    StartsExpanded = q.Length > 0 || group.StartsExpanded,
+                    Sections = new ObservableCollection<PaletteSectionViewModel>(sections),
+                });
+                continue;
+            }
+
+            var flatItems = group.Items
                 .Where(i => PaletteSearch.Matches(i.SearchIndex, q))
                 .ToList();
-            if (items.Count == 0)
+            if (flatItems.Count == 0)
                 continue;
             FilteredPaletteGroups.Add(new PaletteGroupViewModel
             {
                 Name = group.Name,
-                StartsExpanded = q.Length > 0,
-                Items = new ObservableCollection<PaletteEntryViewModel>(items),
+                StartsExpanded = q.Length > 0 || group.StartsExpanded,
+                Items = new ObservableCollection<PaletteEntryViewModel>(flatItems),
             });
         }
 

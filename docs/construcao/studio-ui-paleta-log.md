@@ -7,7 +7,7 @@ Registro técnico das alterações na interface WPF + React Flow (WebView2).
 | Artefato | Responsabilidade |
 |----------|------------------|
 | `ActionPalettePanel.xaml` | Layout: busca, banner read-only, expanders, cards |
-| `ActionPaletteCatalog.cs` | Grupos, rótulos PT, `SearchAliases` |
+| `ActionPaletteCatalog.cs` | Grupos, rótulos PT, `SearchAliases`; `PaletteSection` para subgrupos (ex.: Excel → Básico / Avançado) |
 | `PaletteVisuals.cs` | Cores/ícones por `Key` (paridade com `flow-canvas/styles.css`) |
 | `PaletteSearch.cs` | Índice e match de filtro |
 | `PaletteGroupViewModel.cs` | `StartsExpanded`, `HeaderText`, VM de entrada |

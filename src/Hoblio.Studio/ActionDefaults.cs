@@ -9,12 +9,17 @@ public static class ActionDefaults
         "log", "no_op", "browser_navigate", "browser_click", "browser_wait_navigation",
         "browser_fill", "browser_wait_for", "browser_get_text", "set_variable",
         "increase_variable", "decrease_variable", "file_write", "file_append", "file_read",
-        "list_append", "list_clear", "delay", "http_get",         "show_message", "show_get_user_input", "run_flow",
+        "list_append", "list_clear", "delay", "http_get",
+        ..ExcelActionTypes.All,
+        "show_message", "show_get_user_input", "show_select_from_list", "run_flow",
     ];
 
     public static ActionKind Create(string type, IReadOnlySet<string>? takenNames = null)
     {
         takenNames ??= new HashSet<string>();
+        if (ExcelActionDefaults.TryCreate(type, takenNames) is { } excel)
+            return excel;
+
         return type switch
         {
             "no_op" => new NoOpAction(),
@@ -70,6 +75,16 @@ public static class ActionDefaults
                 Message = "Digite um valor",
                 DefaultValue = "",
                 UserInputVariable = NextName("UserInput", takenNames) ?? "UserInput",
+                ButtonPressedVariable = NextName("ButtonPressed", takenNames) ?? "ButtonPressed",
+            },
+            "show_select_from_list" => new ShowSelectFromListAction
+            {
+                Title = "Escolher",
+                Message = "Selecione um item",
+                List = "Opção A\nOpção B\nOpção C",
+                LimitToList = true,
+                SelectedItemVariable = NextName("SelectedItem", takenNames) ?? "SelectedItem",
+                SelectedIndexVariable = NextName("SelectedIndex", takenNames) ?? "SelectedIndex",
                 ButtonPressedVariable = NextName("ButtonPressed", takenNames) ?? "ButtonPressed",
             },
             "run_flow" => new RunFlowAction

@@ -30,6 +30,7 @@ public static class ActionCatalog
         HttpGetAction => new("Web", "InvokeWebServiceBase"),
         ShowMessageAction => new("Display", "ShowMessage"),
         ShowGetUserInputAction => new("Display", "DisplayInputDialog"),
+        ShowSelectFromListAction => new("Display", "SelectFromList"),
         FileWriteAction => new("File", "WriteText"),
         FileAppendAction => new("File", "AppendLine"),
         FileReadAction => new("File", "ReadText"),
@@ -45,6 +46,7 @@ public static class ActionCatalog
         ListAppendAction => new("Variables", "AddItemToList"),
         ListClearAction => new("Variables", "ClearList"),
         RunFlowAction => new("FlowControl", "CallFunction"),
+        ExcelAction e => new("Excel", ExcelActionTypes.ModuleActionId(e.Type)),
         _ => new("System", action.Type),
     };
 
@@ -75,7 +77,9 @@ public static class ActionCatalog
             ListAppendAction la => ([la.ListVariable], [la.ListVariable]),
             ListClearAction lc => ([lc.ListVariable], [lc.ListVariable]),
             ShowGetUserInputAction ui => (null, FilterNames(ui.UserInputVariable, ui.ButtonPressedVariable)),
+            ShowSelectFromListAction sl => (null, FilterNames(sl.SelectedItemVariable, sl.SelectedIndexVariable, sl.ButtonPressedVariable)),
             RunFlowAction rf => (rf.Inputs?.Keys.ToList(), rf.Outputs),
+            ExcelAction ex => ExcelVariableIo(ex),
             IncreaseVariableAction iv => ([iv.Variable], [iv.Variable]),
             DecreaseVariableAction dv => ([dv.Variable], [dv.Variable]),
             _ => (null, null),
@@ -85,5 +89,20 @@ public static class ActionCatalog
     {
         var list = names.Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n!.Trim()).ToList();
         return list.Count == 0 ? null : list;
+    }
+
+    static (IReadOnlyList<string>? Inputs, IReadOnlyList<string>? Outputs) ExcelVariableIo(ExcelAction ex)
+    {
+        if (ex.Type == ExcelActionTypes.Launch)
+            return (null, ex.ProducedVariables().ToList() is { Count: > 0 } o ? o : null);
+
+        var inputs = new List<string> { ex.Instance };
+        if (ex.Type == ExcelActionTypes.CopyWorksheet
+            && !string.IsNullOrWhiteSpace(ex.TargetInstance)
+            && !string.Equals(ex.TargetInstance.Trim(), ex.Instance.Trim(), StringComparison.Ordinal))
+            inputs.Add(ex.TargetInstance.Trim());
+
+        var outputs = ex.ProducedVariables().ToList();
+        return (inputs, outputs.Count == 0 ? null : outputs);
     }
 }
