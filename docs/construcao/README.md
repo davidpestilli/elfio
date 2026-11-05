@@ -6,6 +6,8 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 |-----------|----------|
 | [runtime-e-execucao.md](./runtime-e-execucao.md) | Camadas, pipeline de run, separação grafo × ações × serviços |
 | [catalogo-acoes-e-modulos.md](./catalogo-acoes-e-modulos.md) | Identificadores estáveis (`module`, `action_id`), paleta e mapeamento JSON |
+| [modulo-excel.md](./modulo-excel.md) | Módulo Excel COM: paleta, JSON, runtime, exemplo, testes |
+| [notas-release-2026-11-05.md](./notas-release-2026-11-05.md) | Rodada nov/2025: lista, login-eproc, Excel, Studio |
 | [telemetria-e-logs.md](./telemetria-e-logs.md) | Eventos de run, JSONL, correlação Studio ↔ CLI |
 | [manifest-e-capacidades.md](./manifest-e-capacidades.md) | `manifest.json` atual e extensão `module_references` |
 

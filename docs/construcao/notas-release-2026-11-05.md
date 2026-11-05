@@ -56,12 +56,22 @@ O subfluxo **não para** no primeiro probe com sucesso; `ScreenText` fica com o 
 
 ## 3. Módulo Excel (`excel_*`)
 
-- **41** tipos de ação COM (`ExcelActionTypes`), paleta Studio (Básico / Avançado), runtime `ExcelContext` / `ExcelComSemantics`
-- Exemplo: `examples/excel-demo-flow`
-- Requisito: Microsoft Excel instalado (Windows)
-- Testes: `ExcelActionCoverageTests`, `PaletteCatalogStructureTests`
+Entrega completa documentada em **[modulo-excel.md](modulo-excel.md)**. Resumo:
 
-Ver linha `excel_*` em [catalogo-acoes-e-modulos.md](catalogo-acoes-e-modulos.md).
+| Área | Entrega |
+|------|---------|
+| Modelo | `ExcelAction` + 41 tipos `excel_*`, JSON estendido (filtro avançado, colar, copiar planilha, PROCV, …) |
+| Runtime | `ExcelContext` + `ExcelComSemantics` — COM próprio, sessão por variável `instance` |
+| Paleta | **Um** grupo **Excel** com subgrupos **Básico** (16) e **Avançado** (25) via `PaletteSection` |
+| Studio | Painel de propriedades Excel; ícone 📊; busca por aliases em inglês |
+| Exemplo | `examples/excel-demo-flow` → `output/excel-demo.xlsx` |
+| Manifest | `module_references`: `Excel` |
+
+Requisito: Microsoft Excel instalado (Windows).
+
+Testes: `ExcelActionCoverageTests`, `ActionKindTests` (Excel), `PaletteCatalogStructureTests`.
+
+Catálogo telemetria: linha `excel_*` em [catalogo-acoes-e-modulos.md](catalogo-acoes-e-modulos.md).
 
 ---
 

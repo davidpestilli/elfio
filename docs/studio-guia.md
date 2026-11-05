@@ -30,12 +30,12 @@ Interface inspirada no **Hoblio Studio (Rust/Tauri)** e no fluxo de trabalho do 
 ## Paleta de ações (sidebar esquerda)
 
 - **Busca** com placeholder (sem label “Filtrar”); aceita português, id do nó e aliases em inglês (`HttpGet`, `Delay`, …). Com texto na busca, os grupos com resultados **abrem** automaticamente.
-- **Grupos colapsáveis** (`Expander`) com contagem de itens; ao abrir o Studio, **todos os grupos começam fechados**.
+- **Grupos colapsáveis** (`Expander`) com contagem de itens. O grupo **Excel** contém subgrupos **Básico** e **Avançado** (expanders aninhados). Demais grupos seguem a política de expansão do catálogo (`DefaultExpanded` por grupo; Excel aberto, Avançado fechado por padrão).
 - Cada ação é um **card**: faixa de cor alinhada ao canvas, ícone, título em PT, descrição curta; tooltip com detalhe.
 - Instruções de uso no ícone **ⓘ** no cabeçalho (não ocupam espaço fixo).
 - **Modo Exibição** ou execução em andamento: banner na paleta e botões de inserção desabilitados.
 
-Metadados: `ActionPaletteCatalog.cs`, apresentação `PaletteVisuals.cs`, filtro `PaletteSearch.cs`.
+Metadados: `ActionPaletteCatalog.cs`, `ExcelPaletteCatalog.cs`, apresentação `PaletteVisuals.cs`, filtro `PaletteSearch.cs`. Excel: [construcao/modulo-excel.md](construcao/modulo-excel.md).
 
 ## Painéis laterais — estado inicial
 

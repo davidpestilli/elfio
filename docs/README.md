@@ -5,6 +5,7 @@
 | [conformidade/registro-auditoria-independencia-pad.md](conformidade/registro-auditoria-independencia-pad.md) | O que já foi verificado vs código PAD (anti-plágio; auditorias incrementais) |
 | [guia-construcao.md](guia-construcao.md) | Build, testes, Grok v2, pendências Elfio |
 | [construcao/README.md](construcao/README.md) | Runtime, catálogo de ações, telemetria, manifest |
+| [construcao/modulo-excel.md](construcao/modulo-excel.md) | Módulo Excel: 41 ações, paleta Básico/Avançado, runtime COM, demo |
 | [construcao/notas-release-2026-11-05.md](construcao/notas-release-2026-11-05.md) | Lista/diálogo, Excel, login-eproc, probes de tela |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Mapa crates Rust → projetos .NET |
 | [PARITY.md](PARITY.md) | Checklist de paridade com Hoblio Rust |

@@ -27,6 +27,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
 | Browser CDP (navigate, click, fill, wait, get_text) | ✓ | ✓ | browser-demo-flow (manual + Chrome) |
 | show_message / show_get_user_input / show_select_from_list | ✓ | ✓ | message-timer-demo (manual) |
+| Excel COM (`excel_*`, 41 ações) | — | ✓ | `excel-demo-flow` (manual + Excel instalado) |
 | HOBLIO_CHROME_PATH | ✓ | ✓ | ChromiumLocator |
 | Cancel run | ✓ | ✓ | API `RunCancel` (Studio a expor) |
 
@@ -47,7 +48,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Abrir/salvar projeto | ✓ | ✓ |
 | Validar / executar | ✓ | ✓ |
 | Posição UI (drag) | ✓ | ✓ (React Flow) |
-| Palette agrupada / novos nós | ✓ | ✓ (categorias de paleta + filtro; Start/End/New subflow alinhados ao Rust) |
+| Palette agrupada / novos nós | ✓ | ✓ (categorias + subgrupos ex. Excel Básico/Avançado; busca; Start/End/New subflow) |
 | Modo Exibição / Edição | ✓ | ✓ |
 | PropertiesPanel completo | ✓ | ✓ (formulário por tipo de ação, if/loop, run_flow, erro, última exec.) |
 | Run log panel | ✓ | ✓ (lista + toggle JSON + copiar log) |
