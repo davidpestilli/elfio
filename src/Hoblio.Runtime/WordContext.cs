@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Hoblio.Model;
@@ -23,10 +22,6 @@ public sealed class WordContext : IDisposable
     const int WdReplaceOne = 1;
     const int WdReplaceAll = 2;
     const int WdFindStop = 0;
-
-    static readonly Regex PageRangeRegex = new(
-        @"^\s*((?'PageValues'\d+\s*(-\s*\d+)?\s*),\s*)*(?'PageValues'\d+\s*(-\s*\d+)?)(\s*,)?\s*$",
-        RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     public void Dispose()
     {
@@ -263,21 +258,62 @@ public sealed class WordContext : IDisposable
     static string ReadWholeDocument(WordSession session) =>
         ((string)session.Document.Range().Text).TrimEnd('\r', '\a');
 
+    /// <summary>Interpreta especificação estilo "1, 3-5, 7" (mesma gramática de produto, parser próprio).</summary>
+    static IReadOnlyList<string> ParsePageRangeSpec(string pagesSpec)
+    {
+        var tokens = new List<string>();
+        foreach (var segment in pagesSpec.Split(','))
+        {
+            var token = segment.Trim();
+            if (token.Length == 0)
+                continue;
+
+            var dash = token.IndexOf('-', StringComparison.Ordinal);
+            if (dash < 0)
+            {
+                if (!IsPageNumberToken(token))
+                    throw new InvalidOperationException($"Formato de páginas inválido: `{pagesSpec}`.");
+                tokens.Add(token);
+                continue;
+            }
+
+            var left = token[..dash].Trim();
+            var right = token[(dash + 1)..].Trim();
+            if (left.Length == 0 || right.Length == 0 || token.IndexOf('-', dash + 1) >= 0
+                || !IsPageNumberToken(left) || !IsPageNumberToken(right))
+                throw new InvalidOperationException($"Formato de páginas inválido: `{pagesSpec}`.");
+            tokens.Add($"{left}-{right}");
+        }
+
+        if (tokens.Count == 0)
+            throw new InvalidOperationException($"Formato de páginas inválido: `{pagesSpec}`.");
+        return tokens;
+    }
+
+    static bool IsPageNumberToken(string token)
+    {
+        if (token.Length == 0)
+            return false;
+        foreach (var ch in token)
+        {
+            if (!char.IsAsciiDigit(ch))
+                return false;
+        }
+        return true;
+    }
+
     string ReadByPages(WordSession session, WordAction action, RunVariables vars)
     {
         var pagesSpec = RunVariables.Interpolate(action.Pages ?? "", vars);
         if (string.IsNullOrWhiteSpace(pagesSpec))
             throw new InvalidOperationException("word_read: informe `pages` (ex.: 1-3,5).");
-        var match = PageRangeRegex.Match(pagesSpec);
-        if (!match.Success)
-            throw new InvalidOperationException($"Formato de páginas inválido: `{pagesSpec}`.");
+        var pageTokens = ParsePageRangeSpec(pagesSpec);
 
         dynamic doc = session.Document;
         var pageCount = (int)doc.ComputeStatistics(WdStatisticPages);
         var sb = new StringBuilder();
-        foreach (Capture capture in match.Groups["PageValues"].Captures)
+        foreach (var token in pageTokens)
         {
-            var token = capture.Value.Trim();
             if (token.Contains('-', StringComparison.Ordinal))
             {
                 var parts = token.Split('-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
