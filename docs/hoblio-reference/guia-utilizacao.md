@@ -63,6 +63,7 @@ cargo run -p hoblio-cli -- run examples\flow-control-demo
 | `examples/message-timer-demo` | Janela **`show_message`** com timer 2s (Windows) |
 | `examples/browser-demo-flow` | Browser CDP → texto → `output/heading.txt` |
 | `examples/excel-demo-flow` | Excel COM → grava planilha → filtro → `output/excel-demo.xlsx` |
+| `examples/word-demo-flow` | Word COM → escreve → localizar/substituir → `output/word-demo.docx` |
 
 Validar antes de rodar:
 

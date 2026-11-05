@@ -61,6 +61,7 @@ public static class ActionPaletteCatalog
             ],
         },
         ExcelPaletteCatalog.Group,
+        WordPaletteCatalog.Group,
         new PaletteGroup
         {
             Name = "Browser",

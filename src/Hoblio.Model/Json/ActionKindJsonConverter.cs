@@ -134,6 +134,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
             },
             "run_flow" => ReadRunFlow(root),
             _ when ExcelActionTypes.IsExcelType(type) => ExcelActionJson.Read(root, type),
+            _ when WordActionTypes.IsWordType(type) => WordActionJson.Read(root, type),
             _ => throw new JsonException($"unknown action type `{type}`"),
         };
     }
@@ -250,6 +251,9 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 break;
             case ExcelAction a:
                 ExcelActionJson.Write(writer, a);
+                break;
+            case WordAction a:
+                WordActionJson.Write(writer, a);
                 break;
             case RunFlowAction a:
                 WriteOptionalString(writer, "flow_id", a.FlowId);

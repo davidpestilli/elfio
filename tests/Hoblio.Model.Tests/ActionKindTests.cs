@@ -146,6 +146,30 @@ public class ActionKindTests
     }
 
     [Fact]
+    public void Word_actions_roundtrip_and_catalog_id()
+    {
+        var launch = new WordAction
+        {
+            Operation = WordActionTypes.Launch,
+            Instance = "WordInstance1",
+            Visible = true,
+        };
+        Roundtrip(launch);
+        var read = new WordAction
+        {
+            Operation = WordActionTypes.Read,
+            Instance = "WordInstance1",
+            Mode = WordEnums.ReadMode.Pages,
+            Pages = "1-2",
+            OutputVariable = "WordData",
+        };
+        Roundtrip(read);
+        var desc = ActionCatalog.Describe(read);
+        Assert.Equal("Word", desc.Module);
+        Assert.Equal("ReadFromWord", desc.ActionId);
+    }
+
+    [Fact]
     public void Excel_extended_fields_roundtrip_json()
     {
         var filter = new ExcelAction

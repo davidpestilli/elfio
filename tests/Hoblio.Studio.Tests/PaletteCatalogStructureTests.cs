@@ -18,4 +18,14 @@ public sealed class PaletteCatalogStructureTests
         Assert.Equal(16, excel.Sections[0].Items.Count);
         Assert.Equal(25, excel.Sections[1].Items.Count);
     }
+
+    [Fact]
+    public void Word_is_single_group_with_eight_actions()
+    {
+        var wordGroups = ActionPaletteCatalog.Groups.Where(g => g.Name == "Word").ToList();
+        Assert.Single(wordGroups);
+        var word = wordGroups[0];
+        Assert.Empty(word.Sections);
+        Assert.Equal(8, word.Items.Count);
+    }
 }

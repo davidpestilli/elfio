@@ -18,6 +18,7 @@ Clone recomendado em pasta **`elfio`** (sem `#` no caminho) para build do canvas
 - [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)
 - Chrome ou Edge (ações `browser_*`), ou `HOBLIO_CHROME_PATH`
 - Microsoft Excel instalado (ações `excel_*`, ex.: `examples/excel-demo-flow`)
+- Microsoft Word instalado (ações `word_*`, ex.: `examples/word-demo-flow`)
 
 ## Comandos
 
@@ -30,6 +31,7 @@ dotnet test
 dotnet run --project src/Hoblio.Cli -- validate examples/flow-control-demo
 dotnet run --project src/Hoblio.Cli -- run examples/flow-control-demo
 dotnet run --project src/Hoblio.Cli -- run examples/excel-demo-flow --jsonl
+dotnet run --project src/Hoblio.Cli -- run examples/word-demo-flow --jsonl
 dotnet run --project src/Hoblio.Studio
 ```
 

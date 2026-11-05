@@ -11,6 +11,7 @@ public static class ActionExecutor
         ActionKind action,
         BrowserContext browser,
         ExcelContext excel,
+        WordContext word,
         RunVariables vars,
         string? projectRoot)
     {
@@ -53,6 +54,7 @@ public static class ActionExecutor
             SetVariableAction sv => SetVariable(sv, vars),
             IncreaseVariableAction or DecreaseVariableAction => AdjustVariable.ExecuteAdjust(action, vars, 1.0),
             ExcelAction ex => excel.Execute(ex, vars, projectRoot),
+            WordAction w => word.Execute(w, vars, projectRoot),
             _ => throw new InvalidOperationException($"unknown action {action.Type}"),
         };
     }

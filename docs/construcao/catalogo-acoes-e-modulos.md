@@ -46,6 +46,7 @@ Convenções:
 | `list_clear` | Variáveis | `Variables` | `ClearList` | — |
 | `run_flow` | Fluxos | `FlowControl` | `CallFunction` | `outputs[]` |
 | `excel_*` (41 tipos) | Excel → Básico / Avançado | `Excel` | `LaunchExcel`, `ReadFromExcel`, … | ver `ExcelActionTypes` |
+| `word_*` (8 tipos) | Word | `Word` | `LaunchWord`, `ReadFromWord`, … | ver `WordActionTypes` |
 
 Notas:
 

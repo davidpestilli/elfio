@@ -1,0 +1,112 @@
+{
+  "start": "start",
+  "variables": {},
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": { "x": 40, "y": 220 }
+    },
+    {
+      "id": "launch",
+      "kind": "action",
+      "label": "Iniciar Word",
+      "action": {
+        "type": "word_launch",
+        "instance": "WordInstance1",
+        "visible": true
+      },
+      "ui": { "x": 200, "y": 220 }
+    },
+    {
+      "id": "write_intro",
+      "kind": "action",
+      "label": "Escrever texto",
+      "action": {
+        "type": "word_write",
+        "instance": "WordInstance1",
+        "mode": "end",
+        "value": "Demonstração Elfio — Word COM\r\rEste parágrafo contém a palavra inicial para localizar.",
+        "append_new_line": true
+      },
+      "ui": { "x": 360, "y": 220 }
+    },
+    {
+      "id": "find_replace",
+      "kind": "action",
+      "label": "Substituir inicial",
+      "action": {
+        "type": "word_find_replace",
+        "instance": "WordInstance1",
+        "find_text": "inicial",
+        "replace_text": "final",
+        "all_matches": true,
+        "match_case": false,
+        "match_entire_word": false,
+        "match_wildcards": false
+      },
+      "ui": { "x": 520, "y": 220 }
+    },
+    {
+      "id": "read_doc",
+      "kind": "action",
+      "label": "Ler documento",
+      "action": {
+        "type": "word_read",
+        "instance": "WordInstance1",
+        "mode": "document",
+        "output_variable": "WordText"
+      },
+      "ui": { "x": 680, "y": 220 }
+    },
+    {
+      "id": "log_result",
+      "kind": "action",
+      "label": "Log resumo",
+      "action": {
+        "type": "log",
+        "message": "Word demo: leitura em WordText concluída; salvo em output/word-demo.docx"
+      },
+      "ui": { "x": 840, "y": 220 }
+    },
+    {
+      "id": "save",
+      "kind": "action",
+      "label": "Salvar docx",
+      "action": {
+        "type": "word_save",
+        "instance": "WordInstance1",
+        "path": "output/word-demo.docx"
+      },
+      "ui": { "x": 1000, "y": 220 }
+    },
+    {
+      "id": "close",
+      "kind": "action",
+      "label": "Fechar Word",
+      "action": {
+        "type": "word_close",
+        "instance": "WordInstance1",
+        "mode": "close"
+      },
+      "ui": { "x": 1160, "y": 220 }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": { "x": 1320, "y": 220 }
+    }
+  ],
+  "edges": [
+    { "from": "start", "to": "launch" },
+    { "from": "launch", "to": "write_intro" },
+    { "from": "write_intro", "to": "find_replace" },
+    { "from": "find_replace", "to": "read_doc" },
+    { "from": "read_doc", "to": "log_result" },
+    { "from": "log_result", "to": "save" },
+    { "from": "save", "to": "close" },
+    { "from": "close", "to": "end" }
+  ]
+}

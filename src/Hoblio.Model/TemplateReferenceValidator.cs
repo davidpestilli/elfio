@@ -103,6 +103,8 @@ public static class TemplateReferenceValidator
             e.Path, e.WorksheetName, e.WorksheetIndex, e.DocumentName, e.StartRow, e.StartColumn, e.EndRow, e.EndColumn,
             e.CellName, e.Value, e.Index, e.Macro, e.NewName, e.FindText, e.ReplaceText, e.ColorHex, e.Mode, e.TableName,
             e.SourceWorksheetName, e.TargetWorksheetName, e.FilterValue1, e.FilterValue2, e.SortColumn2),
+        WordAction w => Yield(
+            w.Path, w.DocumentName, w.Mode, w.Pages, w.Bookmark, w.Value, w.FindText, w.ReplaceText, w.ImageSource, w.TextToFind),
         _ => [],
     };
 

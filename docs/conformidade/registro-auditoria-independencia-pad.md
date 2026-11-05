@@ -77,14 +77,17 @@ Há **identificadores de telemetria e manifest** que reutilizam **nomes público
 |-------|--------|----------------------|
 | `src/Hoblio.Model/ActionCatalog.cs` | `module` + `action_id` (ex.: `WebAutomation`, `LaunchChromeBase`, `PopulateTextFieldBase`) | Vocabulário de **metadados**; implementação é PuppeteerSharp + JSON próprio |
 | `src/Hoblio.Model/ExcelActionTypes.cs` | `ModuleActionIds` (ex.: `LaunchExcel`, `AttachToRunningExcel`, `ReadFromExcel`) | Mesmos **rótulos** que símbolos Robin; tipos JSON Elfio são `excel_*` |
+| `src/Hoblio.Model/WordActionTypes.cs` | `ModuleActionIds` (ex.: `LaunchWord`, `AttachToRunningWord`, `ReadFromWord`) | Mesmos **rótulos** que símbolos Robin; tipos JSON Elfio são `word_*` |
 | `docs/construcao/catalogo-acoes-e-modulos.md` | Tabela `type` → `module` / `action_id` | Documentação de produto |
 | `examples/*/manifest.json` | `module_references[].name` (ex.: `WebAutomation`) | Capacidades declaradas, não binários PAD |
 | `src/Hoblio.Studio/ExcelPaletteCatalog.cs` | Texto de busca da paleta inclui nomes PAD (ex.: `AttachToRunningExcel`) | Apenas **keywords** de UI |
+| `src/Hoblio.Studio/WordPaletteCatalog.cs` | Keywords PAD (ex.: `LaunchWord`, `InsertImageToWord`) | Apenas **keywords** de UI |
 
 **Implementações distintas verificadas:**
 
 - **Browser:** `BrowserContext.cs` — PuppeteerSharp/CDP; PAD usa extensão + native messaging + runtime `WebAutomationRuntimeServiceProxy` (ver pasta `01-Automacao-Navegador` no estudo PAD).
 - **Excel:** `ExcelContext.cs` + `ExcelComSemantics.cs` — COM `dynamic` + constantes xl* locais; não há cópia de IL das classes `Microsoft.Flow.RPA.Desktop.Modules.Excel.Actions.*`.
+- **Word:** `WordContext.cs` — COM `dynamic` + constantes wd* locais; não há cópia de IL das classes `Microsoft.Flow.RPA.Desktop.Modules.Word.Actions.*`.
 - **Fluxo:** `FlowExecutor.cs` + JSON `flow.json`; PAD usa Robin, `FlowGraphBuilder`, `Robin.Engine` (pastas `02`, `18`, `19` no estudo PAD) — **sem parser Robin** no Elfio.
 
 Se a política interna exigir **distanciamento nominal total**, alterar apenas `ActionCatalog` / `ExcelActionTypes` / manifests (breaking change de telemetria), **não** reimplementar runtime.
@@ -118,7 +121,7 @@ Legenda: **Verificado** = código Elfio existente comparado ao baseline PAD; **N
 | 20 HTTP-Web | `http_get` | Verificado |
 | 21–23 FTP, Terminal, Filas | — | N/A |
 | 25 Gravador | — | N/A |
-| 26 Word | — | N/A |
+| 26 Word | `word_*`, `WordContext` | Verificado — COM próprio |
 | 27 Triggers … 38 Executar-Fluxo | — | N/A (exceto conceito `run_flow` já coberto) |
 | 29 Caixas-Mensagem | `NativeDialogs`, WPF dialogs | Verificado |
 
@@ -149,7 +152,7 @@ Marcar novos ficheiros fora desta lista na próxima auditoria incremental.
 <details>
 <summary><code>src/Hoblio.Runtime</code> (21)</summary>
 
-- `ActionExecutor.cs`, `AdjustVariable.cs`, `BrowserContext.cs`, `ChromiumLocator.cs`, `ExcelComSemantics.cs`, `ExcelContext.cs`
+- `ActionExecutor.cs`, `AdjustVariable.cs`, `BrowserContext.cs`, `ChromiumLocator.cs`, `ExcelComSemantics.cs`, `ExcelContext.cs`, `WordContext.cs`
 - `ExpressionEvaluator.cs`, `FileActions.cs`, `FlowExecutor.cs`, `ListActions.cs`, `NativeDialogs.cs`
 - `RunErrors.cs`, `RunEventJson.cs`, `RunEvents.cs`, `RunFlowSupport.cs`, `RunTelemetry.cs`, `RunVariables.cs`
 - `SelectFromListDialog.xaml.cs`, `SelectFromListItems.cs`, `UserInputDialog.xaml.cs`, `GlobalUsings.cs`

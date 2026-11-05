@@ -23,6 +23,7 @@ public sealed partial class FlowEditorViewModel
                 ShowGetUserInputAction a => $"Input: {Truncate(a.Title, 30)}",
                 ShowSelectFromListAction a => $"Lista: {Truncate(a.Title, 30)}",
                 ExcelAction a => $"Excel: {ExcelActionTypes.ModuleActionId(a.Type)}",
+                WordAction a => $"Word: {WordActionTypes.ModuleActionId(a.Type)}",
                 _ => node.Action.Type,
             };
         }
@@ -446,6 +447,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionSetVariable));
         OnPropertyChanged(nameof(ShowBrowserNavigateMaximizeOption));
         RefreshExcelInspector();
+        RefreshWordInspector();
         NotifyAllActionFieldProperties();
     }
 

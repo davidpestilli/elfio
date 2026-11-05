@@ -90,3 +90,33 @@ dotnet run --project src/Hoblio.Cli -- validate examples/excel-demo-flow
 ```
 
 Paridade atualizada em [PARITY.md](../PARITY.md).
+
+---
+
+## 6. Módulo Word (`word_*`)
+
+Entrega alinhada à paleta PAD **Word desktop** (8 ações). Documentação completa: **[modulo-word.md](modulo-word.md)**.
+
+| Área | Entrega |
+|------|---------|
+| Modelo | `WordAction` + 8 tipos `word_*`, JSON (`mode`, marcadores, find/replace, imagem) |
+| Runtime | `WordContext` — COM `Word.Application`, sessão por `instance` (app + documento) |
+| Anexo | `GetActiveObject` + enumeração `WINWORD` / `AccessibleObjectFromWindow` (paridade com `AttachToRunningWord`) |
+| Paleta | Grupo **Word** com 8 entradas (rótulos PT como no PAD) |
+| Studio | Painel de propriedades Word; defaults; rename de variáveis/templates |
+| Exemplo | `examples/word-demo-flow` → Launch → Write → Find/Replace → Read → Save → `output/word-demo.docx` → Close |
+| Manifest | `module_references`: `Word`, `System` |
+
+Requisito: Microsoft Word instalado (Windows).
+
+Estudo PAD de referência: pasta **`26-Word`** (fora do repo Elfio; engenharia reversa `Modules.Word.Actions`).
+
+Testes: `WordActionCoverageTests`, `ActionKindTests` (Word), `PaletteCatalogStructureTests` (Word).
+
+```powershell
+dotnet test --filter "Word|PaletteCatalog"
+dotnet run --project src/Hoblio.Cli -- validate examples/word-demo-flow
+dotnet run --project src/Hoblio.Cli -- run examples/word-demo-flow --jsonl
+```
+
+Catálogo telemetria: linha `word_*` em [catalogo-acoes-e-modulos.md](catalogo-acoes-e-modulos.md). Conformidade: linha **26 Word** em [registro-auditoria-independencia-pad.md](../conformidade/registro-auditoria-independencia-pad.md).

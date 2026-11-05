@@ -47,6 +47,7 @@ public static class ActionCatalog
         ListClearAction => new("Variables", "ClearList"),
         RunFlowAction => new("FlowControl", "CallFunction"),
         ExcelAction e => new("Excel", ExcelActionTypes.ModuleActionId(e.Type)),
+        WordAction w => new("Word", WordActionTypes.ModuleActionId(w.Type)),
         _ => new("System", action.Type),
     };
 
@@ -80,6 +81,7 @@ public static class ActionCatalog
             ShowSelectFromListAction sl => (null, FilterNames(sl.SelectedItemVariable, sl.SelectedIndexVariable, sl.ButtonPressedVariable)),
             RunFlowAction rf => (rf.Inputs?.Keys.ToList(), rf.Outputs),
             ExcelAction ex => ExcelVariableIo(ex),
+            WordAction w => WordVariableIo(w),
             IncreaseVariableAction iv => ([iv.Variable], [iv.Variable]),
             DecreaseVariableAction dv => ([dv.Variable], [dv.Variable]),
             _ => (null, null),
@@ -103,6 +105,16 @@ public static class ActionCatalog
             inputs.Add(ex.TargetInstance.Trim());
 
         var outputs = ex.ProducedVariables().ToList();
+        return (inputs, outputs.Count == 0 ? null : outputs);
+    }
+
+    static (IReadOnlyList<string>? Inputs, IReadOnlyList<string>? Outputs) WordVariableIo(WordAction w)
+    {
+        if (w.Type == WordActionTypes.Launch)
+            return (null, w.ProducedVariables().ToList() is { Count: > 0 } o ? o : null);
+
+        var inputs = new List<string> { w.Instance };
+        var outputs = w.ProducedVariables().ToList();
         return (inputs, outputs.Count == 0 ? null : outputs);
     }
 }

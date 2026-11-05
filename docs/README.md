@@ -6,7 +6,8 @@
 | [guia-construcao.md](guia-construcao.md) | Build, testes, Grok v2, pendências Elfio |
 | [construcao/README.md](construcao/README.md) | Runtime, catálogo de ações, telemetria, manifest |
 | [construcao/modulo-excel.md](construcao/modulo-excel.md) | Módulo Excel: 41 ações, paleta Básico/Avançado, runtime COM, demo |
-| [construcao/notas-release-2026-11-05.md](construcao/notas-release-2026-11-05.md) | Lista/diálogo, Excel, login-eproc, probes de tela |
+| [construcao/modulo-word.md](construcao/modulo-word.md) | Módulo Word: 8 ações PAD, runtime COM, `word-demo-flow` |
+| [construcao/notas-release-2026-11-05.md](construcao/notas-release-2026-11-05.md) | Lista/diálogo, Excel, Word, login-eproc, probes de tela |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Mapa crates Rust → projetos .NET |
 | [PARITY.md](PARITY.md) | Checklist de paridade com Hoblio Rust |
 | [studio-guia.md](studio-guia.md) | Uso do Elfio Studio (WPF + React Flow) |

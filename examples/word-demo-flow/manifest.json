@@ -1,0 +1,21 @@
+{
+  "name": "word-demo-flow",
+  "version": "0.1.0",
+  "description": "Word COM: Launch → Write → Find/Replace → Read → Save → Close (requer Microsoft Word no Windows)",
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "Word",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "System",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
+}

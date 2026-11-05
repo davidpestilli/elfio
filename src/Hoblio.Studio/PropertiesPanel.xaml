@@ -503,6 +503,39 @@
               <CheckBox Content="PROCV: correspondência exata" IsChecked="{Binding ExcelMatchExactLookup}" Margin="0,0,0,6"/>
             </StackPanel>
 
+            <StackPanel Visibility="{Binding ShowActionWord, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Variável de instância Word" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordInstance, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Caminho (.docx / imagem / Salvar como)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Word visível" IsChecked="{Binding WordVisible}" Margin="0,0,0,4"/>
+              <CheckBox Content="Abrir somente leitura" IsChecked="{Binding WordReadOnly}" Margin="0,0,0,6"/>
+              <TextBlock Text="Documento (anexar)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordDocumentName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Modo (read/write/close/image — ver WordEnums)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Páginas (leitura, ex.: 1-3,5)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordPages, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Marcador" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordBookmark, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Texto / valor" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordValue, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <CheckBox Content="Acrescentar quebra de linha ao escrever" IsChecked="{Binding WordAppendNewLine}" Margin="0,0,0,6"/>
+              <TextBlock Text="Variável de saída (leitura)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordOutputVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Localizar / substituir" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordFindText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBox Text="{Binding WordReplaceText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              <CheckBox Content="Substituir todas as ocorrências" IsChecked="{Binding WordAllMatches}" Margin="0,4,0,4"/>
+              <CheckBox Content="Curingas" IsChecked="{Binding WordMatchWildcards}" Margin="0,0,0,4"/>
+              <CheckBox Content="Diferenciar maiúsculas" IsChecked="{Binding WordMatchCase}" Margin="0,0,0,4"/>
+              <CheckBox Content="Palavra inteira" IsChecked="{Binding WordMatchEntireWord}" Margin="0,0,0,6"/>
+              <TextBlock Text="Imagem: origem (file|clipboard)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordImageSource, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Texto para posicionar imagem" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding WordTextToFind, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+
             <StackPanel Visibility="{Binding ShowRunFlowSection, Converter={StaticResource BoolVis}}">
               <TextBlock Text="Flow id (manifest.flows)" Style="{StaticResource FieldLabel}"/>
               <ComboBox ItemsSource="{Binding RunFlowTargetIds}"

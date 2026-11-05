@@ -28,6 +28,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Browser CDP (navigate, click, fill, wait, get_text) | ✓ | ✓ | browser-demo-flow (manual + Chrome) |
 | show_message / show_get_user_input / show_select_from_list | ✓ | ✓ | message-timer-demo (manual) |
 | Excel COM (`excel_*`, 41 ações) | — | ✓ | `excel-demo-flow` (manual + Excel instalado) |
+| Word COM (`word_*`, 8 ações) | — | ✓ | `word-demo-flow` (manual + Word instalado) |
 | HOBLIO_CHROME_PATH | ✓ | ✓ | ChromiumLocator |
 | Cancel run | ✓ | ✓ | API `RunCancel` (Studio a expor) |
 
