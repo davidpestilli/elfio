@@ -10,7 +10,9 @@ public static class ActionDefaults
         ..WebAutomationActionTypes.All,
         "set_variable",
         "increase_variable", "decrease_variable", "file_write", "file_append", "file_read",
-        "list_append", "list_clear", "delay", "http_get",
+        "list_append", "list_clear",
+        ..VariablesActionTypes.All,
+        "delay", "http_get",
         ..ExcelActionTypes.All,
         ..WordActionTypes.All,
         "show_message", "show_get_user_input", "show_select_from_list", "run_flow",
@@ -25,6 +27,8 @@ public static class ActionDefaults
             return word;
         if (WebAutomationActionDefaults.TryCreate(type, takenNames) is { } web)
             return web;
+        if (VariablesActionDefaults.TryCreate(type, takenNames) is { } variables)
+            return variables;
 
         return type switch
         {

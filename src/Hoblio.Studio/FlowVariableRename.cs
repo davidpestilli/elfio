@@ -140,6 +140,10 @@ public static class FlowVariableRename
             w,
             text => ReplaceTemplates(text, oldName, newName),
             value => ReplaceVarName(value, oldName, newName)),
+        VariablesAction v => VariablesActionMutator.RenameReferences(
+            v,
+            text => ReplaceTemplates(text, oldName, newName),
+            value => ReplaceVarName(value, oldName, newName)),
         _ => action,
     };
 

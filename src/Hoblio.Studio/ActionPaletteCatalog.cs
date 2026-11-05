@@ -63,18 +63,7 @@ public static class ActionPaletteCatalog
         ExcelPaletteCatalog.Group,
         WordPaletteCatalog.Group,
         BrowserPaletteCatalog.Group,
-        new PaletteGroup
-        {
-            Name = "Variáveis",
-            Items =
-            [
-                new("action:set_variable", "Definir variável", "Define valor", "Set variable set"),
-                new("action:increase_variable", "Incrementar", "Incrementa número", "Increase variable"),
-                new("action:decrease_variable", "Decrementar", "Decrementa número", "Decrease variable"),
-                new("action:list_clear", "Limpar lista", "Esvazia lista", "List clear"),
-                new("action:list_append", "Adicionar à lista", "Adiciona item à lista", "List append"),
-            ],
-        },
+        VariablesPaletteCatalog.Group,
         new PaletteGroup
         {
             Name = "Fluxos",

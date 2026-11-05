@@ -43,6 +43,7 @@ public static class ActionCatalog
         RunFlowAction => new("FlowControl", "CallFunction"),
         ExcelAction e => new("Excel", ExcelActionTypes.ModuleActionId(e.Type)),
         WordAction w => new("Word", WordActionTypes.ModuleActionId(w.Type)),
+        VariablesAction v => new("Variables", VariablesActionTypes.ModuleActionId(v.Type)),
         _ => new("System", action.Type),
     };
 
@@ -79,6 +80,7 @@ public static class ActionCatalog
             WordAction w => WordVariableIo(w),
             IncreaseVariableAction iv => ([iv.Variable], [iv.Variable]),
             DecreaseVariableAction dv => ([dv.Variable], [dv.Variable]),
+            VariablesAction va => VariablesVariableIo(va),
             _ => (null, null),
         };
 
@@ -101,6 +103,31 @@ public static class ActionCatalog
 
         var outputs = ex.ProducedVariables().ToList();
         return (inputs, outputs.Count == 0 ? null : outputs);
+    }
+
+    static (IReadOnlyList<string>? Inputs, IReadOnlyList<string>? Outputs) VariablesVariableIo(VariablesAction va)
+    {
+        var inputs = new List<string>();
+        if (!string.IsNullOrWhiteSpace(va.DataTableVariable))
+            inputs.Add(va.DataTableVariable.Trim());
+        if (!string.IsNullOrWhiteSpace(va.SecondDataTableVariable))
+            inputs.Add(va.SecondDataTableVariable.Trim());
+        if (!string.IsNullOrWhiteSpace(va.ListVariable))
+            inputs.Add(va.ListVariable.Trim());
+        if (!string.IsNullOrWhiteSpace(va.SecondListVariable))
+            inputs.Add(va.SecondListVariable.Trim());
+        if (!string.IsNullOrWhiteSpace(va.SourceVariable))
+            inputs.Add(va.SourceVariable.Trim());
+
+        var outputs = va.ProducedVariables().ToList();
+        if (outputs.Count == 0 && !string.IsNullOrWhiteSpace(va.DataTableVariable)
+            && va.Type is not VariablesActionTypes.CreateDatatable and not VariablesActionTypes.ReadCsv)
+            outputs.Add(va.DataTableVariable.Trim());
+        if (outputs.Count == 0 && !string.IsNullOrWhiteSpace(va.ListVariable)
+            && va.Type != VariablesActionTypes.CreateList)
+            outputs.Add(va.ListVariable.Trim());
+
+        return (inputs.Count == 0 ? null : inputs, outputs.Count == 0 ? null : outputs);
     }
 
     static (IReadOnlyList<string>? Inputs, IReadOnlyList<string>? Outputs) WordVariableIo(WordAction w)

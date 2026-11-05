@@ -43,6 +43,7 @@ public static class ActionExecutor
             IncreaseVariableAction or DecreaseVariableAction => AdjustVariable.ExecuteAdjust(action, vars, 1.0),
             ExcelAction ex => excel.Execute(ex, vars, projectRoot),
             WordAction w => word.Execute(w, vars, projectRoot),
+            VariablesAction va => VariablesContext.Execute(va, vars, projectRoot),
             _ => throw new InvalidOperationException($"unknown action {action.Type}"),
         };
     }

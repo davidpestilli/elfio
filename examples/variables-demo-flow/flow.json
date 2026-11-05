@@ -1,0 +1,619 @@
+{
+  "start": "start",
+  "variables": {
+    "counter": "0",
+    "score": "3.14159",
+    "ListA": "[\"shared\",\"onlyA\"]",
+    "ListB": "[\"shared\",\"onlyB\"]"
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "label": "Start",
+      "ui": { "x": 40, "y": 240 }
+    },
+    {
+      "id": "write_summary_hdr",
+      "kind": "action",
+      "label": "Init summary",
+      "action": {
+        "type": "file_write",
+        "path": "output/summary.txt",
+        "content": "variables-demo-flow\n"
+      },
+      "ui": { "x": 180, "y": 240 }
+    },
+    {
+      "id": "create_table",
+      "kind": "action",
+      "label": "Create datatable",
+      "action": {
+        "type": "variables_create_datatable",
+        "data_table_variable": "DataTable",
+        "values": "Id,Name,Score"
+      },
+      "ui": { "x": 340, "y": 240 }
+    },
+    {
+      "id": "add_row_alice",
+      "kind": "action",
+      "label": "Add Alice",
+      "action": {
+        "type": "variables_add_row",
+        "data_table_variable": "DataTable",
+        "values": "1,Alice,85"
+      },
+      "ui": { "x": 500, "y": 240 }
+    },
+    {
+      "id": "add_row_bob",
+      "kind": "action",
+      "label": "Add Bob",
+      "action": {
+        "type": "variables_add_row",
+        "data_table_variable": "DataTable",
+        "values": "2,Bob,60"
+      },
+      "ui": { "x": 660, "y": 240 }
+    },
+    {
+      "id": "find_replace_name",
+      "kind": "action",
+      "label": "Bob -> Robert",
+      "action": {
+        "type": "variables_find_replace_datatable",
+        "data_table_variable": "DataTable",
+        "find_text": "Bob",
+        "replace_text": "Robert",
+        "find_replace_mode": "replace"
+      },
+      "ui": { "x": 820, "y": 240 }
+    },
+    {
+      "id": "read_csv",
+      "kind": "action",
+      "label": "Read products CSV",
+      "action": {
+        "type": "variables_read_csv",
+        "path": "input/products.csv",
+        "data_table_variable": "DataCsv",
+        "first_line_is_header": true,
+        "separator": "comma"
+      },
+      "ui": { "x": 980, "y": 240 }
+    },
+    {
+      "id": "read_fixed",
+      "kind": "action",
+      "label": "Read fixed width",
+      "action": {
+        "type": "variables_read_csv",
+        "path": "input/fixed-width.txt",
+        "mode": "fixed_width",
+        "column_widths": "8,12",
+        "first_line_is_header": true,
+        "data_table_variable": "DataFixed"
+      },
+      "ui": { "x": 980, "y": 120 }
+    },
+    {
+      "id": "fixed_to_list",
+      "kind": "action",
+      "label": "Fixed SKU list",
+      "action": {
+        "type": "variables_column_to_list",
+        "data_table_variable": "DataFixed",
+        "column_name": "SKU",
+        "list_variable": "FixedSkus"
+      },
+      "ui": { "x": 1140, "y": 120 }
+    },
+    {
+      "id": "merge_tables",
+      "kind": "action",
+      "label": "Merge tables",
+      "action": {
+        "type": "variables_merge_datatables",
+        "data_table_variable": "DataTable",
+        "second_data_table_variable": "DataCsv",
+        "mode": "add_extra_columns"
+      },
+      "ui": { "x": 1140, "y": 240 }
+    },
+    {
+      "id": "create_team_lookup",
+      "kind": "action",
+      "label": "Team lookup",
+      "action": {
+        "type": "variables_create_datatable",
+        "data_table_variable": "TeamLookup",
+        "values": "KeyId,Team"
+      },
+      "ui": { "x": 1300, "y": 120 }
+    },
+    {
+      "id": "team_row_1",
+      "kind": "action",
+      "label": "Team row 1",
+      "action": {
+        "type": "variables_add_row",
+        "data_table_variable": "TeamLookup",
+        "values": "1,Eng"
+      },
+      "ui": { "x": 1460, "y": 120 }
+    },
+    {
+      "id": "team_row_2",
+      "kind": "action",
+      "label": "Team row 2",
+      "action": {
+        "type": "variables_add_row",
+        "data_table_variable": "TeamLookup",
+        "values": "2,Sales"
+      },
+      "ui": { "x": 1620, "y": 120 }
+    },
+    {
+      "id": "join_team",
+      "kind": "action",
+      "label": "Join team",
+      "action": {
+        "type": "variables_join_datatable",
+        "data_table_variable": "DataTable",
+        "second_data_table_variable": "TeamLookup",
+        "join_column": "Id",
+        "join_column2": "KeyId",
+        "join_comparison_operator": "eq",
+        "join_operation": "left",
+        "output_variable": "DataTable"
+      },
+      "ui": { "x": 1780, "y": 120 }
+    },
+    {
+      "id": "add_dup_row",
+      "kind": "action",
+      "label": "Duplicate row (for dedupe)",
+      "action": {
+        "type": "variables_add_row",
+        "data_table_variable": "DataTable",
+        "values": "1,Alice,85"
+      },
+      "ui": { "x": 1300, "y": 240 }
+    },
+    {
+      "id": "dedupe_rows",
+      "kind": "action",
+      "label": "Delete duplicate rows",
+      "action": {
+        "type": "variables_delete_duplicate_rows",
+        "data_table_variable": "DataTable"
+      },
+      "ui": { "x": 1460, "y": 240 }
+    },
+    {
+      "id": "modify_robert_score",
+      "kind": "action",
+      "label": "Bump Robert score",
+      "action": {
+        "type": "variables_modify_cell",
+        "data_table_variable": "DataTable",
+        "column_name": "Score",
+        "row_index": "1",
+        "value": "88"
+      },
+      "ui": { "x": 1620, "y": 120 }
+    },
+    {
+      "id": "add_status_col",
+      "kind": "action",
+      "label": "Add Status column",
+      "action": {
+        "type": "variables_add_column",
+        "data_table_variable": "DataTable",
+        "column_name": "Status",
+        "values": "ok"
+      },
+      "ui": { "x": 1780, "y": 240 }
+    },
+    {
+      "id": "filter_high_score",
+      "kind": "action",
+      "label": "Score >= 70",
+      "action": {
+        "type": "variables_filter_datatable",
+        "data_table_variable": "DataTable",
+        "filter_conditions": [
+          { "column": "Score", "operator": "gte", "value": "70" },
+          { "column": "Score", "operator": "lte", "value": "95", "logic": "and" },
+          { "column": "Status", "operator": "eq", "value": "ok", "logic": "and" }
+        ],
+        "output_variable": "DataFiltered"
+      },
+      "ui": { "x": 1620, "y": 240 }
+    },
+    {
+      "id": "sort_by_name",
+      "kind": "action",
+      "label": "Sort by name",
+      "action": {
+        "type": "variables_sort_datatable",
+        "data_table_variable": "DataFiltered",
+        "sort_column": "Name",
+        "sort_order": "asc",
+        "sort_column2": "Score",
+        "sort_order2": "desc"
+      },
+      "ui": { "x": 1780, "y": 240 }
+    },
+    {
+      "id": "drop_region_col",
+      "kind": "action",
+      "label": "Drop Region column",
+      "action": {
+        "type": "variables_delete_column",
+        "data_table_variable": "DataFiltered",
+        "column_name": "Region"
+      },
+      "ui": { "x": 1940, "y": 120 }
+    },
+    {
+      "id": "names_to_list",
+      "kind": "action",
+      "label": "Column to list",
+      "action": {
+        "type": "variables_column_to_list",
+        "data_table_variable": "DataFiltered",
+        "column_name": "Name",
+        "list_variable": "NamesList"
+      },
+      "ui": { "x": 1940, "y": 240 }
+    },
+    {
+      "id": "write_csv",
+      "kind": "action",
+      "label": "Export CSV",
+      "action": {
+        "type": "variables_write_csv",
+        "data_table_variable": "DataFiltered",
+        "path": "output/export.csv",
+        "separator": "semicolon"
+      },
+      "ui": { "x": 2100, "y": 240 }
+    },
+    {
+      "id": "scratch_table",
+      "kind": "action",
+      "label": "Scratch table",
+      "action": {
+        "type": "variables_create_datatable",
+        "data_table_variable": "Scratch",
+        "values": "A,B"
+      },
+      "ui": { "x": 2260, "y": 240 }
+    },
+    {
+      "id": "scratch_row",
+      "kind": "action",
+      "label": "Scratch row",
+      "action": {
+        "type": "variables_add_row",
+        "data_table_variable": "Scratch",
+        "values": "1,2"
+      },
+      "ui": { "x": 2420, "y": 240 }
+    },
+    {
+      "id": "clear_scratch",
+      "kind": "action",
+      "label": "Clear scratch",
+      "action": {
+        "type": "variables_clear_datatable",
+        "data_table_variable": "Scratch"
+      },
+      "ui": { "x": 2580, "y": 240 }
+    },
+    {
+      "id": "create_tags",
+      "kind": "action",
+      "label": "Create tag list",
+      "action": {
+        "type": "variables_create_list",
+        "list_variable": "Tags",
+        "items": "zulu\nalpha\nmike"
+      },
+      "ui": { "x": 340, "y": 400 }
+    },
+    {
+      "id": "append_tag",
+      "kind": "action",
+      "label": "Append tag",
+      "action": {
+        "type": "list_append",
+        "list_variable": "Tags",
+        "item": "omega"
+      },
+      "ui": { "x": 500, "y": 400 }
+    },
+    {
+      "id": "sort_tags",
+      "kind": "action",
+      "label": "Sort tags",
+      "action": {
+        "type": "variables_sort_list",
+        "list_variable": "Tags",
+        "sort_order": "asc"
+      },
+      "ui": { "x": 660, "y": 400 }
+    },
+    {
+      "id": "reverse_tags",
+      "kind": "action",
+      "label": "Reverse tags",
+      "action": {
+        "type": "variables_reverse_list",
+        "list_variable": "Tags"
+      },
+      "ui": { "x": 740, "y": 320 }
+    },
+    {
+      "id": "shuffle_tags",
+      "kind": "action",
+      "label": "Shuffle tags",
+      "action": {
+        "type": "variables_shuffle_list",
+        "list_variable": "Tags"
+      },
+      "ui": { "x": 900, "y": 320 }
+    },
+    {
+      "id": "remove_zulu",
+      "kind": "action",
+      "label": "Remove zulu",
+      "action": {
+        "type": "variables_remove_list_item",
+        "list_variable": "Tags",
+        "mode": "by_value",
+        "value": "zulu"
+      },
+      "ui": { "x": 1060, "y": 320 }
+    },
+    {
+      "id": "filter_tags",
+      "kind": "action",
+      "label": "Filter tags (a*)",
+      "action": {
+        "type": "variables_filter_list",
+        "list_variable": "Tags",
+        "filter_operator": "begins_with",
+        "filter_value": "a",
+        "output_variable": "TagsA"
+      },
+      "ui": { "x": 820, "y": 400 }
+    },
+    {
+      "id": "merge_name_tags",
+      "kind": "action",
+      "label": "Merge name + tag lists",
+      "action": {
+        "type": "variables_merge_lists",
+        "list_variable": "NamesList",
+        "second_list_variable": "TagsA",
+        "output_variable": "MergedList"
+      },
+      "ui": { "x": 980, "y": 400 }
+    },
+    {
+      "id": "common_lists",
+      "kind": "action",
+      "label": "Common A∩B",
+      "action": {
+        "type": "variables_find_common_list_items",
+        "list_variable": "ListA",
+        "second_list_variable": "ListB",
+        "output_variable": "CommonList"
+      },
+      "ui": { "x": 1140, "y": 400 }
+    },
+    {
+      "id": "subtract_lists",
+      "kind": "action",
+      "label": "A minus B",
+      "action": {
+        "type": "variables_subtract_lists",
+        "list_variable": "ListA",
+        "second_list_variable": "ListB",
+        "output_variable": "DiffList"
+      },
+      "ui": { "x": 1300, "y": 400 }
+    },
+    {
+      "id": "create_temp_list",
+      "kind": "action",
+      "label": "Temp list",
+      "action": {
+        "type": "variables_create_list",
+        "list_variable": "TempList",
+        "items": "only"
+      },
+      "ui": { "x": 1460, "y": 320 }
+    },
+    {
+      "id": "clear_temp_list",
+      "kind": "action",
+      "label": "Clear temp list",
+      "action": {
+        "type": "list_clear",
+        "list_variable": "TempList"
+      },
+      "ui": { "x": 1620, "y": 320 }
+    },
+    {
+      "id": "truncate_score",
+      "kind": "action",
+      "label": "Round score",
+      "action": {
+        "type": "variables_truncate_number",
+        "source_variable": "score",
+        "mode": "round",
+        "decimal_places": "2",
+        "output_variable": "RoundScore"
+      },
+      "ui": { "x": 1460, "y": 400 }
+    },
+    {
+      "id": "random_int",
+      "kind": "action",
+      "label": "Random int",
+      "action": {
+        "type": "variables_random_number",
+        "min_value": "10",
+        "max_value": "20",
+        "mode": "integer",
+        "output_variable": "RandInt"
+      },
+      "ui": { "x": 1620, "y": 400 }
+    },
+    {
+      "id": "json_to_object",
+      "kind": "action",
+      "label": "JSON to object",
+      "action": {
+        "type": "variables_json_to_custom_object",
+        "json_text": "{\"demo\":true,\"module\":\"Variables\"}",
+        "output_variable": "CustomObj"
+      },
+      "ui": { "x": 1780, "y": 400 }
+    },
+    {
+      "id": "object_to_json",
+      "kind": "action",
+      "label": "Object to JSON",
+      "action": {
+        "type": "variables_custom_object_to_json",
+        "source_variable": "CustomObj",
+        "output_variable": "JsonLine"
+      },
+      "ui": { "x": 1940, "y": 400 }
+    },
+    {
+      "id": "inc_counter",
+      "kind": "action",
+      "label": "Increase counter",
+      "action": {
+        "type": "increase_variable",
+        "variable": "counter"
+      },
+      "ui": { "x": 2100, "y": 400 }
+    },
+    {
+      "id": "dec_counter",
+      "kind": "action",
+      "label": "Decrease counter",
+      "action": {
+        "type": "decrease_variable",
+        "variable": "counter"
+      },
+      "ui": { "x": 2260, "y": 400 }
+    },
+    {
+      "id": "foreach_name",
+      "kind": "for_each",
+      "label": "For each name",
+      "control": {
+        "type": "for_each",
+        "list_variable": "NamesList",
+        "item_variable": "PersonName"
+      },
+      "ui": { "x": 340, "y": 560 }
+    },
+    {
+      "id": "log_person",
+      "kind": "action",
+      "label": "Log person",
+      "action": {
+        "type": "log",
+        "message": "person={PersonName} round={RoundScore} rand={RandInt}"
+      },
+      "ui": { "x": 540, "y": 560 }
+    },
+    {
+      "id": "append_summary",
+      "kind": "action",
+      "label": "Append summary",
+      "action": {
+        "type": "file_append",
+        "path": "output/summary.txt",
+        "content": "common={CommonList} diff={DiffList} json={JsonLine} counter={counter} merged_len={MergedList} fixed={FixedSkus} team=Eng\n"
+      },
+      "ui": { "x": 740, "y": 560 }
+    },
+    {
+      "id": "log_done",
+      "kind": "action",
+      "label": "Done",
+      "action": {
+        "type": "log",
+        "message": "variables-demo complete counter={counter}"
+      },
+      "ui": { "x": 940, "y": 560 }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "label": "End",
+      "ui": { "x": 1140, "y": 560 }
+    }
+  ],
+  "edges": [
+    { "from": "start", "to": "write_summary_hdr" },
+    { "from": "write_summary_hdr", "to": "create_table" },
+    { "from": "create_table", "to": "add_row_alice" },
+    { "from": "add_row_alice", "to": "add_row_bob" },
+    { "from": "add_row_bob", "to": "find_replace_name" },
+    { "from": "find_replace_name", "to": "read_csv" },
+    { "from": "read_csv", "to": "read_fixed" },
+    { "from": "read_fixed", "to": "fixed_to_list" },
+    { "from": "fixed_to_list", "to": "merge_tables" },
+    { "from": "merge_tables", "to": "create_team_lookup" },
+    { "from": "create_team_lookup", "to": "team_row_1" },
+    { "from": "team_row_1", "to": "team_row_2" },
+    { "from": "team_row_2", "to": "join_team" },
+    { "from": "join_team", "to": "add_dup_row" },
+    { "from": "add_dup_row", "to": "dedupe_rows" },
+    { "from": "dedupe_rows", "to": "modify_robert_score" },
+    { "from": "modify_robert_score", "to": "add_status_col" },
+    { "from": "add_status_col", "to": "filter_high_score" },
+    { "from": "filter_high_score", "to": "sort_by_name" },
+    { "from": "sort_by_name", "to": "drop_region_col" },
+    { "from": "drop_region_col", "to": "names_to_list" },
+    { "from": "names_to_list", "to": "write_csv" },
+    { "from": "write_csv", "to": "scratch_table" },
+    { "from": "scratch_table", "to": "scratch_row" },
+    { "from": "scratch_row", "to": "clear_scratch" },
+    { "from": "clear_scratch", "to": "create_tags" },
+    { "from": "create_tags", "to": "append_tag" },
+    { "from": "append_tag", "to": "sort_tags" },
+    { "from": "sort_tags", "to": "reverse_tags" },
+    { "from": "reverse_tags", "to": "shuffle_tags" },
+    { "from": "shuffle_tags", "to": "remove_zulu" },
+    { "from": "remove_zulu", "to": "filter_tags" },
+    { "from": "filter_tags", "to": "merge_name_tags" },
+    { "from": "merge_name_tags", "to": "common_lists" },
+    { "from": "common_lists", "to": "subtract_lists" },
+    { "from": "subtract_lists", "to": "create_temp_list" },
+    { "from": "create_temp_list", "to": "clear_temp_list" },
+    { "from": "clear_temp_list", "to": "truncate_score" },
+    { "from": "truncate_score", "to": "random_int" },
+    { "from": "random_int", "to": "json_to_object" },
+    { "from": "json_to_object", "to": "object_to_json" },
+    { "from": "object_to_json", "to": "inc_counter" },
+    { "from": "inc_counter", "to": "dec_counter" },
+    { "from": "dec_counter", "to": "foreach_name" },
+    { "from": "foreach_name", "to": "log_person", "port": "body" },
+    { "from": "foreach_name", "to": "append_summary", "port": "after" },
+    { "from": "log_person", "to": "foreach_name" },
+    { "from": "append_summary", "to": "log_done" },
+    { "from": "log_done", "to": "end" }
+  ]
+}

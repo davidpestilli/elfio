@@ -7,6 +7,7 @@
 | [construcao/README.md](construcao/README.md) | Runtime, catálogo de ações, telemetria, manifest |
 | [construcao/modulo-excel.md](construcao/modulo-excel.md) | Módulo Excel: 41 ações, paleta Básico/Avançado, runtime COM, demo |
 | [construcao/modulo-word.md](construcao/modulo-word.md) | Módulo Word: 8 ações PAD, runtime COM, `word-demo-flow` |
+| [construcao/modulo-variaveis.md](construcao/modulo-variaveis.md) | Módulo Variáveis PAD: 31 `variables_*`, runtime, Studio, demo, **pendências** |
 | [construcao/notas-release-2026-11-05.md](construcao/notas-release-2026-11-05.md) | Lista/diálogo, Excel, Word, login-eproc, probes de tela |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Mapa crates Rust → projetos .NET |
 | [PARITY.md](PARITY.md) | Checklist de paridade com Hoblio Rust |

@@ -39,6 +39,7 @@ public static class PaletteVisuals
             "run_flow" => new Visual("⎇", Parse("#4F46E5")),
             "create_subflow" => new Visual("+", Parse("#4F46E5")),
             _ when k.StartsWith("excel_", StringComparison.Ordinal) => new Visual("📊", Parse("#217346")),
+            _ when k.StartsWith("variables_", StringComparison.Ordinal) => new Visual("{}", Parse("#0F766E")),
             _ => new Visual("•", Parse("#CBD5E1")),
         };
     }

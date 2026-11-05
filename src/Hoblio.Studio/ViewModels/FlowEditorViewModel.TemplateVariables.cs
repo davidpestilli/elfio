@@ -81,6 +81,45 @@ public sealed partial class FlowEditorViewModel
             case "ListAppendItem":
                 ListAppendItem = ListAppendItem + token;
                 break;
+            case "VarFilterValue":
+                VarFilterValue = VarFilterValue + token;
+                break;
+            case "VarValues":
+                VarValues = VarValues + token;
+                break;
+            case "VarValue":
+                VarValue = VarValue + token;
+                break;
+            case "VarFindText":
+                VarFindText = VarFindText + token;
+                break;
+            case "VarReplaceText":
+                VarReplaceText = VarReplaceText + token;
+                break;
+            case "VarFilterValue2":
+                VarFilterValue2 = VarFilterValue2 + token;
+                break;
+            case "VarPath":
+                VarPath = VarPath + token;
+                break;
+            case "VarJoinColumn":
+                VarJoinColumn = VarJoinColumn + token;
+                break;
+            case "VarJsonText":
+                VarJsonText = VarJsonText + token;
+                break;
+            case "VarItems":
+                VarItems = VarItems + token;
+                break;
+            case "VarSourceVariable":
+                VarSourceVariable = VarSourceVariable + token;
+                break;
+            case "VarMinValue":
+                VarMinValue = VarMinValue + token;
+                break;
+            case "VarMaxValue":
+                VarMaxValue = VarMaxValue + token;
+                break;
             case "ShowMessageText":
                 ShowMessageText = ShowMessageText + token;
                 break;

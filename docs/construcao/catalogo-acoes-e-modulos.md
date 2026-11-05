@@ -39,6 +39,7 @@ Convenções:
 | `decrease_variable` | Variáveis | `Variables` | `DecreaseVariable` | — |
 | `list_append` | Variáveis | `Variables` | `AddItemToList` | — |
 | `list_clear` | Variáveis | `Variables` | `ClearList` | — |
+| `variables_*` (31 tipos) | Variáveis | `Variables` | ex. `CreateNewDatatable`, `FilterDataTable`, … | ver [modulo-variaveis.md](./modulo-variaveis.md) |
 | `run_flow` | Fluxos | `FlowControl` | `CallFunction` | `outputs[]` |
 | `excel_*` (41 tipos) | Excel → Básico / Avançado | `Excel` | `LaunchExcel`, `ReadFromExcel`, … | ver `ExcelActionTypes` |
 | `word_*` (8 tipos) | Word | `Word` | `LaunchWord`, `ReadFromWord`, … | ver `WordActionTypes` |

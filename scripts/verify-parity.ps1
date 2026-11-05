@@ -41,6 +41,7 @@ try {
         "demo-flow",
         "flow-control-demo",
         "variables-loops-demo",
+        "variables-demo-flow",
         "files-lists-demo",
         "resilience-demo",
         "flow-compose-subflow",

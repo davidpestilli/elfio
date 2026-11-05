@@ -21,6 +21,7 @@ public sealed partial class FlowEditorViewModel
                 ShowSelectFromListAction a => $"Lista: {Truncate(a.Title, 30)}",
                 ExcelAction a => $"Excel: {ExcelActionTypes.ModuleActionId(a.Type)}",
                 WordAction a => $"Word: {WordActionTypes.ModuleActionId(a.Type)}",
+                VariablesAction a => $"Variáveis: {VariablesActionTypes.ModuleActionId(a.Type)}",
                 _ => node.Action.Type,
             };
         }
@@ -317,6 +318,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionSetVariable));
         RefreshExcelInspector();
         RefreshWordInspector();
+        RefreshVariablesInspector();
         RefreshWebAutomationInspector();
         NotifyAllActionFieldProperties();
     }

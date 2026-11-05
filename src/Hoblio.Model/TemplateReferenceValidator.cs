@@ -102,6 +102,9 @@ public static class TemplateReferenceValidator
             e.SourceWorksheetName, e.TargetWorksheetName, e.FilterValue1, e.FilterValue2, e.SortColumn2),
         WordAction w => Yield(
             w.Path, w.DocumentName, w.Mode, w.Pages, w.Bookmark, w.Value, w.FindText, w.ReplaceText, w.ImageSource, w.TextToFind),
+        VariablesAction v => Yield(
+            v.Value, v.Values, v.Items, v.FindText, v.ReplaceText, v.FilterValue, v.FilterValue2, v.FilterConditions, v.JoinColumn, v.JoinColumn2,
+            v.Path, v.MinValue, v.MaxValue, v.DecimalPlaces, v.Count, v.ItemIndex, v.JsonText),
         _ => [],
     };
 

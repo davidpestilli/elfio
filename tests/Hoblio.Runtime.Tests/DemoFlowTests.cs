@@ -45,6 +45,45 @@ public class DemoFlowTests
     }
 
     [Fact]
+    public void Variables_demo_flow_runs()
+    {
+        var path = ExamplePaths.Resolve("variables-demo-flow");
+        var project = ProjectLoader.LoadProject(path);
+        var outcome = FlowExecutor.RunProject(project, path);
+        Assert.Equal("end", outcome.LastNodeId);
+
+        var exportPath = Path.Combine(path, "output", "export.csv");
+        var summaryPath = Path.Combine(path, "output", "summary.txt");
+        Assert.True(File.Exists(exportPath));
+        Assert.True(File.Exists(summaryPath));
+        var export = File.ReadAllText(exportPath);
+        Assert.Contains("Carol", export);
+        Assert.Contains(";", export);
+        var summary = File.ReadAllText(summaryPath);
+        Assert.Contains("shared", summary);
+        Assert.Contains("\"demo\":true", summary);
+        Assert.Contains("A001", summary);
+        Assert.Contains("team=Eng", summary);
+
+        var variableActions = outcome.Events.OfType<RunEvent.ActionExecuted>()
+            .Where(e => e.Module == "Variables")
+            .ToList();
+        Assert.True(variableActions.Count >= 28);
+        Assert.Contains(variableActions, e => e.ActionId == "CreateNewDatatable");
+        Assert.Contains(variableActions, e => e.ActionId == "JoinDataTable");
+        Assert.Contains(variableActions, e => e.ActionId == "DecreaseVariable");
+
+        var doneLog = outcome.Events.OfType<RunEvent.ActionExecuted>()
+            .Select(e => e.Summary)
+            .FirstOrDefault(s => s.Contains("variables-demo complete"));
+        Assert.NotNull(doneLog);
+        Assert.Contains("counter=0", doneLog);
+
+        File.Delete(exportPath);
+        File.Delete(summaryPath);
+    }
+
+    [Fact]
     public void Files_lists_demo_runs()
     {
         var path = ExamplePaths.Resolve("files-lists-demo");

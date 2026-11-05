@@ -190,6 +190,8 @@ public static class GraphValidator
                     throw new ValidationException(ValidationErrorKind.InvalidListVariable, $"for_each node `{node.Id}` has invalid list variable name ``");
                 if (action is ListClearAction { ListVariable: var lc } && string.IsNullOrWhiteSpace(lc))
                     throw new ValidationException(ValidationErrorKind.InvalidListVariable, $"for_each node `{node.Id}` has invalid list variable name ``");
+                if (action is VariablesAction va)
+                    VariablesActionValidator.Validate(va, node.Id);
                 if (action is RunFlowAction rf
                     && string.IsNullOrWhiteSpace(rf.FlowId)
                     && string.IsNullOrWhiteSpace(rf.Path))

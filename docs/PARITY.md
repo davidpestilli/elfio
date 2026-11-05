@@ -22,6 +22,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Set/increase/decrease variable | ✓ | ✓ | variables-loops-demo |
 | File read/write/append | ✓ | ✓ | files-lists-demo |
 | List append/clear | ✓ | ✓ | files-lists-demo |
+| Variáveis PAD (`variables_*`, 31 + escalares/listas legadas) | — | ✓ | `VariablesBehaviorTests`, `VariablesActionCoverageTests`, `variables-demo-flow` |
 | HTTP GET | ✓ | ✓ | web-demo-flow (manual); C# opcional `variable` no JSON |
 | If / ForEach / While / Repeat | ✓ | ✓ | DemoFlowTests |
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
@@ -52,6 +53,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | Palette agrupada / novos nós | ✓ | ✓ (categorias + subgrupos ex. Excel Básico/Avançado; busca; Start/End/New subflow) |
 | Modo Exibição / Edição | ✓ | ✓ |
 | PropertiesPanel completo | ✓ | ✓ (formulário por tipo de ação, if/loop, run_flow, erro, última exec.) |
+| PropertiesPanel Variáveis contextual | — | ✓ | `VariablesActionUi`, `ShowVarSection*`; doc [modulo-variaveis.md](construcao/modulo-variaveis.md) |
 | Run log panel | ✓ | ✓ (lista + toggle JSON + copiar log) |
 | Waypoint edges (arrastar / + / duplo clique / viewport) | ✓ | ✓ |
 | Handles multi-lado (then/else/body/after) | ✓ | ✓ |
@@ -92,8 +94,10 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | `action.rs` (5 JSON roundtrips) | `ActionKindTests` (5 facts) |
 | `expr` / `variables` / `lists` / `adjust_var` unit | `UnitBehaviorTests` (+3) |
 
-Contagem atual: **78** testes automatizados (`dotnet test` na solution).
+Contagem atual: **93** testes automatizados (`dotnet test` na solution; nov/2026).
 
-Verificação local: `.\scripts\verify-parity.ps1` (Release build + 45 testes + validate nos 9 demos + probe browser).
+Verificação local: `.\scripts\verify-parity.ps1` (Release build + testes + validate nos demos incl. `variables-demo-flow` + probe browser).
+
+Gaps detalhados do módulo Variáveis: [construcao/modulo-variaveis.md](construcao/modulo-variaveis.md) § *Pendências e gaps*.
 
 Scripts Grok: `scripts/eval-flow-control.ps1` e `scripts/eval-rpa-abc.ps1` (C#); comparativo cross-stack: `eval-grok-cross-stack.ps1` (ver [guia-construcao.md](guia-construcao.md)).

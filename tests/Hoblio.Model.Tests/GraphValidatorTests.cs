@@ -30,6 +30,43 @@ public class GraphValidatorTests
     }
 
     [Fact]
+    public void Variables_join_requires_join_column()
+    {
+        var g = new FlowGraph
+        {
+            Start = "start",
+            Nodes =
+            [
+                new Node { Id = "start", Kind = NodeKind.Start, Label = "Start" },
+                new Node
+                {
+                    Id = "join",
+                    Kind = NodeKind.Action,
+                    Label = "Join",
+                    Action = new VariablesAction
+                    {
+                        Operation = VariablesActionTypes.JoinDatatable,
+                        DataTableVariable = "A",
+                        SecondDataTableVariable = "B",
+                        OutputVariable = "Out",
+                    },
+                },
+                new Node { Id = "end", Kind = NodeKind.End, Label = "End" },
+            ],
+            Edges =
+            [
+                new Edge { From = "start", To = "join" },
+                new Edge { From = "join", To = "end" },
+            ],
+        };
+        var ex = Assert.Throws<ValidationException>(() =>
+            VariablesActionValidator.Validate(
+                (VariablesAction)g.Nodes[1].Action!,
+                "join"));
+        Assert.Contains("join_column", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void If_requires_then_and_else()
     {
         var baseNodes = DemoGraph().Nodes.ToList();

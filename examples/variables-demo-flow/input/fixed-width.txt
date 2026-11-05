@@ -1,0 +1,3 @@
+SKU     NAME        
+A001    Widget      
+B002    Gadget      

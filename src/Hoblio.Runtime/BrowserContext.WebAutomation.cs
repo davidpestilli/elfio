@@ -350,8 +350,9 @@ public sealed partial class BrowserContext
                 return JSON.stringify(rows);
             }").GetAwaiter().GetResult() ?? "[]";
         });
-        StoreVariable(variable, json, vars);
-        return $"browser_extract_table: {selector} ({json.Length} chars json)";
+        var normalized = FlowTable.NormalizeStoredTableJson(json, firstRowIsHeader: true);
+        StoreVariable(variable, normalized, vars);
+        return $"browser_extract_table: {selector} ({normalized.Length} chars json)";
     }
 
     public string SetCheckbox(string selector, bool check, ulong? timeoutMs)

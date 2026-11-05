@@ -41,6 +41,22 @@ public sealed class PaletteCatalogStructureTests
     }
 
     [Fact]
+    public void Variables_group_has_pad_subgroups_and_thirty_six_actions()
+    {
+        var groups = ActionPaletteCatalog.Groups.Where(g => g.Name == "Variáveis").ToList();
+        Assert.Single(groups);
+        var v = groups[0];
+        Assert.Empty(v.Items);
+        Assert.Equal(5, v.Sections.Count);
+        Assert.Equal(36, v.Sections.Sum(s => s.Items.Count));
+        Assert.Equal(3, v.Sections[0].Items.Count);
+        Assert.Equal(17, v.Sections[1].Items.Count);
+        Assert.Equal(2, v.Sections[2].Items.Count);
+        Assert.Equal(12, v.Sections[3].Items.Count);
+        Assert.Equal(2, v.Sections[4].Items.Count);
+    }
+
+    [Fact]
     public void Web_automation_group_matches_pad_sections()
     {
         var groups = ActionPaletteCatalog.Groups.Where(g => g.Name == "Automação do navegador").ToList();

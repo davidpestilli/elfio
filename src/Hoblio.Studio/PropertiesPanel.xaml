@@ -511,6 +511,153 @@
               <CheckBox Content="PROCV: correspondência exata" IsChecked="{Binding ExcelMatchExactLookup}" Margin="0,0,0,6"/>
             </StackPanel>
 
+            <StackPanel Visibility="{Binding ShowActionVariables, Converter={StaticResource BoolVis}}">
+              <StackPanel Visibility="{Binding ShowVarSectionDatatable, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Variável da tabela de dados" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarDataTableVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionSecondTable, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Segunda tabela (merge/join)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarSecondDataTableVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionList, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Variável de lista" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarListVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionSecondList, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Segunda lista" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarSecondListVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionOutput, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Variável de saída" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarOutputVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionRowValues, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Valores (colunas ou linha CSV / JSON array)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarValues, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarValues" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionListContent, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Itens da lista (linhas ou JSON)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarItems, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarItems" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionCellCoords, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Coluna (nome / índice) / linha" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarColumnName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBox Text="{Binding VarColumnIndex, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarRowIndex, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBlock Text="Valor da célula" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarValue" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionFindReplace, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Localizar / substituir" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFindText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarFindText" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarReplaceText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarReplaceText" DataContext="{Binding}"/>
+                <CheckBox Content="Usar regex" IsChecked="{Binding VarUseRegex}" Margin="0,4,0,0"/>
+                <CheckBox Content="Diferenciar maiúsculas" IsChecked="{Binding VarMatchCase}" Margin="0,0,0,0"/>
+                <CheckBox Content="Célula inteira" IsChecked="{Binding VarMatchEntireCell}" Margin="0,0,0,6"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionJoinMerge, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Modo merge (add_extra_columns|ignore_extra_columns|error_on_extra_columns)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBlock Text="Join: coluna esq. / col. dir. / operação / comparação (eq|ne)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarJoinColumn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarJoinColumn" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarJoinColumn2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarJoinOperation, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarJoinComparisonOperator, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionSortTable, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Ordenar: coluna / ordem (asc|desc)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarSortColumn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBox Text="{Binding VarSortOrder, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarSortColumn2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarSortOrder2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionFilterTable, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Filtro 1: coluna / operador / valor" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFilterColumn, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBox Text="{Binding VarFilterOperator, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding VarFilterValue, UpdateSourceTrigger=PropertyChanged}"
+                          IsEditable="True" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarFilterValue" DataContext="{Binding}"/>
+                <TextBlock Text="Filtro 2 (opcional): coluna / operador / valor / lógica (and|or)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFilterColumn2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBox Text="{Binding VarFilterOperator2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding VarFilterValue2, UpdateSourceTrigger=PropertyChanged}"
+                          IsEditable="True" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarFilterValue2" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarFilterLogic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBlock Text="Condições 3+ (JSON array filter_conditions)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFilterConditions, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="56" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionFilterList, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Filtrar lista: operador / valor" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFilterOperator, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding VarFilterValue, UpdateSourceTrigger=PropertyChanged}"
+                          IsEditable="True" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarFilterValue" DataContext="{Binding}"/>
+                <TextBlock Text="2ª condição: operador / valor / lógica" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFilterOperator2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding VarFilterValue2, UpdateSourceTrigger=PropertyChanged}"
+                          IsEditable="True" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarFilterValue2" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarFilterLogic, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBlock Text="Propriedade JSON (sort/filter by property)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarPropertyName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBlock Text="Condições 3+ (filter_conditions JSON)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarFilterConditions, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="56" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+                <CheckBox Content="Ignorar maiúsculas" IsChecked="{Binding VarIgnoreCase}" Margin="0,4,0,6"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionCsv, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Arquivo CSV" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarPath" DataContext="{Binding}"/>
+                <TextBlock Text="Modo leitura (delimiter|fixed_width)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBlock Text="Separador (comma|semicolon|tab|custom)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarSeparator, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBox Text="{Binding VarCustomSeparator, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBlock Text="Larguras fixas (fixed_width)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarColumnWidths, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <CheckBox Content="Primeira linha é cabeçalho" IsChecked="{Binding VarFirstLineIsHeader}" Margin="0,4,0,6"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionListItemOps, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Modo lista (by_index|by_value) / operador filtro" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <TextBox Text="{Binding VarFilterOperator, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarItemIndex, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarPropertyName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <CheckBox Content="Ignorar maiúsculas" IsChecked="{Binding VarIgnoreCase}" Margin="0,4,0,0"/>
+                <CheckBox Content="Remover todas as ocorrências (by_value)" IsChecked="{Binding VarRemoveAllMatches}" Margin="0,0,0,6"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionNumbers, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Fonte / modo (round|integer|integer_list…)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarSourceVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarSourceVariable" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBlock Text="Min / max / casas / quantidade" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarMinValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarMinValue" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarMaxValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarMaxValue" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarDecimalPlaces, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <TextBox Text="{Binding VarCount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding ShowVarSectionJson, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Variável fonte / JSON literal" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding VarSourceVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="VarSourceVariable" DataContext="{Binding}"/>
+                <TextBox Text="{Binding VarJsonText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="64" TextWrapping="Wrap" Style="{StaticResource FieldBox}" Margin="0,4,0,0"/>
+                <local:TemplateVariableChips FieldKey="VarJsonText" DataContext="{Binding}"/>
+              </StackPanel>
+            </StackPanel>
+
             <StackPanel Visibility="{Binding ShowActionWord, Converter={StaticResource BoolVis}}">
               <TextBlock Text="Variável de instância Word" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding WordInstance, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>

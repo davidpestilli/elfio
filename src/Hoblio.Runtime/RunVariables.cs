@@ -20,6 +20,15 @@ public sealed class RunVariables : Dictionary<string, string>
         return vars;
     }
 
+    /// <summary>Interpola `{var}`; literais JSON (início `{`/`[`) não são alterados — alinhado ao PAD.</summary>
+    public static string InterpolateUnlessJsonLiteral(string template, RunVariables vars)
+    {
+        var trimmed = template.TrimStart();
+        if (trimmed.StartsWith('{') || trimmed.StartsWith('['))
+            return template;
+        return Interpolate(template, vars);
+    }
+
     public static string Interpolate(string template, RunVariables vars)
     {
         if (!template.Contains('{'))
