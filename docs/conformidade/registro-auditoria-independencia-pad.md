@@ -120,7 +120,7 @@ Demais linhas da rodada `b0c0a7da` (condicionais, loops, ficheiros, runtime graf
 
 ## 8. Próximas auditorias (incremental)
 
-1. `git diff fb0caf7..HEAD --name-only -- src/ tests/ scripts/ examples/`
+1. `git diff a15bf99..HEAD --name-only -- src/ tests/ scripts/ examples/`
 2. Reexecutar §9 (incluir bloco `ldstr` para módulos COM/regex).
 3. Próximo baseline incremental: commit que inclui remediação Word + este registro (HEAD após merge).
 
@@ -168,7 +168,7 @@ Resultado esperado **após remediação Word:** `ldstr` hits **0** (podem persis
 |------|--------|-------|
 | 2026-11-05 | `b0c0a7da` | Primeira varredura completa (178 artefatos) |
 | 2026-11-05 | `6c99969` | Incremental: Variáveis, Word, WebAutomation modular, Excel/Studio; revarredura total 226 artefatos |
-| 2026-11-05 | `fb0caf7` | Remediação regex Word + atualização deste registro |
+| 2026-11-05 | `a15bf99` | Remediação regex Word + atualização deste registro |
 
 ---
 
