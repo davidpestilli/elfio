@@ -73,11 +73,15 @@ public static class GraphValidator
                 hasEnd = true;
             if (node.Kind == NodeKind.Action && node.Action is null)
                 throw new ValidationException(ValidationErrorKind.ActionNodeMissingAction, $"action node `{node.Id}` has no action");
-            if (node.Kind is NodeKind.If or NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat && node.Control is null)
+            if (node.Kind is NodeKind.If or NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat
+                    or NodeKind.Switch or NodeKind.Case or NodeKind.CaseDefault
+                && node.Control is null)
                 throw new ValidationException(ValidationErrorKind.ControlNodeMissingControl, $"control node `{node.Id}` has no control config");
             if (node.Action is not null && node.Kind != NodeKind.Action)
                 throw new ValidationException(ValidationErrorKind.NonActionHasAction, $"node `{node.Id}` has action but is not an action node");
-            if (node.Control is not null && node.Kind is not (NodeKind.If or NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat))
+            if (node.Control is not null && node.Kind is not (
+                    NodeKind.If or NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat
+                    or NodeKind.Switch or NodeKind.Case or NodeKind.CaseDefault))
                 throw new ValidationException(ValidationErrorKind.NonControlHasControl, $"node `{node.Id}` has control but is not a control node");
         }
 
@@ -350,7 +354,9 @@ public static class GraphValidator
     {
         NodeKind.Start or NodeKind.Action or NodeKind.NextLoop or NodeKind.ExitLoop => port == EdgePort.Main,
         NodeKind.End => false,
-        NodeKind.If => port is EdgePort.Then or EdgePort.Else,
+        NodeKind.If or NodeKind.Case => port is EdgePort.Then or EdgePort.Else,
+        NodeKind.Switch => port is EdgePort.Then,
+        NodeKind.CaseDefault => port == EdgePort.Main,
         NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat => port is EdgePort.Body or EdgePort.After,
         _ => false,
     };
@@ -360,7 +366,8 @@ public static class GraphValidator
         var ports = edges?.Select(e => e.Item1).ToHashSet() ?? [];
         EdgePort[]? need = node.Kind switch
         {
-            NodeKind.If => [EdgePort.Then, EdgePort.Else],
+            NodeKind.If or NodeKind.Case => [EdgePort.Then, EdgePort.Else],
+            NodeKind.Switch => [EdgePort.Then],
             NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat => [EdgePort.Body, EdgePort.After],
             _ => null,
         };

@@ -66,6 +66,10 @@ public static class TemplateReferenceValidator
             yield return ic.Left;
             yield return ic.Right;
         }
+        else if (node.Control is SwitchControlKind sw)
+            yield return sw.Expression;
+        else if (node.Control is CaseControlKind cc)
+            yield return cc.Value;
         else if (node.Control is WhileControlKind wc)
         {
             yield return wc.Left;

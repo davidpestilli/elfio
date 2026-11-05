@@ -41,7 +41,7 @@ public static class FlowCanvasSerializer
                 port = c.Port.AsString(),
                 sourceHandle,
                 targetHandle,
-                label = FlowCanvasHandles.CanvasEdgeLabel(c.Port, c.Label),
+                label = FlowCanvasHandles.CanvasEdgeLabel(c.Source.Kind, c.Port, c.Label),
                 waypoints = c.Waypoints.Select(w => new { x = w.X, y = w.Y }).ToArray(),
             };
         }).ToArray();
@@ -58,7 +58,7 @@ public static class FlowCanvasSerializer
                 targetId = sel.Target.Id,
                 sourceLabel = sel.Source.Label,
                 targetLabel = sel.Target.Label,
-                label = FlowCanvasHandles.CanvasEdgeLabel(sel.Port, sel.Label) ?? "",
+                label = FlowCanvasHandles.CanvasEdgeLabel(sel.Source.Kind, sel.Port, sel.Label) ?? "",
             };
         }
 
@@ -85,6 +85,10 @@ public static class FlowCanvasSerializer
         NodeKind.ForEach => "for_each",
         NodeKind.NextLoop => "next_loop",
         NodeKind.ExitLoop => "exit_loop",
+        NodeKind.WhileLoop => "while_loop",
+        NodeKind.Case => "case",
+        NodeKind.CaseDefault => "case_default",
+        NodeKind.Switch => "switch",
         _ => kind.ToString().ToLowerInvariant(),
     };
 }

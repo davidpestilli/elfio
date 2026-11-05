@@ -58,6 +58,9 @@ Notas:
 | `kind` (nó) | Paleta | `module` | `action_id` | Log resumido (hoje) |
 |-------------|--------|----------|-------------|---------------------|
 | `if` | Condicionais | `Conditionals` | `If` | `if … => then\|else` |
+| `switch` | Condicionais | `Conditionals` | `Switch` | `switch {expr} => \`value\`` |
+| `case` | Condicionais | `Conditionals` | `Case` | `case … => then\|else` |
+| `case_default` | Condicionais | `Conditionals` | `CaseDefault` | `case default` |
 | `for_each` | Loops | `Loops` | `Foreach` | `for_each \`list\` -> port …` |
 | `while_loop` | Loops | `Loops` | `While` | `while … => …` |
 | `repeat` | Loops | `Loops` | `Loop` | `repeat \`N\` -> port …` |

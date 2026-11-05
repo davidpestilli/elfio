@@ -9,6 +9,9 @@ public static class ActionCatalog
     {
         NodeKind.Action when node.Action is not null => Describe(node.Action),
         NodeKind.If => new("Conditionals", "If"),
+        NodeKind.Switch => new("Conditionals", "Switch"),
+        NodeKind.Case => new("Conditionals", "Case"),
+        NodeKind.CaseDefault => new("Conditionals", "CaseDefault"),
         NodeKind.ForEach => new("Loops", "Foreach"),
         NodeKind.WhileLoop => new("Loops", "While"),
         NodeKind.Repeat => new("Loops", "Loop"),
@@ -57,7 +60,7 @@ public static class ActionCatalog
         if (graph.Subflows is null)
             return;
         foreach (var bundle in graph.Subflows.Values)
-            CollectModulesFromGraph(bundle.AsGraph(graph.Subflows), modules);
+            CollectModulesFromGraph(bundle.AsGraph(null), modules);
     }
 
     public static (IReadOnlyList<string>? Inputs, IReadOnlyList<string>? Outputs) VariableIo(ActionKind action) =>

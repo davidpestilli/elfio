@@ -36,6 +36,17 @@ public sealed class ControlKindJsonConverter : JsonConverter<ControlKind>
                 Times = root.GetProperty("times").GetString() ?? "",
                 IndexVariable = root.GetProperty("index_variable").GetString() ?? "",
             },
+            "switch" => new SwitchControlKind
+            {
+                Expression = root.GetProperty("expression").GetString() ?? "",
+                IgnoreCase = root.TryGetProperty("ignore_case", out var sic) && sic.GetBoolean(),
+            },
+            "case" => new CaseControlKind
+            {
+                Value = root.GetProperty("value").GetString() ?? "",
+                Operator = ParseCompareOperator(root.GetProperty("operator").GetString()),
+            },
+            "case_default" => new CaseDefaultControlKind(),
             _ => throw new JsonException($"unknown control type `{type}`"),
         };
     }
@@ -67,6 +78,17 @@ public sealed class ControlKindJsonConverter : JsonConverter<ControlKind>
             case RepeatControlKind c:
                 writer.WriteString("times", c.Times);
                 writer.WriteString("index_variable", c.IndexVariable);
+                break;
+            case SwitchControlKind c:
+                writer.WriteString("expression", c.Expression);
+                if (c.IgnoreCase)
+                    writer.WriteBoolean("ignore_case", true);
+                break;
+            case CaseControlKind c:
+                writer.WriteString("value", c.Value);
+                writer.WriteString("operator", OperatorToJson(c.Operator));
+                break;
+            case CaseDefaultControlKind:
                 break;
         }
         writer.WriteEndObject();
@@ -116,5 +138,17 @@ public static class ControlKindExtensions
     {
         RepeatControlKind c => new RepeatControl(c.Times, c.IndexVariable),
         _ => throw new InvalidOperationException("not repeat"),
+    };
+
+    public static SwitchControl AsSwitch(this ControlKind control) => control switch
+    {
+        SwitchControlKind c => new SwitchControl(c.Expression, c.IgnoreCase),
+        _ => throw new InvalidOperationException("not switch"),
+    };
+
+    public static CaseControl AsCase(this ControlKind control) => control switch
+    {
+        CaseControlKind c => new CaseControl(c.Value, c.Operator),
+        _ => throw new InvalidOperationException("not case"),
     };
 }

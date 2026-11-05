@@ -34,7 +34,7 @@ static class PaletteSpawn
 
     static bool IsControlKey(string paletteKey) => paletteKey switch
     {
-        "if" or "for_each" or "while_loop" or "repeat" or "next_loop" or "exit_loop" => true,
+        "if" or "switch" or "case" or "case_default" or "for_each" or "while_loop" or "repeat" or "next_loop" or "exit_loop" => true,
         _ when paletteKey.StartsWith("node:", StringComparison.Ordinal) => false,
         _ when paletteKey.StartsWith("ui:", StringComparison.Ordinal) => false,
         _ when paletteKey.StartsWith("action:", StringComparison.Ordinal) => false,

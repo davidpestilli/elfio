@@ -10,6 +10,7 @@ import {
   applyNodeChanges,
   reconnectEdge,
   useReactFlow,
+  useUpdateNodeInternals,
   type Connection,
   type Edge,
   type EdgeChange,
@@ -36,11 +37,12 @@ import { FlowAlignmentGuides } from "./FlowAlignmentGuides";
 import { FlowToolbar } from "./FlowToolbar";
 import type { SelectedEdgeDto } from "./bridge";
 import { connectionRejectReason, edgeDisplayLabel, normalizeSourceHandle, portFromSourceHandle } from "./flowHandles";
+import { HOBLIO_FALLBACK_HEIGHT, HOBLIO_FALLBACK_WIDTH } from "./nodeLayout";
 
 const nodeTypes = { flowNode: FlowNode };
 const edgeTypes = { waypoint: WaypointEdge };
-const FALLBACK_W = 148;
-const FALLBACK_H = 56;
+const FALLBACK_W = HOBLIO_FALLBACK_WIDTH;
+const FALLBACK_H = HOBLIO_FALLBACK_HEIGHT;
 
 const markerEnd = { type: MarkerType.ArrowClosed, width: 18, height: 18 };
 
@@ -85,6 +87,7 @@ function applySelection(nodes: Node[], edges: Edge[], nodeIds: string[], edgeId:
 
 export function App() {
   const { fitView, setCenter, getNode } = useReactFlow();
+  const updateNodeInternals = useUpdateNodeInternals();
   const [nodes, setNodes] = useState<Node<FlowNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [canEdit, setCanEdit] = useState(true);
@@ -129,6 +132,9 @@ export function App() {
           setNodes(selNodes);
           setEdges(selEdges);
           publishGuides([]);
+          requestAnimationFrame(() => {
+            for (const n of message.payload.nodes) updateNodeInternals(n.id);
+          });
           if (
             message.payload.fitViewToken &&
             message.payload.fitViewToken > lastFitToken.current
@@ -227,7 +233,7 @@ export function App() {
         }
       }
     },
-    [fitView, getNode, publishGuides, setCenter],
+    [fitView, getNode, publishGuides, setCenter, updateNodeInternals],
   );
 
   useEffect(() => {

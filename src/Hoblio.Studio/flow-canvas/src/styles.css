@@ -39,12 +39,16 @@ body,
 
 .hoblio-node {
   min-width: 140px;
-  padding: 0.5rem 0.65rem;
+  padding: 0;
   border: 2px solid #cbd5e1;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
   position: relative;
+}
+
+.hoblio-node-body {
+  padding: 0.5rem 0.65rem;
 }
 
 .hoblio-node.selected {
@@ -80,7 +84,10 @@ body,
   border-color: #dc2626;
 }
 
-.hoblio-node.kind-if {
+.hoblio-node.kind-if,
+.hoblio-node.kind-switch,
+.hoblio-node.kind-case,
+.hoblio-node.kind-case_default {
   border-color: #7c3aed;
   background: #faf5ff;
 }
@@ -132,8 +139,11 @@ body,
   border: 2px solid #fff;
 }
 
-.hoblio-handle-source.port-then {
+.hoblio-handle-source.port-then,
+.hoblio-handle-source.port-switch-out {
   background: #16a34a;
+  width: 12px;
+  height: 12px;
 }
 
 .hoblio-handle-source.port-else {

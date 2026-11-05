@@ -26,6 +26,11 @@ public enum NodeKind
     [JsonPropertyName("while_loop")]
     WhileLoop,
     Repeat,
+    Switch,
+    [JsonPropertyName("case")]
+    Case,
+    [JsonPropertyName("case_default")]
+    CaseDefault,
 }
 
 public enum EdgePort

@@ -1,3 +1,5 @@
+import { HOBLIO_ANCHOR_Y } from "./nodeLayout";
+
 export interface Rect {
   x: number;
   y: number;
@@ -24,6 +26,24 @@ const GUIDE_MARGIN = 24;
 interface AxisMatch {
   delta: number;
   guide: AlignmentGuide;
+}
+
+/** Snap horizontal-flow ports (left/right) to the same logical row. */
+function anchorRowMatch(dragged: Rect, other: Rect, otherId: string): AxisMatch | null {
+  const draggedRow = dragged.y + HOBLIO_ANCHOR_Y;
+  const otherRow = other.y + HOBLIO_ANCHOR_Y;
+  const delta = otherRow - draggedRow;
+  if (Math.abs(delta) > TOLERANCE) return null;
+  return {
+    delta,
+    guide: {
+      id: `${otherId}-anchor-row`,
+      axis: "y",
+      position: otherRow,
+      start: Math.min(dragged.x, other.x) - GUIDE_MARGIN,
+      end: Math.max(dragged.x + dragged.width, other.x + other.width) + GUIDE_MARGIN,
+    },
+  };
 }
 
 function centerMatch(axis: "x" | "y", dragged: Rect, other: Rect, otherId: string): AxisMatch | null {
@@ -81,7 +101,17 @@ function edgeMatch(axis: "x" | "y", dragged: Rect, other: Rect, otherId: string)
 export function computeSnap(dragged: Rect, others: { id: string; rect: Rect }[]): SnapResult {
   const matches: Partial<Record<"x" | "y", AxisMatch>> = {};
 
+  let bestAnchor: AxisMatch | null = null;
+  for (const other of others) {
+    const candidate = anchorRowMatch(dragged, other.rect, other.id);
+    if (candidate && (!bestAnchor || Math.abs(candidate.delta) < Math.abs(bestAnchor.delta))) {
+      bestAnchor = candidate;
+    }
+  }
+  if (bestAnchor) matches.y = bestAnchor;
+
   for (const axis of ["y", "x"] as const) {
+    if (axis === "y" && matches.y) continue;
     let bestCenter: AxisMatch | null = null;
     for (const other of others) {
       const candidate = centerMatch(axis, dragged, other.rect, other.id);

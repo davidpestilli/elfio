@@ -206,6 +206,17 @@ public static class FlowVariableRename
             Times = ReplaceTemplates(c.Times, oldName, newName),
             IndexVariable = ReplaceVarName(c.IndexVariable, oldName, newName),
         },
+        SwitchControlKind c => new SwitchControlKind
+        {
+            Expression = ReplaceTemplates(c.Expression, oldName, newName),
+            IgnoreCase = c.IgnoreCase,
+        },
+        CaseControlKind c => new CaseControlKind
+        {
+            Value = ReplaceTemplates(c.Value, oldName, newName),
+            Operator = c.Operator,
+        },
+        CaseDefaultControlKind => new CaseDefaultControlKind(),
         _ => control,
     };
 

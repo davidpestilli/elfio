@@ -1,5 +1,6 @@
 using Hoblio.Model;
 using Hoblio.Serde;
+using Hoblio.TestSupport;
 
 namespace Hoblio.Model.Tests;
 
@@ -32,5 +33,15 @@ public sealed class ModuleManifestSyncTests
         Assert.Equal(ElfioEngineInfo.Version, manifest.CreatedEngineVersion);
         Assert.NotNull(manifest.ModuleReferences);
         Assert.Contains(manifest.ModuleReferences!, r => r.Name == "WebAutomation");
+    }
+
+    [Fact]
+    public void Refresh_does_not_stack_overflow_with_multiple_embedded_subflows()
+    {
+        var manifest = new FlowManifest { Name = "t", Version = "1" };
+        var project = ProjectLoader.LoadProject(ExamplePaths.Resolve("login-eproc"));
+        ModuleManifestSync.Refresh(manifest, project.Flow);
+        Assert.NotNull(manifest.ModuleReferences);
+        Assert.NotEmpty(manifest.ModuleReferences!);
     }
 }

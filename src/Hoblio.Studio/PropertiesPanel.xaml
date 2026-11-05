@@ -188,6 +188,32 @@
                        Text="Connect saída then (→) e else (↓)."/>
           </StackPanel>
 
+          <StackPanel Visibility="{Binding ShowSwitchSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="Expressão" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding SwitchExpression, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <local:TemplateVariableChips FieldKey="SwitchExpression" DataContext="{Binding}"/>
+            <CheckBox Content="Ignore case (comparações de texto nos cases)" IsChecked="{Binding SwitchIgnoreCase}" Margin="0,0,0,8"/>
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Saída then (→) liga ao primeiro Case. Encadeie Case com else (↓) até o próximo Case ou Default case."/>
+          </StackPanel>
+
+          <StackPanel Visibility="{Binding ShowCaseSection, Converter={StaticResource BoolVis}}">
+            <TextBlock Text="Operator" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding CompareOperators}" SelectedItem="{Binding CaseOperator}" Margin="0,0,0,10"/>
+            <TextBlock Text="Value" Style="{StaticResource FieldLabel}"/>
+            <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding CaseValue, UpdateSourceTrigger=PropertyChanged}"
+                      IsEditable="True" Margin="0,0,0,10"/>
+            <local:TemplateVariableChips FieldKey="CaseValue" DataContext="{Binding}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Compara o valor do Switch. then (→) = ramo; else (↓) = próximo Case ou Default."/>
+          </StackPanel>
+
+          <StackPanel Visibility="{Binding ShowCaseDefaultSection, Converter={StaticResource BoolVis}}">
+            <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,0,0,12"
+                       Text="Executado quando nenhum Case anterior correspondeu. Entrada pela saída else do último Case; saída main (→) para as ações do ramo padrão."/>
+          </StackPanel>
+
           <StackPanel Visibility="{Binding ShowWhileSection, Converter={StaticResource BoolVis}}">
             <TextBlock Text="Left" Style="{StaticResource FieldLabel}"/>
             <ComboBox ItemsSource="{Binding TemplateVariableNames}" Text="{Binding WhileLeft, UpdateSourceTrigger=PropertyChanged}"

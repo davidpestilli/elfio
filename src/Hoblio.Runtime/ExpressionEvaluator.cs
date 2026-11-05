@@ -32,12 +32,16 @@ public static class ExpressionEvaluator
     {
         var left = ResolveOperand(cfg.Left, vars);
         var right = ResolveOperand(cfg.Right, vars);
+        return EvalCompareValues(left, cfg.Operator, right, cfg.IgnoreCase);
+    }
 
-        if (IsNumericOperator(cfg.Operator))
+    public static bool EvalCompareValues(string left, CompareOperator op, string right, bool ignoreCase)
+    {
+        if (IsNumericOperator(op))
         {
             var l = ParseNumber(left);
             var r = ParseNumber(right);
-            return cfg.Operator switch
+            return op switch
             {
                 CompareOperator.Gt => l > r,
                 CompareOperator.Gte => l >= r,
@@ -47,13 +51,13 @@ public static class ExpressionEvaluator
             };
         }
 
-        if (cfg.IgnoreCase)
+        if (ignoreCase)
         {
             left = left.ToLowerInvariant();
             right = right.ToLowerInvariant();
         }
 
-        return cfg.Operator switch
+        return op switch
         {
             CompareOperator.Eq => left == right,
             CompareOperator.Ne => left != right,

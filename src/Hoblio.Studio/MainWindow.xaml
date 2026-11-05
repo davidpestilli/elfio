@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Hoblio.Studio"
         xmlns:canvas="clr-namespace:Hoblio.Studio.FlowCanvas"
-        Title="Elfio Studio"
+        Title="{Binding DocumentTitle, Mode=OneWay}"
         Width="1480" Height="920"
         MinWidth="1100" MinHeight="700"
         Background="{StaticResource Brush.AppBg}"

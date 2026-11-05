@@ -15,6 +15,8 @@ public static class FlowCanvasHandles
     {
         if (EdgePortExtensions.Parse(handle) is { } port)
             return port;
+        if (sourceKind == NodeKind.Switch && (string.IsNullOrEmpty(handle) || MainOut.Contains(handle)))
+            return EdgePort.Then;
         if (string.IsNullOrEmpty(handle) || MainOut.Contains(handle))
             return EdgePort.Main;
         return EdgePort.Main;
@@ -23,13 +25,21 @@ public static class FlowCanvasHandles
     public static string SourceHandleFor(NodeKind kind, EdgePort port, string? persisted)
     {
         if (!string.IsNullOrEmpty(persisted))
-            return NormalizeSourceHandle(persisted)!;
+            return NormalizeSwitchSourceHandle(kind, NormalizeSourceHandle(persisted)!);
+        if (kind == NodeKind.Switch && port == EdgePort.Then)
+            return MainSource;
         if (port is not EdgePort.Main)
             return port.AsString();
-        return kind is NodeKind.If or NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat
+        return kind is NodeKind.If or NodeKind.Case
+                or NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat
             ? port.AsString()
             : MainSource;
     }
+
+    static string NormalizeSwitchSourceHandle(NodeKind kind, string handle) =>
+        kind == NodeKind.Switch && handle is "then" or "cases"
+            ? MainSource
+            : handle;
 
     public static string? NormalizeSourceHandle(string? value) => value switch
     {
@@ -49,5 +59,12 @@ public static class FlowCanvasHandles
         if (!string.IsNullOrWhiteSpace(customLabel))
             return customLabel.Trim();
         return EdgeLabelForPort(port);
+    }
+
+    public static string? CanvasEdgeLabel(NodeKind sourceKind, EdgePort port, string? customLabel)
+    {
+        if (sourceKind == NodeKind.Switch && port == EdgePort.Then)
+            return "cases";
+        return CanvasEdgeLabel(port, customLabel);
     }
 }

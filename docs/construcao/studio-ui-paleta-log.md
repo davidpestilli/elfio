@@ -42,6 +42,25 @@ Bridge canvas:
 - `PaletteSearchTests.cs` — aliases e query vazia
 - `RunLogLineTests.cs` — módulo, `NodeId`, profundidade, `node_exit` oculto
 
+## Shell — título da janela e nome do projeto
+
+| Comportamento | Implementação |
+|---------------|---------------|
+| Marca **Elfio Studio** | Texto + ícone no ribbon (`MainWindow.xaml`); não repetir na moldura OS. |
+| Título da janela | `Title="{Binding DocumentTitle}"` — mesmo rótulo do canto direito do ribbon. |
+| `DocumentTitle` | `ProjectDisplayName()` + ` *` se sujo; nome vem de `manifest.name`, com fallback para **nome da pasta** quando `name` é vazio ou `untitled`. |
+| Caminho | `ProjectPath` abaixo do status (pasta do `manifest.json` aberto). |
+
+## Canvas — Switch / Case (handles)
+
+| Artefato | Nota |
+|----------|------|
+| `FlowCanvasHandles.cs` | Switch: porta lógica `then`, handle visual `right`, label de aresta “cases”. |
+| `nodeLayout.ts` | Linha lógica de conectores (`HOBLIO_ROW_Y`); top/bottom no padrão XYFlow. |
+| `FlowNode.tsx` / `styles.css` | Faixa compacta de título/portas; metadados abaixo sem deslocar handles horizontais. |
+
+Rebuild do canvas após mudanças TS: `npm run build --prefix src/Hoblio.Studio/flow-canvas`.
+
 ## Build
 
 ```bash

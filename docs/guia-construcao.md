@@ -113,7 +113,7 @@ Resumo do que entrou nesta rodada (paridade funcional com o Hoblio Rust/Tauri pa
 | **Toolbar do canvas** | Modo **Exibição / Edição**, desfazer/refazer, apagar seleção, limpar fluxo, barra de **rótulo de aresta** — espelha o Rust; barra WPF duplicada foi retirada. |
 | **React Flow** | `WaypointEdge`, handles `then/else/body/after`, `edgesReconnectable`, substituir ligação na mesma porta, snap 10×10, guias de alinhamento, `fitViewToken`, MiniMap/Controls, atalhos (copiar/colar/recortar/selecionar tudo). |
 | **Propriedades** | Índice **Flow variables** (produtores + jump para nó); removido bloco **Nova ligação** — ligações só no canvas (como no Rust). |
-| **Ribbon / janela** | Faixa WPF: Arquivo + Validar/Executar/Parar; abas de fluxo/subfluxo; status + **`DocumentTitle`** (nome do manifest + `*` se sujo) + caminho do projeto. Moldura OS: título fixo **Elfio Studio**, sem ícone na title bar (marca e ícone só no ribbon; taskbar usa `ApplicationIcon` do exe). |
+| **Ribbon / janela** | Faixa WPF: Arquivo + Validar/Executar/Parar; abas de fluxo/subfluxo; status + **`DocumentTitle`** + caminho do projeto. *(Atualizado na rodada Switch — ver abaixo.)* |
 | **Marca** | Scripts `generate-elfio-icons.ps1` / `.py`, assets `Hoblio.Studio/Assets/`, favicon do canvas. |
 
 ### Runtime e modelo (impacto em RPA / login eproc)
@@ -136,6 +136,49 @@ dotnet run --project src/Hoblio.Studio
 ```
 
 Diferenças **esperadas** vs Rust (não bloqueiam paridade de JSON): motor CDP **PuppeteerSharp** vs driver Rust (timing/flakiness), **`TemplateReferenceValidator`** só no C#, texto do log CLI (`StrictSummaryLines` no harness). Detalhe em [PARITY.md](PARITY.md).
+
+## Rodada nov/2026 — Switch/Case, save e shell
+
+Condicionais estilo PAD (multi-way), correção crítica ao **Salvar**, refatoração do exemplo `login-eproc` e ajustes de canvas/shell.
+
+### Modelo e runtime
+
+| Área | Mudança |
+|------|---------|
+| **Switch / Case / Case default** | Nós `switch`, `case`, `case_default` + controles JSON (`SwitchControlKind`, `CaseControlKind`, `CaseDefaultControlKind`). |
+| **Grafo** | Switch: saída `then` → primeiro Case; cada Case: `then` (match) / `else` (próximo case); default entra pelo `else` do último Case (porta `main` no default). |
+| **`FlowExecutor`** | Frame `LoopFrameSwitch`; avalia expressão uma vez; cases encadeados; teste `SwitchBehaviorTests`. |
+| **`GraphValidator`** | Portas exigidas por kind; subfluxos validados com `SubflowBundle.AsGraph(null)`. |
+
+### Studio — paleta, inspector, canvas
+
+| Área | Mudança |
+|------|---------|
+| **Paleta / propriedades** | Entradas Switch, Case, Case default; inspector para expressão/operador/valor. |
+| **Handles React Flow** | Switch mapeia saída lógica `then` → handle `right` (label “cases”); alinhamento horizontal (`nodeLayout.ts`, `HOBLIO_ROW_Y`); snap ao arrastar. |
+| **Salvar** | `SyncUiToProject` grava arestas a partir do diagrama (`CollectEdgesFromDiagram`); `try/catch` com diálogo; `CommitProjectVariablesFromUi` antes do save. |
+| **Crash ao salvar** | **`ActionCatalog.CollectModulesFromGraph`** não re-passava mais todos os subfluxos em cada nível (`AsGraph(null)` por bundle) — evitava stack overflow em projetos com vários subfluxos embutidos (`ModuleManifestSync.Refresh`). |
+| **Exceções** | `App.xaml.cs`: handlers em thread UI e domínio para não fechar o processo em silêncio. |
+| **Ribbon / moldura** | Marca **Elfio Studio** só no ribbon; **barra de título** = `DocumentTitle` (nome do projeto + `*` se sujo). |
+| **Nome exibido** | `manifest.name`; se vazio ou `untitled`, fallback para **nome da pasta** do projeto (`ProjectDisplayName`). |
+
+### Exemplo e testes
+
+| Área | Mudança |
+|------|---------|
+| **`examples/login-eproc`** | Grafo principal com Switch/Case onde couber; subfluxo **`detect_screen`** (probes + `continue`); variável **`ScreenText`**; `manifest.name`: `login-eproc`. |
+| **Testes** | `Login_eproc_refactored_switch_graph_validates`, `Login_eproc_save_roundtrip`, `Refresh_does_not_stack_overflow_with_multiple_embedded_subflows`. |
+
+### Verificação
+
+```powershell
+dotnet test --filter "Login_eproc|ModuleManifestSync|Switch_routes"
+dotnet run --project src/Hoblio.Cli -- validate examples/login-eproc
+# Canvas: npm run build --prefix src/Hoblio.Studio/flow-canvas
+dotnet run --project src/Hoblio.Studio
+```
+
+Detalhe de interpretação Switch/Case: [construcao/runtime-e-execucao.md](construcao/runtime-e-execucao.md). Catálogo `Conditionals`: [construcao/catalogo-acoes-e-modulos.md](construcao/catalogo-acoes-e-modulos.md).
 
 ## Projetos de fluxo
 

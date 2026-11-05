@@ -29,6 +29,13 @@ public static partial class FlowExecutor
         public string IndexVar { get; } = indexVar;
     }
 
+    sealed class LoopFrameSwitch(string switchId, string value, bool ignoreCase)
+    {
+        public string SwitchId { get; } = switchId;
+        public string Value { get; } = value;
+        public bool IgnoreCase { get; } = ignoreCase;
+    }
+
     public static RunOutcome RunProject(
         FlowProject project,
         string? projectRoot = null,
@@ -214,6 +221,44 @@ public static partial class FlowExecutor
                     var summary = $"if {cfg.Left} {CompareLabel(cfg.Operator)} {cfg.Right} => {port.AsString()}";
                     EmitActionExecuted(emit, telemetry, node, flowRef, summary, null);
                     routed = RouteTo(routes, node.Id, port);
+                    break;
+                }
+                case NodeKind.Switch:
+                {
+                    if (node.Control is not SwitchControlKind)
+                        throw new InvalidOperationException("switch node has wrong control kind");
+                    var cfg = node.Control.AsSwitch();
+                    var value = ExpressionEvaluator.ResolveOperand(cfg.Expression, runVars);
+                    loopFrames.Add(new LoopFrameSwitch(node.Id, value, cfg.IgnoreCase));
+                    var summary = $"switch {cfg.Expression} => `{value}`";
+                    EmitActionExecuted(emit, telemetry, node, flowRef, summary, null);
+                    routed = RouteTo(routes, node.Id, EdgePort.Then);
+                    break;
+                }
+                case NodeKind.Case:
+                {
+                    if (node.Control is not CaseControlKind)
+                        throw new InvalidOperationException("case node has wrong control kind");
+                    var frame = ActiveSwitchFrame(loopFrames)
+                                ?? throw new InvalidOperationException($"case `{node.Id}` is not inside an active switch");
+                    var cfg = node.Control.AsCase();
+                    var right = ExpressionEvaluator.ResolveOperand(cfg.Value, runVars);
+                    var pass = ExpressionEvaluator.EvalCompareValues(frame.Value, cfg.Operator, right, frame.IgnoreCase);
+                    if (pass)
+                        PopSwitchFrame(loopFrames, frame);
+                    var port = pass ? EdgePort.Then : EdgePort.Else;
+                    var summary = $"case {cfg.Operator.ToString().ToLowerInvariant()} `{cfg.Value}` => {port.AsString()}";
+                    EmitActionExecuted(emit, telemetry, node, flowRef, summary, null);
+                    routed = RouteTo(routes, node.Id, port);
+                    break;
+                }
+                case NodeKind.CaseDefault:
+                {
+                    if (node.Control is not CaseDefaultControlKind)
+                        throw new InvalidOperationException("case_default node has wrong control kind");
+                    if (ActiveSwitchFrame(loopFrames) is { } frame)
+                        PopSwitchFrame(loopFrames, frame);
+                    EmitActionExecuted(emit, telemetry, node, flowRef, "case default", null);
                     break;
                 }
                 case NodeKind.ForEach:
@@ -512,6 +557,28 @@ public static partial class FlowExecutor
         if (routes.TryGetValue((from, port), out var to))
             return to;
         throw new InvalidOperationException($"node `{from}` has no `{port.AsString()}` outgoing edge");
+    }
+
+    static LoopFrameSwitch? ActiveSwitchFrame(List<object> loopFrames)
+    {
+        for (var i = loopFrames.Count - 1; i >= 0; i--)
+        {
+            if (loopFrames[i] is LoopFrameSwitch sw)
+                return sw;
+        }
+        return null;
+    }
+
+    static void PopSwitchFrame(List<object> loopFrames, LoopFrameSwitch frame)
+    {
+        for (var i = loopFrames.Count - 1; i >= 0; i--)
+        {
+            if (ReferenceEquals(loopFrames[i], frame))
+            {
+                loopFrames.RemoveAt(i);
+                return;
+            }
+        }
     }
 
     static string CompareLabel(CompareOperator op) => op switch

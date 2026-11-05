@@ -94,9 +94,10 @@ Algoritmo (`ModuleManifestSync` + `ActionCatalog.CollectModulesFromGraph`):
 1. Carregar todos os grafos do projeto (`flow.json` + entradas de `manifest.flows` + subfluxos embutidos).
 2. Para cada nó:
    - `action` → mapear `type` → `module` (catálogo).
-   - `if` / loops → módulos virtuais `Conditionals`, `Loops`.
+   - `if` / `switch` / `case` / `case_default` / loops → módulos virtuais `Conditionals`, `Loops`.
    - `run_flow` → incluir `FlowControl`.
-3. Unificar por `name`; ordenar; gravar se diferença em relação ao manifest salvo.
+3. Subfluxos **embutidos**: percorrer cada entrada de `flow.subflows` com `SubflowBundle.AsGraph(null)` — **não** re-injetar o mapa completo de irmãos em cada bundle (evita recursão infinita ao agregar módulos).
+4. Unificar por `name`; ordenar; gravar se diferença em relação ao manifest salvo.
 
 Validação opcional: se o grafo usa `module` X e `module_references` não contém X → aviso (não erro fatal na fase 1).
 

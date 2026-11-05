@@ -7,7 +7,8 @@ static class NodeOutputPorts
     public static IReadOnlyList<EdgePort> ForKind(NodeKind kind) => kind switch
     {
         NodeKind.End => [],
-        NodeKind.If => [EdgePort.Then, EdgePort.Else],
+        NodeKind.If or NodeKind.Case => [EdgePort.Then, EdgePort.Else],
+        NodeKind.Switch => [EdgePort.Then],
         NodeKind.ForEach or NodeKind.WhileLoop or NodeKind.Repeat => [EdgePort.Body, EdgePort.After],
         _ => [EdgePort.Main],
     };

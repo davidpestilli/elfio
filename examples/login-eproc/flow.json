@@ -1,142 +1,13 @@
 {
-  "edges": [
-    {
-      "from": "start",
-      "to": "action_mw1pickenv",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_mw1pickenv",
-      "to": "action_mvzu4odw",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_mvzu4odw",
-      "to": "action_mvzu49l8",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "if_mvzwh8br_8bng",
-      "port": "else",
-      "to": "action_mvqgy75i",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "if_mvzwh8br_8bng",
-      "port": "then",
-      "to": "action_mvsnv0r6",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_mvqgy75i",
-      "to": "action_mvsnv0r6",
-      "ui": {
-        "targetHandle": "bottom"
-      }
-    },
-    {
-      "from": "action_mvzwoqkh",
-      "to": "if_mvzwh8br_8bng",
-      "ui": {
-        "sourceHandle": "bottom",
-        "targetHandle": "top"
-      }
-    },
-    {
-      "from": "action_mvzu49l8",
-      "to": "if_mvqgu2sc",
-      "ui": {
-        "targetHandle": "top"
-      }
-    },
-    {
-      "from": "if_mvqgu2sc",
-      "port": "then",
-      "to": "action_s2i6xjei",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_mvsnv0r6",
-      "to": "end",
-      "ui": {
-        "targetHandle": "top"
-      }
-    },
-    {
-      "from": "action_mvzudsb7",
-      "to": "if_mvzu74tg_nz5i",
-      "ui": {
-        "sourceHandle": "bottom",
-        "targetHandle": "top"
-      }
-    },
-    {
-      "from": "if_mvzu74tg_nz5i",
-      "port": "then",
-      "to": "action_mvzsy16v",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_s2i6xjei",
-      "to": "action_mw108qvx",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_mw108qvx",
-      "to": "action_mvzudsb7",
-      "ui": {
-        "targetHandle": "left"
-      }
-    },
-    {
-      "from": "action_mvzsy16v",
-      "to": "action_mvzwoqkh",
-      "ui": {
-        "sourceHandle": "bottom",
-        "targetHandle": "top"
-      }
-    },
-    {
-      "from": "if_mvzu74tg_nz5i",
-      "port": "else",
-      "to": "action_mvzwoqkh",
-      "ui": {
-        "targetHandle": "top"
-      }
-    },
-    {
-      "from": "if_mvqgu2sc",
-      "port": "else",
-      "to": "action_mvzwoqkh",
-      "ui": {
-        "targetHandle": "top"
-      }
-    }
-  ],
+  "start": "start",
   "nodes": [
     {
       "id": "start",
       "kind": "start",
       "label": "Start",
       "ui": {
-        "x": -520.0,
-        "y": -310.0
+        "x": -1450,
+        "y": -170
       }
     },
     {
@@ -144,215 +15,511 @@
       "kind": "end",
       "label": "End",
       "ui": {
-        "x": 100.0,
-        "y": 600.0
+        "x": 430,
+        "y": 400
       }
     },
     {
-      "action": {
-        "flow_id": "pick_environment",
-        "type": "run_flow",
-        "variable_scope": "inherit"
-      },
       "id": "action_mw1pickenv",
       "kind": "action",
       "label": "Escolhe ambiente",
-      "ui": {
-        "x": -320.0,
-        "y": -310.0
-      }
-    },
-    {
-      "control": {
-        "ignore_case": true,
-        "left": "{BrowserText1}",
-        "operator": "contains",
-        "right": "acesso",
-        "type": "if"
-      },
-      "id": "if_mvqgu2sc",
-      "kind": "if",
-      "label": "Tela de login?",
-      "ui": {
-        "x": -520.0,
-        "y": -170.0
-      }
-    },
-    {
       "action": {
-        "selector": "#tr1",
-        "type": "browser_click",
-        "wait_for_navigation": true,
-        "wait_selector_after": "#btn-home > i"
-      },
-      "id": "action_mvqgy75i",
-      "kind": "action",
-      "label": "Seleciona o usuário",
-      "ui": {
-        "x": -280.0,
-        "y": 600.0
-      }
-    },
-    {
-      "action": {
-        "text": "Painel do Advogado",
-        "title": "Hoblio",
-        "type": "show_message"
-      },
-      "id": "action_mvsnv0r6",
-      "kind": "action",
-      "label": "show message",
-      "ui": {
-        "x": -120.0,
-        "y": 418.0
-      }
-    },
-    {
-      "action": {
-        "flow_id": "otp_input",
-        "share_browser": true,
         "type": "run_flow",
+        "flow_id": "pick_environment",
         "variable_scope": "inherit"
       },
-      "id": "action_mvzsy16v",
-      "kind": "action",
-      "label": "insere_otp",
       "ui": {
-        "x": 270.0,
-        "y": 0.0
+        "x": -1250,
+        "y": -170
       }
     },
     {
-      "action": {
-        "selector": "#kc-form-buttons > div.my-3.border-bottom.d-flex > div.w-100.text-left.font-weight-light",
-        "type": "browser_get_text",
-        "variable": "BrowserText1"
-      },
-      "id": "action_mvzu49l8",
+      "id": "action_mvzu4odw",
       "kind": "action",
-      "label": "Verifica para qual tela foi",
-      "ui": {
-        "x": 100.0,
-        "y": -310.0
-      }
-    },
-    {
-      "action": {
-        "flow_id": "credentials_input",
-        "share_browser": true,
-        "type": "run_flow",
-        "variable_scope": "inherit"
-      },
-      "id": "action_s2i6xjei",
-      "kind": "action",
-      "label": "Insere login e senha",
-      "ui": {
-        "x": -250.0,
-        "y": -152.5
-      }
-    },
-    {
+      "label": "Abre eproc",
       "action": {
         "type": "browser_navigate",
         "url": "{EprocUrl}",
         "wait_ms": 2000
       },
-      "id": "action_mvzu4odw",
-      "kind": "action",
-      "label": "Abre eproc",
       "ui": {
-        "x": -120.0,
-        "y": -310.0
+        "x": -1050,
+        "y": -170
       }
     },
     {
+      "id": "action_detect_nav",
+      "kind": "action",
+      "label": "Detecta tela (p\u00F3s-navega\u00E7\u00E3o)",
+      "action": {
+        "type": "run_flow",
+        "flow_id": "detect_screen",
+        "share_browser": true,
+        "variable_scope": "inherit"
+      },
+      "ui": {
+        "x": -830,
+        "y": -170
+      }
+    },
+    {
+      "id": "sw_after_nav",
+      "kind": "switch",
+      "label": "Switch tela inicial",
       "control": {
-        "ignore_case": true,
-        "left": "{BrowserText2}",
-        "operator": "contains",
-        "right": "Código",
-        "type": "if"
+        "type": "switch",
+        "expression": "{ScreenText}",
+        "ignore_case": true
       },
-      "id": "if_mvzu74tg_nz5i",
-      "kind": "if",
-      "label": "Tela de OTP?",
       "ui": {
-        "x": -1.0,
-        "y": -17.5
+        "x": -520,
+        "y": -400
       }
     },
     {
-      "action": {
-        "type": "set_variable",
-        "value": "",
-        "variable": "BrowserText2"
-      },
-      "id": "action_mw108qvx",
-      "kind": "action",
-      "label": "Limpa BrowserText2",
-      "ui": {
-        "x": -20.0,
-        "y": -152.5
-      }
-    },
-    {
-      "action": {
-        "selector": "#kc-otp-login-form > div:nth-child(1) > div:nth-child(1) > label",
-        "timeout_ms": 3000,
-        "type": "browser_get_text",
-        "variable": "BrowserText2"
-      },
-      "error_handling": {
-        "on_failure": "continue",
-        "retry_count": 0
-      },
-      "id": "action_mvzudsb7",
-      "kind": "action",
-      "label": "Verifica para qual tela foi",
-      "ui": {
-        "x": 200.0,
-        "y": -152.5
-      }
-    },
-    {
+      "id": "case_acesso_nav",
+      "kind": "case",
+      "label": "Login?",
       "control": {
-        "ignore_case": true,
-        "left": "{BrowserText3}",
-        "operator": "contains",
-        "right": "Painel",
-        "type": "if"
+        "type": "case",
+        "value": "acesso",
+        "operator": "contains"
       },
-      "id": "if_mvzwh8br_8bng",
-      "kind": "if",
-      "label": "Tela inicial?",
       "ui": {
-        "x": -520.0,
-        "y": 400.0
+        "x": -280,
+        "y": -400
       }
     },
     {
-      "action": {
-        "selector": "#divInfraBarraLocalizacao > div > h1",
-        "timeout_ms": 3000,
-        "type": "browser_get_text",
-        "variable": "BrowserText3"
+      "id": "def_after_nav",
+      "kind": "case_default",
+      "label": "N\u00E3o \u00E9 login",
+      "control": {
+        "type": "case_default"
       },
-      "error_handling": {
-        "on_failure": "continue",
-        "retry_count": 0
-      },
-      "id": "action_mvzwoqkh",
-      "kind": "action",
-      "label": "Verifica para qual tela foi",
       "ui": {
-        "x": -539.0,
-        "y": 210.0
+        "x": -280,
+        "y": -240
+      }
+    },
+    {
+      "id": "action_s2i6xjei",
+      "kind": "action",
+      "label": "Insere login e senha",
+      "action": {
+        "type": "run_flow",
+        "flow_id": "credentials_input",
+        "share_browser": true,
+        "variable_scope": "inherit"
+      },
+      "ui": {
+        "x": -40,
+        "y": -400
+      }
+    },
+    {
+      "id": "action_detect_post_cred",
+      "kind": "action",
+      "label": "Detecta tela (p\u00F3s-credenciais)",
+      "action": {
+        "type": "run_flow",
+        "flow_id": "detect_screen",
+        "share_browser": true,
+        "variable_scope": "inherit"
+      },
+      "ui": {
+        "x": 260,
+        "y": -170
+      }
+    },
+    {
+      "id": "sw_post_cred",
+      "kind": "switch",
+      "label": "Switch p\u00F3s-login",
+      "control": {
+        "type": "switch",
+        "expression": "{ScreenText}",
+        "ignore_case": true
+      },
+      "ui": {
+        "x": 550,
+        "y": -170
+      }
+    },
+    {
+      "id": "case_otp",
+      "kind": "case",
+      "label": "OTP?",
+      "control": {
+        "type": "case",
+        "value": "C\u00F3digo",
+        "operator": "contains"
+      },
+      "ui": {
+        "x": 770,
+        "y": -170
+      }
+    },
+    {
+      "id": "def_post_cred",
+      "kind": "case_default",
+      "label": "Sem OTP",
+      "control": {
+        "type": "case_default"
+      },
+      "ui": {
+        "x": 770,
+        "y": 70
+      }
+    },
+    {
+      "id": "action_mvzsy16v",
+      "kind": "action",
+      "label": "insere_otp",
+      "action": {
+        "type": "run_flow",
+        "flow_id": "otp_input",
+        "share_browser": true,
+        "variable_scope": "inherit"
+      },
+      "ui": {
+        "x": 1010,
+        "y": -170
+      }
+    },
+    {
+      "id": "action_detect_panel",
+      "kind": "action",
+      "label": "Detecta tela (painel/outros)",
+      "action": {
+        "type": "run_flow",
+        "flow_id": "detect_screen",
+        "share_browser": true,
+        "variable_scope": "inherit"
+      },
+      "ui": {
+        "x": -300,
+        "y": 200
+      }
+    },
+    {
+      "id": "sw_panel",
+      "kind": "switch",
+      "label": "Switch painel",
+      "control": {
+        "type": "switch",
+        "expression": "{ScreenText}",
+        "ignore_case": true
+      },
+      "ui": {
+        "x": -520,
+        "y": 400
+      }
+    },
+    {
+      "id": "case_panel",
+      "kind": "case",
+      "label": "Painel?",
+      "control": {
+        "type": "case",
+        "value": "Painel",
+        "operator": "contains"
+      },
+      "ui": {
+        "x": -320,
+        "y": 400
+      }
+    },
+    {
+      "id": "def_panel",
+      "kind": "case_default",
+      "label": "Selecionar usu\u00E1rio",
+      "control": {
+        "type": "case_default"
+      },
+      "ui": {
+        "x": -320,
+        "y": 600
+      }
+    },
+    {
+      "id": "action_mvqgy75i",
+      "kind": "action",
+      "label": "Seleciona o usu\u00E1rio",
+      "action": {
+        "type": "browser_click",
+        "selector": "#tr1",
+        "wait_for_navigation": true,
+        "wait_selector_after": "#btn-home \u003E i"
+      },
+      "ui": {
+        "x": -70,
+        "y": 600
+      }
+    },
+    {
+      "id": "action_mvsnv0r6",
+      "kind": "action",
+      "label": "show message",
+      "action": {
+        "type": "show_message",
+        "title": "Hoblio",
+        "text": "Painel do Advogado"
+      },
+      "ui": {
+        "x": 140,
+        "y": 400
       }
     }
   ],
-  "start": "start",
+  "edges": [
+    {
+      "from": "start",
+      "to": "action_mw1pickenv",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "action_mw1pickenv",
+      "to": "action_mvzu4odw",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "action_mvzu4odw",
+      "to": "action_detect_nav",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "sw_after_nav",
+      "to": "case_acesso_nav",
+      "port": "then",
+      "ui": {
+        "sourceHandle": "right",
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "case_acesso_nav",
+      "to": "action_s2i6xjei",
+      "port": "then",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "action_s2i6xjei",
+      "to": "action_detect_post_cred",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "action_detect_post_cred",
+      "to": "sw_post_cred",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "sw_post_cred",
+      "to": "case_otp",
+      "port": "then",
+      "ui": {
+        "sourceHandle": "right",
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "case_otp",
+      "to": "action_mvzsy16v",
+      "port": "then",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "sw_panel",
+      "to": "case_panel",
+      "port": "then",
+      "ui": {
+        "sourceHandle": "right",
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "case_panel",
+      "to": "action_mvsnv0r6",
+      "port": "then",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "def_panel",
+      "to": "action_mvqgy75i",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "action_mvqgy75i",
+      "to": "action_mvsnv0r6",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "case_otp",
+      "to": "def_post_cred",
+      "port": "else",
+      "ui": {
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "action_mvzsy16v",
+      "to": "action_detect_panel",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "def_post_cred",
+      "to": "action_detect_panel",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "def_after_nav",
+      "to": "action_detect_panel",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "case_acesso_nav",
+      "to": "def_after_nav",
+      "port": "else",
+      "ui": {
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "action_detect_nav",
+      "to": "sw_after_nav",
+      "port": "main",
+      "ui": {}
+    },
+    {
+      "from": "action_detect_panel",
+      "to": "sw_panel",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "action_mvsnv0r6",
+      "to": "end",
+      "port": "main",
+      "ui": {}
+    },
+    {
+      "from": "case_panel",
+      "to": "def_panel",
+      "port": "else",
+      "ui": {
+        "targetHandle": "top"
+      }
+    }
+  ],
   "subflows": {
     "credentials_input": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "action_mvzsjpb3",
+          "kind": "action",
+          "label": "Preenche senha",
+          "action": {
+            "type": "browser_fill",
+            "selector": "#password",
+            "text": "Davidtj150832!!!",
+            "timeout_ms": 1000
+          },
+          "ui": {
+            "x": 440,
+            "y": -170
+          }
+        },
+        {
+          "id": "action_mvzsjpb4",
+          "kind": "action",
+          "label": "Preenche usu\u00E1rio",
+          "action": {
+            "type": "browser_fill",
+            "selector": "#username",
+            "text": "{EprocUser}",
+            "timeout_ms": 1000
+          },
+          "ui": {
+            "x": 230,
+            "y": -170
+          }
+        },
+        {
+          "id": "action_8s5e8dyl",
+          "kind": "action",
+          "label": "Clica no login",
+          "action": {
+            "type": "browser_click",
+            "selector": "#kc-login",
+            "wait_for_navigation": true
+          },
+          "ui": {
+            "x": 640,
+            "y": -170
+          }
+        },
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -20,
+            "y": -170
+          }
+        },
+        {
+          "id": "end_mvzsjw3z",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 880,
+            "y": -170
+          }
+        }
+      ],
       "edges": [
         {
           "from": "action_mvzsjpb3",
@@ -383,49 +550,188 @@
           }
         }
       ],
+      "variables": {}
+    },
+    "detect_screen": {
+      "start": "start",
       "nodes": [
         {
-          "action": {
-            "selector": "#password",
-            "text": "Davidtj150832!!!",
-            "timeout_ms": 1000,
-            "type": "browser_fill"
-          },
-          "id": "action_mvzsjpb3",
-          "kind": "action",
-          "label": "Preenche senha",
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
           "ui": {
-            "x": 440.0,
-            "y": -170.0
+            "x": -200,
+            "y": 0
           }
         },
         {
-          "action": {
-            "selector": "#username",
-            "text": "{EprocUser}",
-            "timeout_ms": 1000,
-            "type": "browser_fill"
-          },
-          "id": "action_mvzsjpb4",
-          "kind": "action",
-          "label": "Preenche usuário",
+          "id": "end_detect",
+          "kind": "end",
+          "label": "End",
           "ui": {
-            "x": 230.0,
-            "y": -170.0
+            "x": 900,
+            "y": 0
           }
         },
         {
+          "id": "action_clear_screen",
+          "kind": "action",
+          "label": "Limpa ScreenText",
           "action": {
-            "selector": "#kc-login",
+            "type": "set_variable",
+            "variable": "ScreenText",
+            "value": ""
+          },
+          "ui": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": "action_probe_login",
+          "kind": "action",
+          "label": "Probe tela login",
+          "action": {
+            "type": "browser_get_text",
+            "selector": "#kc-form-buttons \u003E div.my-3.border-bottom.d-flex \u003E div.w-100.text-left.font-weight-light",
+            "variable": "ScreenText"
+          },
+          "ui": {
+            "x": 220,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 0,
+            "on_failure": "continue"
+          }
+        },
+        {
+          "id": "action_probe_otp",
+          "kind": "action",
+          "label": "Probe tela OTP",
+          "action": {
+            "type": "browser_get_text",
+            "selector": "#kc-otp-login-form \u003E div:nth-child(1) \u003E div:nth-child(1) \u003E label",
+            "timeout_ms": 3000,
+            "variable": "ScreenText"
+          },
+          "ui": {
+            "x": 440,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 0,
+            "on_failure": "continue"
+          }
+        },
+        {
+          "id": "action_probe_panel",
+          "kind": "action",
+          "label": "Probe painel",
+          "action": {
+            "type": "browser_get_text",
+            "selector": "#divInfraBarraLocalizacao \u003E div \u003E h1",
+            "timeout_ms": 3000,
+            "variable": "ScreenText"
+          },
+          "ui": {
+            "x": 660,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 0,
+            "on_failure": "continue"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "action_clear_screen",
+          "ui": {
+            "targetHandle": "left"
+          }
+        },
+        {
+          "from": "action_clear_screen",
+          "to": "action_probe_login",
+          "ui": {
+            "targetHandle": "left"
+          }
+        },
+        {
+          "from": "action_probe_login",
+          "to": "action_probe_otp",
+          "ui": {
+            "targetHandle": "left"
+          }
+        },
+        {
+          "from": "action_probe_otp",
+          "to": "action_probe_panel",
+          "ui": {
+            "targetHandle": "left"
+          }
+        },
+        {
+          "from": "action_probe_panel",
+          "to": "end_detect",
+          "ui": {
+            "targetHandle": "left"
+          }
+        }
+      ],
+      "variables": {
+        "ScreenText": ""
+      }
+    },
+    "otp_input": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "action_mvzsxj64",
+          "kind": "action",
+          "label": "Pede OTP",
+          "action": {
+            "type": "show_get_user_input",
+            "title": "Novo",
+            "message": "Digite um valor",
+            "input_kind": "single_line",
+            "topmost": true,
+            "user_input_variable": "UserInput1",
+            "button_pressed_variable": "ButtonPressed1"
+          },
+          "ui": {
+            "x": 0,
+            "y": 190
+          }
+        },
+        {
+          "id": "action_friiyyj5",
+          "kind": "action",
+          "label": "Clica para avan\u00E7ar",
+          "action": {
             "type": "browser_click",
-            "wait_for_navigation": true
+            "selector": "#kc-login",
+            "wait_for_navigation": false
           },
-          "id": "action_8s5e8dyl",
-          "kind": "action",
-          "label": "Clica no login",
           "ui": {
-            "x": 640.0,
-            "y": -170.0
+            "x": 460,
+            "y": 190
+          }
+        },
+        {
+          "id": "action_mvzsxj65",
+          "kind": "action",
+          "label": "Preenche OTP",
+          "action": {
+            "type": "browser_fill",
+            "selector": "#otp",
+            "text": "{UserInput1}"
+          },
+          "ui": {
+            "x": 230,
+            "y": 190
           }
         },
         {
@@ -433,24 +739,20 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -20.0,
-            "y": -170.0
+            "x": -250,
+            "y": 190
           }
         },
         {
-          "id": "end_mvzsjw3z",
+          "id": "end_mvzsxn44",
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 880.0,
-            "y": -170.0
+            "x": 720,
+            "y": 190
           }
         }
       ],
-      "start": "start",
-      "variables": {}
-    },
-    "otp_input": {
       "edges": [
         {
           "from": "action_mvzsxj65",
@@ -481,51 +783,124 @@
           }
         }
       ],
+      "variables": {}
+    },
+    "pick_environment": {
+      "start": "start",
       "nodes": [
         {
+          "id": "action_mw1envask",
+          "kind": "action",
+          "label": "Pergunta ambiente",
           "action": {
-            "button_pressed_variable": "ButtonPressed1",
-            "input_kind": "single_line",
-            "message": "Digite um valor",
-            "title": "Novo",
-            "topmost": true,
             "type": "show_get_user_input",
-            "user_input_variable": "UserInput1"
+            "title": "Ambiente eproc",
+            "message": "Digite hml (homologa\u00E7\u00E3o) ou prd (produ\u00E7\u00E3o).",
+            "default_value": "hml",
+            "input_kind": "single_line",
+            "topmost": true,
+            "user_input_variable": "EprocEnvChoice",
+            "button_pressed_variable": "EprocEnvButton"
           },
-          "id": "action_mvzsxj64",
-          "kind": "action",
-          "label": "Pede OTP",
           "ui": {
-            "x": 0.0,
-            "y": 190.0
+            "x": 0,
+            "y": 0
           }
         },
         {
-          "action": {
-            "selector": "#kc-login",
-            "type": "browser_click",
-            "wait_for_navigation": false
+          "id": "sw_mw1env",
+          "kind": "switch",
+          "label": "Switch ambiente",
+          "control": {
+            "type": "switch",
+            "expression": "{EprocEnvChoice}",
+            "ignore_case": true
           },
-          "id": "action_friiyyj5",
-          "kind": "action",
-          "label": "Clica para avançar",
           "ui": {
-            "x": 460.0,
-            "y": 190.0
+            "x": 220,
+            "y": 0
           }
         },
         {
-          "action": {
-            "selector": "#otp",
-            "text": "{UserInput1}",
-            "type": "browser_fill"
+          "id": "case_mw1prd",
+          "kind": "case",
+          "label": "Produ\u00E7\u00E3o?",
+          "control": {
+            "type": "case",
+            "value": "prd",
+            "operator": "contains"
           },
-          "id": "action_mvzsxj65",
-          "kind": "action",
-          "label": "Preenche OTP",
           "ui": {
-            "x": 230.0,
-            "y": 190.0
+            "x": 440,
+            "y": 0
+          }
+        },
+        {
+          "id": "def_mw1env",
+          "kind": "case_default",
+          "label": "Homologa\u00E7\u00E3o (default)",
+          "control": {
+            "type": "case_default"
+          },
+          "ui": {
+            "x": 440,
+            "y": 100
+          }
+        },
+        {
+          "id": "action_mw1prdurl",
+          "kind": "action",
+          "label": "URL produ\u00E7\u00E3o",
+          "action": {
+            "type": "set_variable",
+            "variable": "EprocUrl",
+            "value": "https://eproc1g.tjsp.jus.br/eproc/index.php"
+          },
+          "ui": {
+            "x": 660,
+            "y": 0
+          }
+        },
+        {
+          "id": "action_mw1prduser",
+          "kind": "action",
+          "label": "Usu\u00E1rio produ\u00E7\u00E3o",
+          "action": {
+            "type": "set_variable",
+            "variable": "EprocUser",
+            "value": "M372152"
+          },
+          "ui": {
+            "x": 920,
+            "y": 0
+          }
+        },
+        {
+          "id": "action_mw1hmlurl",
+          "kind": "action",
+          "label": "URL homologa\u00E7\u00E3o",
+          "action": {
+            "type": "set_variable",
+            "variable": "EprocUrl",
+            "value": "https://eproc-1g-sp-hml.tjsp.jus.br/"
+          },
+          "ui": {
+            "x": 660,
+            "y": 140
+          }
+        },
+        {
+          "id": "action_mw1hmluser",
+          "kind": "action",
+          "label": "Usu\u00E1rio homologa\u00E7\u00E3o",
+          "action": {
+            "type": "set_variable",
+            "variable": "EprocUser",
+            "value": "WS-DSDP"
+          },
+          "ui": {
+            "x": 900,
+            "y": 140
           }
         },
         {
@@ -533,24 +908,20 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -250.0,
-            "y": 190.0
+            "x": -220,
+            "y": 0
           }
         },
         {
-          "id": "end_mvzsxn44",
+          "id": "end_mw1pickenv",
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 720.0,
-            "y": 190.0
+            "x": 1140,
+            "y": 70
           }
         }
       ],
-      "start": "start",
-      "variables": {}
-    },
-    "pick_environment": {
       "edges": [
         {
           "from": "start",
@@ -561,15 +932,24 @@
         },
         {
           "from": "action_mw1envask",
-          "to": "if_mw1envprd",
+          "to": "sw_mw1env",
           "ui": {
             "targetHandle": "left"
           }
         },
         {
-          "from": "if_mw1envprd",
+          "from": "sw_mw1env",
+          "to": "case_mw1prd",
           "port": "then",
+          "ui": {
+            "sourceHandle": "right",
+            "targetHandle": "left"
+          }
+        },
+        {
+          "from": "case_mw1prd",
           "to": "action_mw1prdurl",
+          "port": "then",
           "ui": {
             "targetHandle": "left"
           }
@@ -589,8 +969,15 @@
           }
         },
         {
-          "from": "if_mw1envprd",
+          "from": "case_mw1prd",
+          "to": "def_mw1env",
           "port": "else",
+          "ui": {
+            "targetHandle": "left"
+          }
+        },
+        {
+          "from": "def_mw1env",
           "to": "action_mw1hmlurl",
           "ui": {
             "targetHandle": "left"
@@ -611,118 +998,6 @@
           }
         }
       ],
-      "nodes": [
-        {
-          "action": {
-            "button_pressed_variable": "EprocEnvButton",
-            "default_value": "hml",
-            "input_kind": "single_line",
-            "message": "Digite hml (homologação) ou prd (produção).",
-            "title": "Ambiente eproc",
-            "topmost": true,
-            "type": "show_get_user_input",
-            "user_input_variable": "EprocEnvChoice"
-          },
-          "id": "action_mw1envask",
-          "kind": "action",
-          "label": "Pergunta ambiente",
-          "ui": {
-            "x": 0.0,
-            "y": 0.0
-          }
-        },
-        {
-          "control": {
-            "ignore_case": true,
-            "left": "{EprocEnvChoice}",
-            "operator": "contains",
-            "right": "prd",
-            "type": "if"
-          },
-          "id": "if_mw1envprd",
-          "kind": "if",
-          "label": "Produção?",
-          "ui": {
-            "x": 220.0,
-            "y": -17.0
-          }
-        },
-        {
-          "action": {
-            "type": "set_variable",
-            "value": "https://eproc1g.tjsp.jus.br/eproc/index.php",
-            "variable": "EprocUrl"
-          },
-          "id": "action_mw1prdurl",
-          "kind": "action",
-          "label": "URL produção",
-          "ui": {
-            "x": 440.0,
-            "y": 0.0
-          }
-        },
-        {
-          "action": {
-            "type": "set_variable",
-            "value": "M372152",
-            "variable": "EprocUser"
-          },
-          "id": "action_mw1prduser",
-          "kind": "action",
-          "label": "Usuário produção",
-          "ui": {
-            "x": 700.0,
-            "y": 0.0
-          }
-        },
-        {
-          "action": {
-            "type": "set_variable",
-            "value": "https://eproc-1g-sp-hml.tjsp.jus.br/",
-            "variable": "EprocUrl"
-          },
-          "id": "action_mw1hmlurl",
-          "kind": "action",
-          "label": "URL homologação",
-          "ui": {
-            "x": 440.0,
-            "y": 140.0
-          }
-        },
-        {
-          "action": {
-            "type": "set_variable",
-            "value": "WS-DSDP",
-            "variable": "EprocUser"
-          },
-          "id": "action_mw1hmluser",
-          "kind": "action",
-          "label": "Usuário homologação",
-          "ui": {
-            "x": 680.0,
-            "y": 140.0
-          }
-        },
-        {
-          "id": "start",
-          "kind": "start",
-          "label": "Start",
-          "ui": {
-            "x": -220.0,
-            "y": 0.0
-          }
-        },
-        {
-          "id": "end_mw1pickenv",
-          "kind": "end",
-          "label": "End",
-          "ui": {
-            "x": 940.0,
-            "y": 70.0
-          }
-        }
-      ],
-      "start": "start",
       "variables": {
         "EprocEnvChoice": "",
         "EprocUrl": "",
@@ -731,10 +1006,8 @@
     }
   },
   "variables": {
-    "BrowserText1": "",
-    "BrowserText2": "",
-    "BrowserText3": "",
     "EprocUrl": "",
-    "EprocUser": ""
+    "EprocUser": "",
+    "ScreenText": ""
   }
 }

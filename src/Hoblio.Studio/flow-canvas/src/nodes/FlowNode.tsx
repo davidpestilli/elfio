@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { CSSProperties } from "react";
+import { HOBLIO_ROW_Y } from "../nodeLayout";
 
 export type FlowNodeData = {
   kind: string;
@@ -18,13 +19,19 @@ type SideSpec = {
   source: boolean;
 };
 
-const CENTER_TOP_BOTTOM: CSSProperties = { left: "50%" };
-const CENTER_LEFT_RIGHT: CSSProperties = { top: "50%" };
-
-function centerStyle(position: Position): CSSProperties | undefined {
-  if (position === Position.Top || position === Position.Bottom) return CENTER_TOP_BOTTOM;
-  if (position === Position.Left || position === Position.Right) return CENTER_LEFT_RIGHT;
-  return undefined;
+/**
+ * Only override left/right (logical row for straight horizontal edges).
+ * Top/bottom use XYFlow defaults (bottom: 0 + translate(-50%, 50%), etc.).
+ */
+function handleStyle(position: Position): CSSProperties | undefined {
+  switch (position) {
+    case Position.Left:
+      return { top: HOBLIO_ROW_Y, transform: "translate(-50%, -50%)" };
+    case Position.Right:
+      return { top: HOBLIO_ROW_Y, transform: "translate(50%, -50%)" };
+    default:
+      return undefined;
+  }
 }
 
 function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): SideSpec[] {
@@ -38,6 +45,7 @@ function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): Side
 
   switch (kind.toLowerCase()) {
     case "if":
+    case "case":
       return [
         { sideId: "top", position: Position.Top, target: showTarget, source: false },
         { sideId: "left", position: Position.Left, target: showTarget, source: false },
@@ -46,7 +54,7 @@ function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): Side
           position: Position.Right,
           sourceId: "then",
           sourceClassName: "port-then",
-          target: showTarget,
+          target: false,
           source: showSource,
         },
         {
@@ -54,7 +62,20 @@ function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): Side
           position: Position.Bottom,
           sourceId: "else",
           sourceClassName: "port-else",
-          target: showTarget,
+          target: false,
+          source: showSource,
+        },
+      ];
+    case "switch":
+      return [
+        { sideId: "top", position: Position.Top, target: showTarget, source: false },
+        { sideId: "left", position: Position.Left, target: showTarget, source: false },
+        {
+          sideId: "right",
+          position: Position.Right,
+          sourceId: "right",
+          sourceClassName: "port-then port-switch-out",
+          target: false,
           source: showSource,
         },
       ];
@@ -69,7 +90,7 @@ function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): Side
           position: Position.Right,
           sourceId: "body",
           sourceClassName: "port-body",
-          target: showTarget,
+          target: false,
           source: showSource,
         },
         {
@@ -77,7 +98,7 @@ function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): Side
           position: Position.Bottom,
           sourceId: "after",
           sourceClassName: "port-after",
-          target: showTarget,
+          target: false,
           source: showSource,
         },
       ];
@@ -92,7 +113,7 @@ function sideSpecs(kind: string, showTarget: boolean, showSource: boolean): Side
 }
 
 function SideHandles({ spec }: { spec: SideSpec }) {
-  const style = centerStyle(spec.position);
+  const style = handleStyle(spec.position);
   return (
     <>
       {spec.target ? (
@@ -140,21 +161,28 @@ export function FlowNode({ id, data, selected }: NodeProps) {
       {sides.map((spec) => (
         <SideHandles key={spec.sideId} spec={spec} />
       ))}
-      <div className="hoblio-node-title">{d.label}</div>
-      <div className="hoblio-node-sub">{d.summary || kind}</div>
-      <div className="hoblio-node-id">{id}</div>
-      {kind === "if" && (
-        <div className="hoblio-node-ports">
-          <span className="port-label port-then-label">then →</span>
-          <span className="port-label port-else-label">else ↓</span>
-        </div>
-      )}
-      {(kind === "for_each" || kind === "while_loop" || kind === "repeat") && (
-        <div className="hoblio-node-ports">
-          <span className="port-label port-body-label">body →</span>
-          <span className="port-label port-after-label">after ↓</span>
-        </div>
-      )}
+      <div className="hoblio-node-body">
+        <div className="hoblio-node-title">{d.label}</div>
+        <div className="hoblio-node-sub">{d.summary || kind}</div>
+        <div className="hoblio-node-id">{id}</div>
+        {(kind === "if" || kind === "case") && (
+          <div className="hoblio-node-ports">
+            <span className="port-label port-then-label">then →</span>
+            <span className="port-label port-else-label">else ↓</span>
+          </div>
+        )}
+        {kind === "switch" && (
+          <div className="hoblio-node-ports">
+            <span className="port-label port-then-label">cases →</span>
+          </div>
+        )}
+        {(kind === "for_each" || kind === "while_loop" || kind === "repeat") && (
+          <div className="hoblio-node-ports">
+            <span className="port-label port-body-label">body →</span>
+            <span className="port-label port-after-label">after ↓</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

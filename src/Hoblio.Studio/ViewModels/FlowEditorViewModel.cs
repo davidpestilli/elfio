@@ -235,7 +235,25 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         private set { _projectDir = value; OnPropertyChanged(); OnPropertyChanged(nameof(DocumentTitle)); }
     }
 
-    public string DocumentTitle => _project.Manifest.Name + (IsDirty ? " *" : "");
+    public string DocumentTitle => ProjectDisplayName() + (IsDirty ? " *" : "");
+
+    static bool IsPlaceholderProjectName(string? name) =>
+        string.IsNullOrWhiteSpace(name)
+        || string.Equals(name.Trim(), "untitled", StringComparison.OrdinalIgnoreCase);
+
+    string ProjectDisplayName()
+    {
+        var name = _project.Manifest.Name?.Trim();
+        if (!IsPlaceholderProjectName(name))
+            return name!;
+        if (!string.IsNullOrWhiteSpace(_projectDir))
+        {
+            var folder = Path.GetFileName(_projectDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            if (!string.IsNullOrWhiteSpace(folder))
+                return folder;
+        }
+        return "Sem título";
+    }
 
     public bool IsDirty { get; private set; }
 
@@ -495,6 +513,9 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShowWelcomeHint));
         OnPropertyChanged(nameof(ShowActionSection));
         OnPropertyChanged(nameof(ShowIfSection));
+        OnPropertyChanged(nameof(ShowSwitchSection));
+        OnPropertyChanged(nameof(ShowCaseSection));
+        OnPropertyChanged(nameof(ShowCaseDefaultSection));
         OnPropertyChanged(nameof(ShowForEachSection));
         OnPropertyChanged(nameof(ShowWhileSection));
         OnPropertyChanged(nameof(ShowRepeatSection));
@@ -652,19 +673,35 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             MessageBox.Show("Use Abrir em uma pasta de projeto existente ou salve manualmente via Serde.", "Salvar");
             return;
         }
-        SyncUiToProject();
-        SaveAllFlowFiles();
-        ProjectLoader.SaveProject(_projectDir, _project);
-        _savedDigest = ProjectDigest();
-        IsDirty = false;
-        OnPropertyChanged(nameof(DocumentTitle));
-        SetStatus("Salvo");
+        try
+        {
+            CommitProjectVariablesFromUi();
+            SyncUiToProject();
+            SaveAllFlowFiles();
+            ProjectLoader.SaveProject(_projectDir, _project);
+            _savedDigest = ProjectDigest();
+            IsDirty = false;
+            OnPropertyChanged(nameof(DocumentTitle));
+            SetStatus("Salvo");
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Falha ao salvar", isError: true);
+            MessageBox.Show(
+                ex.Message + Environment.NewLine + Environment.NewLine + ex.StackTrace,
+                "Erro ao salvar",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     void SyncUiToProject()
     {
-        var uiMap = Nodes.ToDictionary(n => n.Id, n => n.Location);
-        var (sliceNodes, sliceEdges, start) = ActiveGraphSlice();
+        var uiMap = new Dictionary<string, Point>(StringComparer.Ordinal);
+        foreach (var n in Nodes)
+            uiMap[n.Id] = n.Location;
+
+        var (sliceNodes, _, start) = ActiveGraphSlice();
         var updatedNodes = sliceNodes.Select(node => new Node
         {
             Id = node.Id,
@@ -675,53 +712,17 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
             ErrorHandling = node.ErrorHandling,
             Ui = uiMap.TryGetValue(node.Id, out var loc) ? new NodeUi { X = loc.X, Y = loc.Y } : node.Ui,
         }).ToList();
-        var updatedEdges = ApplyConnectionWaypoints(sliceEdges);
+        var updatedEdges = CollectEdgesFromDiagram();
         WriteActiveGraphSlice(updatedNodes, updatedEdges);
         if (_activeSubflowId is null)
         {
-            _project = new FlowProject
-            {
-                Manifest = _project.Manifest,
-                Flow = new FlowGraph
-                {
-                    Start = start,
-                    Nodes = updatedNodes,
-                    Edges = updatedEdges,
-                    Subflows = _project.Flow.Subflows,
-                },
-                Variables = _project.Variables,
-            };
+            var graph = CurrentFileGraph();
+            graph.Start = start;
+            graph.Nodes = updatedNodes;
+            graph.Edges = updatedEdges;
+            if (string.Equals(_activeFlowPath, _entryFlowPath, StringComparison.OrdinalIgnoreCase))
+                _project.Flow = graph;
         }
-    }
-
-    List<Edge> ApplyConnectionWaypoints(List<Edge> edges)
-    {
-        var result = new List<Edge>(edges.Count);
-        foreach (var edge in edges)
-        {
-            var conn = Connections.FirstOrDefault(c =>
-                c.Source.Id == edge.From && c.Target.Id == edge.To && c.Port == edge.ResolvedPort());
-            if (conn is null || conn.Waypoints.Count == 0)
-            {
-                result.Add(edge);
-                continue;
-            }
-            result.Add(new Edge
-            {
-                Id = edge.Id,
-                From = edge.From,
-                To = edge.To,
-                Port = edge.Port,
-                Label = edge.Label,
-                Ui = new EdgeUi
-                {
-                    Waypoints = conn.Waypoints.Select(p => new Waypoint { X = p.X, Y = p.Y }).ToList(),
-                    SourceHandle = edge.Ui?.SourceHandle,
-                    TargetHandle = edge.Ui?.TargetHandle,
-                },
-            });
-        }
-        return result;
     }
 
     void Validate()
@@ -994,6 +995,9 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         return key switch
         {
             "if" => (NodeKind.If, null, new IfControlKind { Left = "flag", Operator = CompareOperator.Eq, Right = "yes" }),
+            "switch" => (NodeKind.Switch, null, new SwitchControlKind { Expression = "{flag}", IgnoreCase = true }),
+            "case" => (NodeKind.Case, null, new CaseControlKind { Value = "yes", Operator = CompareOperator.Eq }),
+            "case_default" => (NodeKind.CaseDefault, null, new CaseDefaultControlKind()),
             "for_each" => (NodeKind.ForEach, null, new ForEachControlKind { ListVariable = "items", ItemVariable = "item" }),
             "while_loop" => (NodeKind.WhileLoop, null, new WhileControlKind { Left = "counter", Operator = CompareOperator.Lt, Right = "4" }),
             "repeat" => (NodeKind.Repeat, null, new RepeatControlKind { Times = "3", IndexVariable = "index" }),
@@ -1136,6 +1140,9 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
     {
         NodeKind.Action => node.Action?.Type ?? "action",
         NodeKind.If => "if",
+        NodeKind.Switch => "switch",
+        NodeKind.Case => "case",
+        NodeKind.CaseDefault => "default",
         NodeKind.ForEach => "for_each",
         NodeKind.WhileLoop => "while",
         NodeKind.Repeat => "repeat",

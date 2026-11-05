@@ -52,7 +52,8 @@ public sealed partial class FlowEditorViewModel
     }
 
     public bool ShowNodeLogicSection =>
-        ShowIfSection || ShowWhileSection || ShowRepeatSection || ShowForEachSection || ShowNextExitLoopHint;
+        ShowIfSection || ShowSwitchSection || ShowCaseSection || ShowCaseDefaultSection
+        || ShowWhileSection || ShowRepeatSection || ShowForEachSection || ShowNextExitLoopHint;
 
     public string NodeActionSectionTitle
     {

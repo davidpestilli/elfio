@@ -10,3 +10,5 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 | [manifest-e-capacidades.md](./manifest-e-capacidades.md) | `manifest.json` atual e extensão `module_references` |
 
 **Estado:** telemetria enriquecida (`module`, `action_id`, índices) e `module_references` no manifest estão **implementadas** (`ActionCatalog`, `RunEventJson`, `ModuleManifestSync` no save). Projetos antigos sem esses campos continuam válidos até o próximo save.
+
+**Nov/2026:** Switch/Case no runtime e Studio; correção de stack overflow no save com subfluxos embutidos; registro completo em [guia-construcao.md](../guia-construcao.md) § *Rodada nov/2026 — Switch/Case, save e shell*.

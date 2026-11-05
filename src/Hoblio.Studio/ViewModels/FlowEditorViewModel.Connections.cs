@@ -267,6 +267,58 @@ public sealed partial class FlowEditorViewModel
             string.Equals(e.ResolvedPort().AsString(), port, StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>Serializa ligações visíveis do diagrama para o modelo persistido.</summary>
+    List<Edge> CollectEdgesFromDiagram()
+    {
+        var edges = new List<Edge>(Connections.Count);
+        foreach (var c in Connections)
+        {
+            var existing = FindEdgeModel(c);
+            var normalizedSource = FlowCanvasHandles.NormalizeSourceHandle(c.SourceHandle);
+            var port = c.Port;
+            string? persistSource =
+                normalizedSource is not null &&
+                !string.Equals(normalizedSource, FlowCanvasHandles.MainSource, StringComparison.Ordinal) &&
+                !(port != EdgePort.Main && string.Equals(normalizedSource, port.AsString(), StringComparison.Ordinal))
+                    ? normalizedSource
+                    : null;
+
+            var persistTarget = string.IsNullOrEmpty(c.TargetHandle) ||
+                                string.Equals(c.TargetHandle, "left", StringComparison.Ordinal)
+                ? null
+                : c.TargetHandle;
+
+            EdgeUi? ui = null;
+            if (persistSource is not null || persistTarget is not null || c.Waypoints.Count > 0)
+            {
+                ui = new EdgeUi
+                {
+                    SourceHandle = persistSource,
+                    TargetHandle = persistTarget,
+                    Waypoints = c.Waypoints.Count > 0
+                        ? c.Waypoints.Select(p => new Waypoint { X = p.X, Y = p.Y }).ToList()
+                        : null,
+                };
+            }
+            else if (existing?.Ui is { } prevUi)
+            {
+                ui = prevUi;
+            }
+
+            edges.Add(new Edge
+            {
+                Id = existing?.Id,
+                From = c.Source.Id,
+                To = c.Target.Id,
+                Port = port.AsString(),
+                Label = c.Label,
+                Ui = ui,
+            });
+        }
+
+        return edges;
+    }
+
     void PatchSelectedEdge(Action<Edge, int, List<Edge>> patch)
     {
         if (SelectedConnection is null || !CanEditDiagram)

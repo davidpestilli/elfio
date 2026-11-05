@@ -19,7 +19,9 @@ export function normalizeSourceHandle(value: string | undefined): string | undef
 }
 
 export function portFromSourceHandle(kind: string, handle: string | null | undefined): string {
+  const k = kind.toLowerCase();
   const h = normalizeSourceHandle(handle ?? undefined) ?? MAIN_SOURCE_HANDLE;
+  if (k === "switch" && (h === "right" || h === "then" || h === "cases" || MAIN_OUT.has(h))) return "then";
   if (CONTROL_PORTS.has(h)) return h;
   if (MAIN_OUT.has(h)) return "main";
   return "main";
@@ -28,7 +30,7 @@ export function portFromSourceHandle(kind: string, handle: string | null | undef
 export function sourceHandleKey(kind: string, handle: string | null | undefined): string {
   const k = kind.toLowerCase();
   const h = handle ?? "main";
-  if (k === "if" || k === "for_each" || k === "while_loop" || k === "repeat") {
+  if (k === "if" || k === "case" || k === "switch" || k === "for_each" || k === "while_loop" || k === "repeat") {
     return CONTROL_PORTS.has(h) ? h : "main";
   }
   return "main";

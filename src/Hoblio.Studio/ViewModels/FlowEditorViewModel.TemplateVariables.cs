@@ -57,6 +57,12 @@ public sealed partial class FlowEditorViewModel
             case "IfRight":
                 IfRight = IfRight + token;
                 break;
+            case "SwitchExpression":
+                SwitchExpression = SwitchExpression + token;
+                break;
+            case "CaseValue":
+                CaseValue = CaseValue + token;
+                break;
             case "WhileLeft":
                 WhileLeft = WhileLeft + token;
                 break;

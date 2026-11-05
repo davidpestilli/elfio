@@ -1,5 +1,39 @@
 {
-  "name": "untitled",
+  "name": "login-eproc",
   "version": "0.1.0",
-  "description": "New Hoblio flow"
+  "description": "New Hoblio flow",
+  "engine_version": "0.1.0",
+  "created_engine_version": "0.1.0",
+  "module_references": [
+    {
+      "name": "Conditionals",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "Display",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "FlowControl",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "Variables",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "WebAutomation",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    }
+  ]
 }

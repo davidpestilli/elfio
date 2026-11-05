@@ -92,7 +92,13 @@ public static class ActionPaletteCatalog
         new PaletteGroup
         {
             Name = "Condicionais",
-            Items = [new("if", "Se (If)", "Ramifica then/else", "If conditional branch")],
+            Items =
+            [
+                new("if", "Se (If)", "Ramifica then/else", "If conditional branch"),
+                new("switch", "Switch", "Compara expressão em cadeia de cases", "Switch conditional"),
+                new("case", "Case", "Ramo do switch (then/else)", "Case switch branch"),
+                new("case_default", "Default case", "Ramo padrão do switch", "Default case switch"),
+            ],
         },
         new PaletteGroup
         {

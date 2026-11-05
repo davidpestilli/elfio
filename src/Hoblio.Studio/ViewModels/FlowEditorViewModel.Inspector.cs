@@ -58,6 +58,9 @@ public sealed partial class FlowEditorViewModel
 
     public bool ShowActionSection => GetSelectedNode()?.Kind == NodeKind.Action;
     public bool ShowIfSection => GetSelectedNode()?.Kind == NodeKind.If;
+    public bool ShowSwitchSection => GetSelectedNode()?.Kind == NodeKind.Switch;
+    public bool ShowCaseSection => GetSelectedNode()?.Kind == NodeKind.Case;
+    public bool ShowCaseDefaultSection => GetSelectedNode()?.Kind == NodeKind.CaseDefault;
     public bool ShowForEachSection => GetSelectedNode()?.Kind == NodeKind.ForEach;
     public bool ShowWhileSection => GetSelectedNode()?.Kind == NodeKind.WhileLoop;
     public bool ShowRepeatSection => GetSelectedNode()?.Kind == NodeKind.Repeat;
@@ -113,6 +116,34 @@ public sealed partial class FlowEditorViewModel
     {
         get => GetIf()?.IgnoreCase ?? false;
         set => PatchIf(c => c with { IgnoreCase = value });
+    }
+
+    public string SwitchExpression
+    {
+        get => GetSwitch()?.Expression ?? "";
+        set => PatchSwitch(c => c with { Expression = value });
+    }
+
+    public bool SwitchIgnoreCase
+    {
+        get => GetSwitch()?.IgnoreCase ?? false;
+        set => PatchSwitch(c => c with { IgnoreCase = value });
+    }
+
+    public string CaseValue
+    {
+        get => GetCase()?.Value ?? "";
+        set => PatchCase(c => c with { Value = value });
+    }
+
+    public string CaseOperator
+    {
+        get => GetCase()?.Operator.ToString().ToLowerInvariant() ?? "eq";
+        set
+        {
+            if (Enum.TryParse<CompareOperator>(value, true, out var op))
+                PatchCase(c => c with { Operator = op });
+        }
     }
 
     public bool WhileIgnoreCase
@@ -292,6 +323,10 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(IfRight));
         OnPropertyChanged(nameof(IfOperator));
         OnPropertyChanged(nameof(IfIgnoreCase));
+        OnPropertyChanged(nameof(SwitchExpression));
+        OnPropertyChanged(nameof(SwitchIgnoreCase));
+        OnPropertyChanged(nameof(CaseValue));
+        OnPropertyChanged(nameof(CaseOperator));
         OnPropertyChanged(nameof(WhileIgnoreCase));
         OnPropertyChanged(nameof(ForEachListVariable));
         OnPropertyChanged(nameof(ForEachItemVariable));
@@ -334,6 +369,22 @@ public sealed partial class FlowEditorViewModel
         return node.Control.AsIf();
     }
 
+    SwitchControl? GetSwitch()
+    {
+        var node = GetSelectedNode();
+        if (node?.Kind != NodeKind.Switch || node.Control is null)
+            return null;
+        return node.Control.AsSwitch();
+    }
+
+    CaseControl? GetCase()
+    {
+        var node = GetSelectedNode();
+        if (node?.Kind != NodeKind.Case || node.Control is null)
+            return null;
+        return node.Control.AsCase();
+    }
+
     ForEachControl? GetForEach()
     {
         var node = GetSelectedNode();
@@ -372,6 +423,38 @@ public sealed partial class FlowEditorViewModel
             IgnoreCase = next.IgnoreCase,
         };
         MarkDirty();
+        RefreshAllInspector();
+    }
+
+    void PatchSwitch(Func<SwitchControl, SwitchControl> patch)
+    {
+        var node = GetSelectedNode();
+        if (node?.Control is not SwitchControlKind c)
+            return;
+        var next = patch(c.AsSwitch());
+        node.Control = new SwitchControlKind
+        {
+            Expression = next.Expression,
+            IgnoreCase = next.IgnoreCase,
+        };
+        MarkDirty();
+        RefreshNodeSummary(node);
+        RefreshAllInspector();
+    }
+
+    void PatchCase(Func<CaseControl, CaseControl> patch)
+    {
+        var node = GetSelectedNode();
+        if (node?.Control is not CaseControlKind c)
+            return;
+        var next = patch(c.AsCase());
+        node.Control = new CaseControlKind
+        {
+            Value = next.Value,
+            Operator = next.Operator,
+        };
+        MarkDirty();
+        RefreshNodeSummary(node);
         RefreshAllInspector();
     }
 
