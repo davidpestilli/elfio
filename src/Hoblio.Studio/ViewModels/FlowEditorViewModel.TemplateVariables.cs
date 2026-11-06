@@ -16,6 +16,13 @@ public sealed partial class FlowEditorViewModel
     {
         TemplateVariableNames.Clear();
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        // Publicadas pelo runtime (BuiltInVariables): existem em qualquer run, sem declarar.
+        foreach (var builtIn in BuiltInVariables.All)
+        {
+            if (seen.Add(builtIn))
+                TemplateVariableNames.Add(builtIn);
+        }
+
         foreach (var s in ProjectScalars)
         {
             var n = s.Name.Trim();

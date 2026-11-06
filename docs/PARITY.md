@@ -29,7 +29,7 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | PDF (`pdf_*`: texto, tabelas heurísticas, imagens, extract páginas, merge; PdfPig) | — | ✓ | `PdfRuntimeTests`; doc [modulo-pdf.md](construcao/modulo-pdf.md) |
 | If / ForEach / While / Repeat | ✓ | ✓ | DemoFlowTests |
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
-| Browser CDP (`browser_*`, 29 ações PAD + attach) | ✓ | ✓ | browser-demo-flow (manual + Chrome); attach manual + `--remote-debugging-port` |
+| Browser CDP (`browser_*`, 29 ações PAD + attach) | ✓ | ✓ | browser-demo-flow (manual + Chrome); attach + `--remote-debugging-port` (a sessão CDP abre pelo Studio **Navegador → Abrir CDP…**, por `hoblio browser` ou `scripts/start-cdp-browser.ps1`) |
 | show_message / show_get_user_input / show_select_from_list | ✓ | ✓ | message-timer-demo (manual) |
 | Excel COM (`excel_*`, 41 ações) | — | ✓ | `excel-demo-flow` (manual + Excel instalado) |
 | Word COM (`word_*`, 8 ações) | — | ✓ | `word-demo-flow` (manual + Word instalado) |

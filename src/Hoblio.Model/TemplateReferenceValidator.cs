@@ -9,6 +9,7 @@ public static class TemplateReferenceValidator
     public static void Validate(FlowProject project)
     {
         var known = new HashSet<string>(project.Variables.Keys, StringComparer.Ordinal);
+        AddBuiltInVariables(known);
         AddLinkedProjectExports(project, known);
         foreach (var node in EnumerateNodes(project.Flow))
         {
@@ -32,6 +33,16 @@ public static class TemplateReferenceValidator
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Variáveis publicadas pelo runtime (<see cref="BuiltInVariables"/>) podem ser referenciadas
+    /// sem constar em <c>variables</c> — o run as escreve antes do primeiro nó.
+    /// </summary>
+    static void AddBuiltInVariables(HashSet<string> known)
+    {
+        foreach (var name in BuiltInVariables.All)
+            known.Add(name);
     }
 
     /// <summary>

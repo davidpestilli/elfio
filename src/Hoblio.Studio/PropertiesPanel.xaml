@@ -492,6 +492,11 @@
               <TextBox Text="{Binding WebAttachMode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
               <TextBlock Text="Porta CDP (opcional, ex. 9222)" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding WebDebuggingPortText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <Button Content="Abrir navegador CDP com esta porta…" HorizontalAlignment="Left" Margin="0,0,0,10"
+                      Style="{StaticResource SecondaryToolButton}"
+                      Command="{Binding OpenCdpBrowserForAttachCommand}"
+                      ToolTip="Abre Chrome/Edge com depuração nesta porta (perfil dedicado) para este nó conseguir anexar"
+                      Visibility="{Binding ShowWebAttach, Converter={StaticResource BoolVis}}"/>
               <TextBlock Text="Seletor após clique (opcional)" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding WebWaitSelectorAfter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
               <TextBlock Text="Timeout pós-clique (ms)" Style="{StaticResource FieldLabel}"/>

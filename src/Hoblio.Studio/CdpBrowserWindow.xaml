@@ -1,0 +1,40 @@
+<Window x:Class="Hoblio.Studio.CdpBrowserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Navegador com CDP"
+        Width="580" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Brush.AppBg}">
+  <StackPanel Margin="18">
+    <TextBlock Text="Abrir navegador com depuração (CDP)" FontSize="15" FontWeight="Bold" Foreground="#111827"/>
+    <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="11" Foreground="#4B5563"
+               Text="O fluxo não abre esta janela: ele se anexa a ela (browser_attach_chrome / browser_attach_edge). Um Chrome/Edge aberto normalmente não tem porta de depuração, e desde a versão 136 a flag só vale num perfil dedicado — é o que este botão faz. Depois de abrir, faça o login aqui e rode o fluxo; o navegador continua aberto quando o run termina."/>
+
+    <TextBlock Text="Navegador" Style="{StaticResource FieldLabel}"/>
+    <ComboBox x:Name="EngineCombo" Margin="0,0,0,10" Padding="6,4"/>
+
+    <TextBlock Text="Porta CDP (a mesma que o nó de anexar procura)" Style="{StaticResource FieldLabel}"/>
+    <TextBox x:Name="PortBox" Style="{StaticResource FieldBox}"/>
+
+    <TextBlock Text="Página inicial" Style="{StaticResource FieldLabel}"/>
+    <TextBox x:Name="UrlBox" Style="{StaticResource FieldBox}"/>
+
+    <TextBlock Text="Perfil (separado do seu navegador do dia a dia; guarda o login entre execuções)" Style="{StaticResource FieldLabel}"/>
+    <TextBox x:Name="ProfileBox" Style="{StaticResource FieldBox}"/>
+
+    <StackPanel Orientation="Horizontal" Margin="0,4,0,10">
+      <Button x:Name="OpenButton" Content="Abrir navegador" Style="{StaticResource RibbonButtonPrimary}"
+              Padding="14,6" Click="OpenClick"/>
+      <Button x:Name="CheckButton" Content="Verificar sessão" Style="{StaticResource SecondaryToolButton}"
+              Margin="8,0,0,0" Padding="14,6" Click="CheckClick"/>
+      <Button Content="Fechar" Style="{StaticResource SecondaryToolButton}"
+              Margin="8,0,0,0" Padding="14,6" Click="CloseClick"/>
+    </StackPanel>
+
+    <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontSize="12" Foreground="#4B5563" Text="Pronto."/>
+
+    <TextBlock Text="Abas desta sessão" Style="{StaticResource FieldLabel}" Margin="0,12,0,4"/>
+    <ListBox x:Name="TabsList" Height="96" FontSize="11"
+             ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+  </StackPanel>
+</Window>

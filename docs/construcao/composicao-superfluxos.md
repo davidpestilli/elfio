@@ -288,7 +288,7 @@ O que foi ajustado para a cadeia funcionar:
 
 | Onde | Ajuste |
 |------|--------|
-| `login-eproc` | o nó final `action_mvsnv0r6` era `show_message` ("Painel do Advogado") — **modal, bloqueava a cadeia**. Virou `log`. Antes dele, o handoff passou a ser uma **pós-condição verificada**: `wait_panel` (`browser_wait_for "#main-menu > li:nth-child(16) > a"`, 20 s) e só então `set_screen_panel` (`set_variable ScreenText = "Painel do Advogado"`). O `log` imprime `{ScreenText}`, então não pode mentir — ver §9.4. |
+| `login-eproc` | o nó final `action_mvsnv0r6` era `show_message` ("Painel do Advogado") — **modal, bloqueava a cadeia**. Virou `log`. Antes dele, o handoff passou a ser uma **pós-condição verificada**: `wait_panel` (`browser_wait_for "#main-menu > li:nth-child(16) > a"`, 20 s) e só então `set_screen_panel` (`set_variable ScreenText = "Painel do Advogado"`). O `log` imprime `{ScreenText}`, então não pode mentir — ver §9.4. A caixa de mensagem voltou **só no modo individual** (`if {HoblioRunMode} eq standalone`), com o `h1` e a URL da tela final — ver §13. |
 | `eproc-peticionamento` | primeira ação é `browser_wait_for "#main-menu > li:nth-child(16) > a"` — assume a tela, **não navega**. Depois executa as etapas 1–10 do peticionamento (menu → localidade/rito/área/classe → "Não se aplica" → próxima → filtro de assunto + Enter → seleciona assunto → Incluir → próxima) e encerra registrando que as fases 3–4 ainda não estão mapeadas. `dropdown_mode: by_index` é **0-based** (`option:nth-child(N)` → `N-1`); a localidade usa `by_value "8"` porque o valor é conhecido. |
 
 Detalhe nó a nó, decisões (Enter via script, seletor do assunto, retentativas) e o que falta: [fluxo-eproc-peticionamento.md](./fluxo-eproc-peticionamento.md).
@@ -343,7 +343,7 @@ A alternativa de "só mais um `detect_screen` depois do clique" não fecha sozin
 |------|----------|------------------------|
 | `share_browser: false` | **inerte**: o runtime sempre compartilha a sessão | honrar criando `BrowserContext` próprio para o filho (isolamento real de tela) |
 | `requires` | documental; não é verificado contra o que o pai realmente tem | checagem de cobertura por dominância no grafo (aviso/erro configurável) |
-| Isolamento de processo | inexistente: um `crash` do browser derruba o run inteiro | etapa "em processo separado" reaproveitando `browser_attach` (padrão PAD) |
+| Isolamento de processo | inexistente: um `crash` do browser derruba o run inteiro | etapa "em processo separado" reaproveitando `browser_attach` (padrão PAD) — o **modo individual** (§13) já exercita esse reencontro |
 | Retomada após falha | não há: o run é contínuo | persistir `project` + nó corrente para retomar no meio da cadeia |
 | Depuração passo a passo | não há (run contínuo) | pausa após `NodeEnter` atravessando projetos |
 | Versionamento do vínculo | só `path` | aceitar `version`/`hash` no vínculo e avisar quando o contrato mudar |
@@ -390,4 +390,115 @@ run_flow `peticionar:entry` finished at `end` (PetitionNumber=PET-2026-0001)
 log: superfluxo concluido: PET-2026-0001 na tela Painel do Advogado
 ```
 
-Testes: `SuperflowTests` (herança, `isolated` com merge de `outputs`, vínculo não declarado, caminho inexistente, ciclo, `exports` satisfazendo `{refs}`, round-trip JSON, `entry_flow` do projeto vinculado) e `LinkedProjectManifestTests` (leitura/gravação de `linked_projects`).
+Testes: `SuperflowTests` (herança, `isolated` com merge de `outputs`, vínculo não declarado, caminho inexistente, ciclo, `exports` satisfazendo `{refs}`, round-trip JSON, `entry_flow` do projeto vinculado), `RunContextTests` (modo `standalone`/`superflow`, profundidade, restauração e subfluxo embutido — ver §13) e `LinkedProjectManifestTests` (leitura/gravação de `linked_projects`).
+
+---
+
+## 13. Execução individual × execução dentro do superfluxo
+
+Os dois fluxos reais do eproc foram escritos para rodar **encadeados**. Rodar um deles sozinho tem outra exigência:
+
+| Fluxo | Dentro do superfluxo | Rodando sozinho |
+|-------|----------------------|-----------------|
+| `login-eproc` | termina em silêncio (`log` de handoff) e devolve a tela ao próximo | termina com **caixa de mensagem** dizendo onde chegou (`h1` + URL + usuário) |
+| `eproc-peticionamento` | herda a sessão do login (mesmo `BrowserContext`) | **anexa** a um navegador já aberto (CDP) e espera o painel |
+
+### 13.1 Como o fluxo sabe
+
+O runtime publica `{HoblioRunMode}` (`standalone` | `superflow`) e `{HoblioRunDepth}` antes do primeiro nó; `run_flow project` marca o filho como `superflow` e **restaura** o valor do pai ao voltar (ver [runtime-e-execucao.md](./runtime-e-execucao.md#contexto-do-run)).
+
+Consequências de projeto:
+
+1. **A decisão é do fluxo filho, não do orquestrador.** Qualquer superfluxo — inclusive um que ainda não existe — roda o filho em modo `superflow` sem precisar passar `inputs` de controle. Nada de "lembrar de passar `RunningInSuperflow: true`".
+2. **Vale para `inherit` e `isolated`**: no escopo isolado a variável é escrita na tabela do filho.
+3. **Não se propaga por engano**: subfluxo embutido e arquivo do **mesmo** projeto mantêm o modo do chamador; só a travessia de projeto vinculado muda o modo.
+4. **Não precisa ser declarada** em `variables` — `TemplateReferenceValidator` conhece as duas (`BuiltInVariables`) e o Studio as oferece no picker de `{variáveis}`.
+
+### 13.2 Ramo no login-eproc
+
+Depois de `set_screen_panel` (a pós-condição do handoff, §9.4):
+
+```
+set_screen_panel → if_run_mode  {HoblioRunMode} == standalone
+                     ├─ then → get_final_h1 → get_final_url → msg_standalone (show_message) → end
+                     └─ else → log "handoff: painel verificado…" → end
+```
+
+`get_final_h1` lê `#divInfraBarraLocalizacao > div > h1` — o mesmo seletor do probe de tela do subfluxo `detect_screen` — e `get_final_url` lê a URL; a caixa mostra os dois mais `{ScreenText}` e `{EprocUser}`. Os dois nós novos têm `on_failure: continue` e `FinalH1`/`FinalUrl` nascem vazias em `variables`, então uma leitura falha degrada a mensagem em vez de derrubar o fim do fluxo.
+
+Depois do **OK** o run termina e o Chrome que o próprio run lançou **fecha** (é o comportamento do fluxo desde a versão Rust). Para continuar de pé naquela sessão logada, o caminho é o modo individual do peticionamento: abrir a sessão com **Abrir CDP…**, logar nela e rodar `eproc-peticionamento` — sessão **anexada** não é fechada no fim.
+
+> **Polaridade do `if` (erro real, e invisível para o validador).** Na primeira montagem as **portas estavam trocadas**: a condição testava `standalone`, mas `then` ia para o `log` e `else` para a caixa. Resultado observado em execução: o superfluxo parava na caixa no meio da cadeia e o fluxo individual terminava em silêncio — o inverso do desejado. `GraphValidator` **não** pega isso: as duas portas existem e todos os nós seguem alcançáveis; só o comportamento muda. A regra que ficou: o irmão `then` do `{HoblioRunMode} eq standalone` é sempre o **modo individual**, e isso está fixado por teste de topologia (`ExampleBranchingTests`, §13.6) em vez de confiança na leitura do grafo.
+
+### 13.3 Ramo no eproc-peticionamento
+
+```
+start → if_run_mode  {HoblioRunMode} == standalone
+          ├─ then → attach_browser (browser_attach_chrome, by_url "eproc", debugging_port 9222)
+          │          → msg_manual (show_message) → wait_menu_manual (painel, 120 s)
+          │          → read_screen_manual (ScreenText = h1 do painel) → rf_abrir
+          └─ else → rf_abrir (sessão herdada; a guarda wait_menu do subfluxo barra se a tela não for o painel)
+```
+
+Por que nessa ordem:
+
+- o `attach` falha **rápido e com mensagem útil** quando não existe navegador com CDP, antes de qualquer caixa modal;
+- a caixa dá ao humano a chance de colocar a aba certa (ou terminar o login) *antes* da guarda de DOM;
+- a guarda continua sendo `wait_menu` — observacional, não preditiva (§9.4);
+- `read_screen_manual` só escreve `ScreenText` **depois** da prova de tela, mantendo a regra do handoff.
+
+### 13.4 Pré-requisito do modo individual
+
+`browser_attach_*` não abre navegador: ele **liga** ao que estiver escutando CDP. Um Chrome/Edge aberto normalmente **não** expõe porta de debug, e desde o Chrome/Edge **136** a flag `--remote-debugging-port` é ignorada no perfil padrão — precisa de `--user-data-dir` próprio.
+
+Por isso o Elfio passou a saber abrir essa sessão (`CdpBrowser`), com três portas de entrada equivalentes:
+
+| Onde | Como |
+|------|------|
+| **Studio** | ribbon → **Navegador → Abrir CDP…** (diálogo com motor/porta/página/perfil, lista as abas; no inspector de `browser_attach_*` há o atalho **“Abrir navegador CDP com esta porta…”**, que já vem preenchido) |
+| **CLI** | `dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url <url>` |
+| **Script** | `pwsh scripts/start-cdp-browser.ps1 -Url <url>` (sem build) |
+
+```powershell
+# exemplo: abrir a sessão e depois rodar o fluxo individual
+dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url https://eproc-1g-sp-hml.tjsp.jus.br/
+
+# nessa janela: logar no eproc e deixar a aba no Painel do Advogado; depois
+dotnet run --project src/Hoblio.Cli -- run examples/eproc-peticionamento
+```
+
+O perfil dedicado (`%TEMP%\elfio-cdp-profile`) guarda os cookies, então o login manual só é necessário na primeira vez. O run termina **sem fechar** o navegador (sessão anexada apenas desconecta o CDP).
+
+Rodar sem CDP nenhum falha no nó certo, com a instrução:
+
+```
+if {HoblioRunMode} == standalone => then
+Error: Could not attach to Chromium. Start Chrome or Edge with remote debugging, e.g. …
+```
+
+### 13.5 Caixa de mensagem que não se esconde
+
+`show_message` passou a abrir uma janela WPF **topmost** com botão OK (antes, sem `timeout_seconds`, era um `MessageBox.Show` comum). Motivo: o fluxo individual termina com o navegador em primeiro plano, e uma caixa comum pode nascer **atrás** dele — o run ficaria parado, invisível, esperando um OK que ninguém vê.
+
+### 13.6 Verificação
+
+| Caso | Onde |
+|------|------|
+| run raiz vê `standalone` / `0` | `RunContextTests.Root_run_reports_standalone_mode` |
+| filho vinculado vê `superflow` / `1` e o pai volta a `standalone` | `RunContextTests.Linked_project_child_reports_superflow_mode_and_parent_restores` |
+| escopo `isolated` também vê `superflow` | `RunContextTests.Isolated_scope_child_also_reports_superflow_mode` |
+| subfluxo embutido não muda o modo | `RunContextTests.Embedded_subflow_keeps_caller_mode` |
+| `{HoblioRunMode}` não precisa ser declarada | `TemplateReferenceValidatorTests.Built_in_run_mode_ref_is_allowed_without_declaration` |
+| **ramo `then` é o individual** (caixa no login, attach no peticionamento) | `ExampleBranchingTests` — falha se as portas forem trocadas |
+| grafos continuam válidos | `FlowJsonTests.Login_eproc_refactored_switch_graph_validates` + `hoblio validate` nos três projetos |
+
+Prova de ponta a ponta sem navegador (projeto sintético com o mesmo `if`): rodando o filho como raiz imprime o ramo individual; chamado por um superfluxo imprime o ramo `superflow`.
+
+```text
+=== filho chamado pelo superfluxo ===
+log: SUPERFLOW: segue direto, sem caixa
+=== filho rodando individual ===
+log: INDIVIDUAL: caixa de mensagem apareceria aqui
+```
+
+Quando o `login-eproc` está aberto no Studio, o grafo em memória é o que executa: **reabra o projeto** depois de mexer no `flow.json`, senão o Studio roda (e salva) a versão antiga.

@@ -4,16 +4,96 @@
     {
       "id": "start",
       "kind": "start",
-      "label": "Start (sessao herdada do login)",
+      "label": "Start (sessao herdada do login ou anexada no modo individual)",
       "ui": {
-        "x": -460,
-        "y": 0
+        "x": -1210,
+        "y": -470
+      }
+    },
+    {
+      "id": "if_run_mode",
+      "kind": "if",
+      "label": "Rodando sozinho (individual)?",
+      "control": {
+        "type": "if",
+        "left": "{HoblioRunMode}",
+        "operator": "eq",
+        "right": "standalone",
+        "ignore_case": true
+      },
+      "ui": {
+        "x": -720,
+        "y": -470
+      }
+    },
+    {
+      "id": "attach_browser",
+      "kind": "action",
+      "label": "Individual: anexa ao navegador aberto (CDP 9222)",
+      "action": {
+        "type": "browser_attach_chrome",
+        "url": "eproc",
+        "attach_mode": "by_url",
+        "debugging_port": 9222
+      },
+      "ui": {
+        "x": -430,
+        "y": -470
+      }
+    },
+    {
+      "id": "msg_manual",
+      "kind": "action",
+      "label": "Individual: confirma a tela com o usuario",
+      "action": {
+        "type": "show_message",
+        "title": "Peticionamento eproc \u2014 modo individual",
+        "text": "Execu\u00E7\u00E3o individual do fluxo eproc-peticionamento (sem superfluxo).\n\nAnexei ao navegador j\u00E1 aberto na porta 9222 (CDP).\n\nDeixe a aba do eproc no Painel do Advogado, j\u00E1 logado, e clique em OK.\nO fluxo espera o menu do painel por 120s: se a tela n\u00E3o for o painel, ele para no passo seguinte."
+      },
+      "ui": {
+        "x": -40,
+        "y": -470
+      }
+    },
+    {
+      "id": "wait_menu_manual",
+      "kind": "action",
+      "label": "Individual: espera o painel do advogado",
+      "action": {
+        "type": "browser_wait_for",
+        "selector": "#main-menu a[href*=\u0022acao=processo_cadastrar\u0022]",
+        "timeout_ms": 120000,
+        "wait_visible": true
+      },
+      "ui": {
+        "x": 270,
+        "y": -470
+      }
+    },
+    {
+      "id": "read_screen_manual",
+      "kind": "action",
+      "label": "Individual: ScreenText = h1 do painel (prova de tela)",
+      "action": {
+        "type": "browser_get_text",
+        "selector": "#divInfraBarraLocalizacao \u003E div \u003E h1",
+        "timeout_ms": 5000,
+        "variable": "ScreenText"
+      },
+      "ui": {
+        "x": 630,
+        "y": -470
+      },
+      "error_handling": {
+        "retry_count": 1,
+        "retry_delay_ms": 500,
+        "on_failure": "continue"
       }
     },
     {
       "id": "rf_abrir",
       "kind": "action",
-      "label": "1. Abre o peticionamento (painel -> etapa 1)",
+      "label": "1. Abre o peticionamento (painel -\u003E etapa 1)",
       "action": {
         "type": "run_flow",
         "flow_id": "abrir_peticionamento",
@@ -21,8 +101,8 @@
         "variable_scope": "inherit"
       },
       "ui": {
-        "x": -240,
-        "y": 0
+        "x": -580,
+        "y": -70
       }
     },
     {
@@ -36,8 +116,8 @@
         "variable_scope": "inherit"
       },
       "ui": {
-        "x": -20,
-        "y": 0
+        "x": -560,
+        "y": 100
       }
     },
     {
@@ -51,8 +131,8 @@
         "variable_scope": "inherit"
       },
       "ui": {
-        "x": 200,
-        "y": 0
+        "x": -160,
+        "y": 100
       }
     },
     {
@@ -66,8 +146,8 @@
         "variable_scope": "inherit"
       },
       "ui": {
-        "x": 420,
-        "y": 0
+        "x": -190,
+        "y": -70
       }
     },
     {
@@ -81,8 +161,8 @@
         "variable_scope": "inherit"
       },
       "ui": {
-        "x": 640,
-        "y": 0
+        "x": 150,
+        "y": -70
       }
     },
     {
@@ -96,8 +176,8 @@
         "variable_scope": "inherit"
       },
       "ui": {
-        "x": 860,
-        "y": 0
+        "x": 130,
+        "y": 100
       }
     },
     {
@@ -106,11 +186,11 @@
       "label": "Log final (protocolo)",
       "action": {
         "type": "log",
-        "message": "eproc: peticao protocolada — processo {PetitionNumber} | autor `{AutorNome}` x reu `{ReuNome}` | documento `{PeticaoDocTipo}` ({DocTextoLen} chars) | tela: {EprocFinal}"
+        "message": "eproc: peticao protocolada \u2014 processo {PetitionNumber} | autor \u0060{AutorNome}\u0060 x reu \u0060{ReuNome}\u0060 | documento \u0060{PeticaoDocTipo}\u0060 ({DocTextoLen} chars) | tela: {EprocFinal}"
       },
       "ui": {
-        "x": 1080,
-        "y": 0
+        "x": 470,
+        "y": 100
       }
     },
     {
@@ -118,51 +198,110 @@
       "kind": "end",
       "label": "End",
       "ui": {
-        "x": 1300,
-        "y": 0
+        "x": 470,
+        "y": 300
       }
     }
   ],
   "edges": [
-    {
-      "from": "start",
-      "to": "rf_abrir",
-      "port": "main"
-    },
-    {
-      "from": "rf_abrir",
-      "to": "rf_etapa1",
-      "port": "main"
-    },
     {
       "from": "rf_etapa1",
       "to": "rf_etapa2",
       "port": "main"
     },
     {
-      "from": "rf_etapa2",
-      "to": "rf_etapa3",
+      "from": "start",
+      "to": "if_run_mode",
       "port": "main"
     },
     {
-      "from": "rf_etapa3",
-      "to": "rf_etapa4",
+      "from": "if_run_mode",
+      "to": "rf_abrir",
+      "port": "else",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "attach_browser",
+      "to": "msg_manual",
       "port": "main"
     },
     {
-      "from": "rf_etapa4",
-      "to": "rf_etapa5",
+      "from": "msg_manual",
+      "to": "wait_menu_manual",
       "port": "main"
     },
     {
-      "from": "rf_etapa5",
-      "to": "log_final",
+      "from": "wait_menu_manual",
+      "to": "read_screen_manual",
       "port": "main"
+    },
+    {
+      "from": "read_screen_manual",
+      "to": "rf_abrir",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "rf_abrir",
+      "to": "rf_etapa1",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
     },
     {
       "from": "log_final",
       "to": "end",
-      "port": "main"
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "rf_etapa2",
+      "to": "rf_etapa3",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "top",
+        "targetHandle": "bottom"
+      }
+    },
+    {
+      "from": "rf_etapa3",
+      "to": "rf_etapa4",
+      "port": "main",
+      "ui": {}
+    },
+    {
+      "from": "rf_etapa4",
+      "to": "rf_etapa5",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "rf_etapa5",
+      "to": "log_final",
+      "port": "main",
+      "ui": {}
+    },
+    {
+      "from": "if_run_mode",
+      "to": "attach_browser",
+      "port": "then",
+      "ui": {
+        "sourceHandle": "then"
+      }
     }
   ],
   "subflows": {
@@ -174,7 +313,7 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -200.0,
+            "x": -270,
             "y": 0
           }
         },
@@ -184,11 +323,11 @@
           "label": "Assume a tela (menu do painel)",
           "action": {
             "type": "browser_wait_for",
-            "selector": "#main-menu a[href*=\"acao=processo_cadastrar\"]",
+            "selector": "#main-menu a[href*=\u0022acao=processo_cadastrar\u0022]",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 20.0,
+            "x": -40,
             "y": 0
           }
         },
@@ -198,10 +337,10 @@
           "label": "Log handoff",
           "action": {
             "type": "log",
-            "message": "peticionamento: assumi a tela `{ScreenText}` (usuario {EprocUser})"
+            "message": "peticionamento: assumi a tela \u0060{ScreenText}\u0060 (modo {HoblioRunMode})"
           },
           "ui": {
-            "x": 260.0,
+            "x": 280,
             "y": 0
           }
         },
@@ -211,14 +350,14 @@
           "label": "1. Abre o peticionamento",
           "action": {
             "type": "browser_click",
-            "selector": "#main-menu a[href*=\"acao=processo_cadastrar\"]",
+            "selector": "#main-menu a[href*=\u0022acao=processo_cadastrar\u0022]",
             "timeout_ms": 60000,
             "wait_for_navigation": true,
             "wait_selector_after": "#selLocalidadeJudicial",
             "wait_after_timeout_ms": 20000
           },
           "ui": {
-            "x": 500.0,
+            "x": 530,
             "y": 0
           }
         },
@@ -227,7 +366,7 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 720.0,
+            "x": 800,
             "y": 0
           }
         }
@@ -264,8 +403,8 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -200.0,
-            "y": 120
+            "x": 400,
+            "y": 100
           }
         },
         {
@@ -274,12 +413,12 @@
           "label": "Aguarda as 368 localidades carregarem (tela lenta)",
           "action": {
             "type": "browser_wait_for",
-            "selector": "#selLocalidadeJudicial option[value=\"8\"]",
+            "selector": "#selLocalidadeJudicial option[value=\u00228\u0022]",
             "timeout_ms": 90000
           },
           "ui": {
-            "x": 20.0,
-            "y": 120
+            "x": 660,
+            "y": 100
           }
         },
         {
@@ -289,13 +428,13 @@
           "action": {
             "type": "browser_set_dropdown",
             "selector": "#selLocalidadeJudicial",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "São Paulo - Regional VIII - Tatuapé",
-            "timeout_ms": 60000
+            "dropdown_value": "S\u00E3o Paulo - Regional VIII - Tatuap\u00E9"
           },
           "ui": {
-            "x": 20.0,
-            "y": 0
+            "x": 1130,
+            "y": 100
           }
         },
         {
@@ -304,12 +443,12 @@
           "label": "Aguarda o Rito repovoar (o change esvazia o select na hora)",
           "action": {
             "type": "browser_wait_for",
-            "selector": "#selRitoProcesso option[value=\"2\"]",
+            "selector": "#selRitoProcesso option[value=\u00222\u0022]",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 140.0,
-            "y": 240
+            "x": 1580,
+            "y": 100
           }
         },
         {
@@ -319,32 +458,33 @@
           "action": {
             "type": "browser_set_dropdown",
             "selector": "#selRitoProcesso",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "RITO ORDINÁRIO (COMUM)",
-            "timeout_ms": 60000
+            "dropdown_value": "RITO ORDIN\u00C1RIO (COMUM)"
           },
           "ui": {
-            "x": 260.0,
-            "y": 0
+            "x": 2080,
+            "y": 100
           },
           "error_handling": {
             "retry_count": 2,
-            "retry_delay_ms": 1200
+            "retry_delay_ms": 1200,
+            "on_failure": "stop"
           }
         },
         {
           "id": "wait_area_rebuild",
           "kind": "action",
-          "label": "Aguarda o rebuild da Area (lista perde a 3a opcao: 6 -> 2)",
+          "label": "Aguarda o rebuild da Area (lista perde a 3a opcao: 6 -\u003E 2)",
           "action": {
             "type": "browser_wait_content",
-            "wait_content_mode": "not_contains_element",
             "selector": "#selIdGrupoCompetencia option:nth-child(3)",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "wait_content_mode": "not_contains_element"
           },
           "ui": {
-            "x": 320.0,
-            "y": 240
+            "x": 2430,
+            "y": 100
           }
         },
         {
@@ -353,12 +493,12 @@
           "label": "Garante a Area nao vazia",
           "action": {
             "type": "browser_wait_for",
-            "selector": "#selIdGrupoCompetencia option[value=\"0\"]",
+            "selector": "#selIdGrupoCompetencia option[value=\u00220\u0022]",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 380.0,
-            "y": 240
+            "x": 2900,
+            "y": 100
           }
         },
         {
@@ -368,31 +508,32 @@
           "action": {
             "type": "browser_set_dropdown",
             "selector": "#selIdGrupoCompetencia",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "Cível",
-            "timeout_ms": 60000
+            "dropdown_value": "C\u00EDvel"
           },
           "ui": {
-            "x": 500.0,
-            "y": 0
+            "x": 3140,
+            "y": 100
           },
           "error_handling": {
             "retry_count": 2,
-            "retry_delay_ms": 1200
+            "retry_delay_ms": 1200,
+            "on_failure": "stop"
           }
         },
         {
           "id": "wait_classe_ajax",
           "kind": "action",
-          "label": "Aguarda a Classe carregar (so existe depois de localidade+rito+area)",
+          "label": "Aguarda a Classe carregar (so existe depois de localidade\u002Brito\u002Barea)",
           "action": {
             "type": "browser_wait_for",
             "selector": "#selIdClasseJudicial option:nth-child(2)",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 500.0,
-            "y": 120
+            "x": 3360,
+            "y": 100
           }
         },
         {
@@ -402,17 +543,18 @@
           "action": {
             "type": "browser_set_dropdown",
             "selector": "#selIdClasseJudicial",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "PETIÇÃO CÍVEL",
-            "timeout_ms": 60000
+            "dropdown_value": "PETI\u00C7\u00C3O C\u00CDVEL"
           },
           "ui": {
-            "x": 740.0,
-            "y": 0
+            "x": 3850,
+            "y": 100
           },
           "error_handling": {
             "retry_count": 2,
-            "retry_delay_ms": 1500
+            "retry_delay_ms": 1500,
+            "on_failure": "stop"
           }
         },
         {
@@ -425,8 +567,8 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 740.0,
-            "y": 120
+            "x": 4100,
+            "y": 100
           }
         },
         {
@@ -436,16 +578,17 @@
           "action": {
             "type": "browser_set_checkbox",
             "selector": "#chkNaoAplicaValor",
-            "checked": true,
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "checked": true
           },
           "ui": {
-            "x": 1220.0,
-            "y": 0
+            "x": 4410,
+            "y": 100
           },
           "error_handling": {
             "retry_count": 2,
-            "retry_delay_ms": 1000
+            "retry_delay_ms": 1000,
+            "on_failure": "stop"
           }
         },
         {
@@ -459,8 +602,8 @@
             "wait_for_navigation": true
           },
           "ui": {
-            "x": 1460.0,
-            "y": 0
+            "x": 4680,
+            "y": 100
           }
         },
         {
@@ -469,14 +612,14 @@
           "label": "Confirma a tela 2 de 5 (Assuntos)",
           "action": {
             "type": "browser_wait_content",
-            "wait_content_mode": "contains_text",
-            "text": "2 de 5",
             "selector": "#divInfraBarraLocalizacao",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "2 de 5",
+            "wait_content_mode": "contains_text"
           },
           "ui": {
-            "x": 1460.0,
-            "y": 120
+            "x": 4940,
+            "y": 100
           }
         },
         {
@@ -484,8 +627,8 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 1680.0,
-            "y": 120
+            "x": 5240,
+            "y": 100
           }
         }
       ],
@@ -571,7 +714,7 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -200.0,
+            "x": 700,
             "y": 0
           }
         },
@@ -582,11 +725,11 @@
           "action": {
             "type": "browser_fill",
             "selector": "#txtFiltroPesquisa",
-            "text": "02200307",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "02200307"
           },
           "ui": {
-            "x": 20.0,
+            "x": 910,
             "y": 0
           }
         },
@@ -600,7 +743,7 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 260.0,
+            "x": 1170,
             "y": 0
           }
         },
@@ -610,12 +753,12 @@
           "label": "8c. Aguarda o assunto visivel na arvore",
           "action": {
             "type": "browser_wait_for",
-            "selector": "[id='02200307_anchor']",
+            "selector": "[id=\u002702200307_anchor\u0027]",
             "timeout_ms": 60000,
             "wait_visible": true
           },
           "ui": {
-            "x": 500.0,
+            "x": 1460,
             "y": 0
           }
         },
@@ -625,12 +768,12 @@
           "label": "8d. Passa o mouse na linha (revela os icones)",
           "action": {
             "type": "browser_hover",
-            "selector": "[id='02200307_anchor']",
+            "selector": "[id=\u002702200307_anchor\u0027]",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 680.0,
-            "y": 120
+            "x": 1810,
+            "y": 0
           }
         },
         {
@@ -644,7 +787,7 @@
             "dialog_action": "accept"
           },
           "ui": {
-            "x": 740.0,
+            "x": 2210,
             "y": 0
           }
         },
@@ -655,17 +798,17 @@
           "action": {
             "type": "browser_execute_script",
             "timeout_ms": 60000,
-            "script": "document.getElementById('hdnIdAssuntoPrincipal').value || (window.__assunto__nao__efetivado).x",
-            "variable": "AssuntoId"
+            "variable": "AssuntoId",
+            "script": "document.getElementById(\u0027hdnIdAssuntoPrincipal\u0027).value || (window.__assunto__nao__efetivado).x"
+          },
+          "ui": {
+            "x": 2620,
+            "y": 0
           },
           "error_handling": {
             "retry_count": 20,
             "retry_delay_ms": 500,
             "on_failure": "stop"
-          },
-          "ui": {
-            "x": 960.0,
-            "y": 0
           }
         },
         {
@@ -678,7 +821,7 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 1220.0,
+            "x": 3160,
             "y": 0
           }
         },
@@ -693,7 +836,7 @@
             "wait_for_navigation": true
           },
           "ui": {
-            "x": 1460.0,
+            "x": 3540,
             "y": 0
           }
         },
@@ -703,14 +846,14 @@
           "label": "Confirma a tela 3 de 5 (Partes)",
           "action": {
             "type": "browser_wait_content",
-            "wait_content_mode": "contains_text",
-            "text": "3 de 5",
             "selector": "#divInfraBarraLocalizacao",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "3 de 5",
+            "wait_content_mode": "contains_text"
           },
           "ui": {
-            "x": 1460.0,
-            "y": 120
+            "x": 3860,
+            "y": 0
           }
         },
         {
@@ -718,8 +861,8 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 1680.0,
-            "y": 120
+            "x": 4150,
+            "y": 0
           }
         }
       ],
@@ -785,8 +928,8 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -200.0,
-            "y": 0
+            "x": 120,
+            "y": 120
           }
         },
         {
@@ -799,8 +942,8 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 20.0,
-            "y": 0
+            "x": 350,
+            "y": 120
           }
         },
         {
@@ -810,12 +953,12 @@
           "action": {
             "type": "browser_fill",
             "selector": "#txtNome",
-            "text": "{AutorNome}",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "{AutorNome}"
           },
           "ui": {
-            "x": 260.0,
-            "y": 0
+            "x": 630,
+            "y": 120
           }
         },
         {
@@ -829,8 +972,8 @@
             "dialog_action": "accept"
           },
           "ui": {
-            "x": 500.0,
-            "y": 0
+            "x": 920,
+            "y": 120
           }
         },
         {
@@ -842,8 +985,8 @@
             "path": "output/eproc-debug-consulta-autor.png"
           },
           "ui": {
-            "x": 500.0,
-            "y": 240
+            "x": 1170,
+            "y": 120
           }
         },
         {
@@ -852,11 +995,11 @@
           "label": "Aguarda a grade de resultados",
           "action": {
             "type": "browser_wait_for",
-            "selector": "#tblResultadosBusca tr[id^='tr']",
+            "selector": "#tblResultadosBusca tr[id^=\u0027tr\u0027]",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 500.0,
+            "x": 1560,
             "y": 120
           }
         },
@@ -866,14 +1009,14 @@
           "label": "14. Autor como Principal = Sim",
           "action": {
             "type": "browser_set_dropdown",
-            "selector": "#tblResultadosBusca select[id^='selPrincipal']",
+            "selector": "#tblResultadosBusca select[id^=\u0027selPrincipal\u0027]",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "Sim",
-            "timeout_ms": 60000
+            "dropdown_value": "Sim"
           },
           "ui": {
-            "x": 740.0,
-            "y": 0
+            "x": 1860,
+            "y": 120
           }
         },
         {
@@ -882,13 +1025,13 @@
           "label": "15. Inclui o autor",
           "action": {
             "type": "browser_click",
-            "selector": "#tblResultadosBusca button[id^='btnIncluir_']",
+            "selector": "#tblResultadosBusca button[id^=\u0027btnIncluir_\u0027]",
             "timeout_ms": 60000,
             "dialog_action": "accept"
           },
           "ui": {
-            "x": 980.0,
-            "y": 0
+            "x": 2180,
+            "y": 120
           }
         },
         {
@@ -901,14 +1044,14 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 980.0,
+            "x": 2430,
             "y": 120
           }
         },
         {
           "id": "click_proxima_autor",
           "kind": "action",
-          "label": "16. Proxima (autor -> reu)",
+          "label": "16. Proxima (autor -\u003E reu)",
           "action": {
             "type": "browser_click",
             "selector": "#btnProxima",
@@ -916,8 +1059,8 @@
             "wait_for_navigation": true
           },
           "ui": {
-            "x": 1220.0,
-            "y": 0
+            "x": 2760,
+            "y": 120
           }
         },
         {
@@ -926,13 +1069,13 @@
           "label": "Confirma a tela 4 de 5 (Partes Res)",
           "action": {
             "type": "browser_wait_content",
-            "wait_content_mode": "contains_text",
-            "text": "4 de 5",
             "selector": "#divInfraBarraLocalizacao",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "4 de 5",
+            "wait_content_mode": "contains_text"
           },
           "ui": {
-            "x": 1220.0,
+            "x": 3010,
             "y": 120
           }
         },
@@ -941,7 +1084,7 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 1440.0,
+            "x": 3290,
             "y": 120
           }
         }
@@ -1013,8 +1156,8 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -200.0,
-            "y": 0
+            "x": -20,
+            "y": 120
           }
         },
         {
@@ -1027,8 +1170,8 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 20.0,
-            "y": 0
+            "x": 230,
+            "y": 120
           }
         },
         {
@@ -1038,12 +1181,12 @@
           "action": {
             "type": "browser_fill",
             "selector": "#txtNome",
-            "text": "{ReuNome}",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "{ReuNome}"
           },
           "ui": {
-            "x": 260.0,
-            "y": 0
+            "x": 530,
+            "y": 120
           }
         },
         {
@@ -1057,8 +1200,8 @@
             "dialog_action": "accept"
           },
           "ui": {
-            "x": 500.0,
-            "y": 0
+            "x": 820,
+            "y": 120
           }
         },
         {
@@ -1070,8 +1213,8 @@
             "path": "output/eproc-debug-consulta-reu.png"
           },
           "ui": {
-            "x": 500.0,
-            "y": 240
+            "x": 1030,
+            "y": 120
           }
         },
         {
@@ -1080,11 +1223,11 @@
           "label": "Aguarda a grade de resultados",
           "action": {
             "type": "browser_wait_for",
-            "selector": "#tblResultadosBusca tr[id^='tr']",
+            "selector": "#tblResultadosBusca tr[id^=\u0027tr\u0027]",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 500.0,
+            "x": 1380,
             "y": 120
           }
         },
@@ -1094,14 +1237,14 @@
           "label": "20. Qualificacao = REQUERIDO",
           "action": {
             "type": "browser_set_dropdown",
-            "selector": "#tblResultadosBusca select[id^='selQualificacaoReu']",
+            "selector": "#tblResultadosBusca select[id^=\u0027selQualificacaoReu\u0027]",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "REQUERIDO",
-            "timeout_ms": 60000
+            "dropdown_value": "REQUERIDO"
           },
           "ui": {
-            "x": 740.0,
-            "y": 0
+            "x": 1680,
+            "y": 120
           }
         },
         {
@@ -1110,14 +1253,14 @@
           "label": "21. Reu como Principal = Sim",
           "action": {
             "type": "browser_set_dropdown",
-            "selector": "#tblResultadosBusca select[id^='selPrincipal']",
+            "selector": "#tblResultadosBusca select[id^=\u0027selPrincipal\u0027]",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "Sim",
-            "timeout_ms": 60000
+            "dropdown_value": "Sim"
           },
           "ui": {
-            "x": 980.0,
-            "y": 0
+            "x": 1980,
+            "y": 120
           }
         },
         {
@@ -1126,13 +1269,13 @@
           "label": "22. Inclui o reu",
           "action": {
             "type": "browser_click",
-            "selector": "#tblResultadosBusca button[id^='btnIncluir_']",
+            "selector": "#tblResultadosBusca button[id^=\u0027btnIncluir_\u0027]",
             "timeout_ms": 60000,
             "dialog_action": "accept"
           },
           "ui": {
-            "x": 1220.0,
-            "y": 0
+            "x": 2250,
+            "y": 120
           }
         },
         {
@@ -1145,14 +1288,14 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 1220.0,
+            "x": 2480,
             "y": 120
           }
         },
         {
           "id": "click_proxima_reu",
           "kind": "action",
-          "label": "23. Proxima (reu -> documentos)",
+          "label": "23. Proxima (reu -\u003E documentos)",
           "action": {
             "type": "browser_click",
             "selector": "#btnProxima",
@@ -1160,8 +1303,8 @@
             "wait_for_navigation": true
           },
           "ui": {
-            "x": 1460.0,
-            "y": 0
+            "x": 2800,
+            "y": 120
           }
         },
         {
@@ -1170,13 +1313,13 @@
           "label": "Confirma a tela 5 de 5 (Documentos)",
           "action": {
             "type": "browser_wait_content",
-            "wait_content_mode": "contains_text",
-            "text": "5 de 5",
             "selector": "#divInfraBarraLocalizacao",
-            "timeout_ms": 60000
+            "timeout_ms": 60000,
+            "text": "5 de 5",
+            "wait_content_mode": "contains_text"
           },
           "ui": {
-            "x": 1460.0,
+            "x": 3110,
             "y": 120
           }
         },
@@ -1185,7 +1328,7 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 1680.0,
+            "x": 3420,
             "y": 120
           }
         }
@@ -1262,8 +1405,8 @@
           "kind": "start",
           "label": "Start",
           "ui": {
-            "x": -200.0,
-            "y": 0
+            "x": -2670,
+            "y": 120
           }
         },
         {
@@ -1275,8 +1418,8 @@
             "path": "output/eproc-tela5-documentos.png"
           },
           "ui": {
-            "x": 20.0,
-            "y": 0
+            "x": -2420,
+            "y": 120
           }
         },
         {
@@ -1289,7 +1432,7 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 20.0,
+            "x": -2030,
             "y": 120
           }
         },
@@ -1303,8 +1446,8 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 260.0,
-            "y": 0
+            "x": -1690,
+            "y": 120
           }
         },
         {
@@ -1317,8 +1460,8 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 500.0,
-            "y": 0
+            "x": -1250,
+            "y": 120
           }
         },
         {
@@ -1331,7 +1474,7 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 500.0,
+            "x": -940,
             "y": 120
           }
         },
@@ -1342,17 +1485,17 @@
           "action": {
             "type": "browser_execute_script",
             "timeout_ms": 60000,
-            "script": "(CKEDITOR.instances.txt_fck && CKEDITOR.instances.txt_fck.status === 'ready') || (window.__editor__nao__pronto).x",
-            "variable": "EditorPronto"
+            "variable": "EditorPronto",
+            "script": "(CKEDITOR.instances.txt_fck \u0026\u0026 CKEDITOR.instances.txt_fck.status === \u0027ready\u0027) || (window.__editor__nao__pronto).x"
+          },
+          "ui": {
+            "x": -620,
+            "y": 120
           },
           "error_handling": {
             "retry_count": 12,
             "retry_delay_ms": 500,
             "on_failure": "stop"
-          },
-          "ui": {
-            "x": 620.0,
-            "y": 120
           }
         },
         {
@@ -1362,17 +1505,17 @@
           "action": {
             "type": "browser_execute_script",
             "timeout_ms": 60000,
-            "script": "CKEDITOR.instances.txt_fck.setData('<p>{DocTextoLatim}</p>') || CKEDITOR.instances.txt_fck.getData().length || (window.__texto__vazio).x",
-            "variable": "EditorResultado"
+            "variable": "EditorResultado",
+            "script": "CKEDITOR.instances.txt_fck.setData(\u0027\u003Cp\u003E{DocTextoLatim}\u003C/p\u003E\u0027) || CKEDITOR.instances.txt_fck.getData().length || (window.__texto__vazio).x"
+          },
+          "ui": {
+            "x": -70,
+            "y": 120
           },
           "error_handling": {
             "retry_count": 6,
             "retry_delay_ms": 700,
             "on_failure": "stop"
-          },
-          "ui": {
-            "x": 740.0,
-            "y": 0
           }
         },
         {
@@ -1382,12 +1525,12 @@
           "action": {
             "type": "browser_execute_script",
             "timeout_ms": 60000,
-            "script": "CKEDITOR.instances.txt_fck.getData().length",
-            "variable": "DocTextoLen"
+            "variable": "DocTextoLen",
+            "script": "CKEDITOR.instances.txt_fck.getData().length"
           },
           "ui": {
-            "x": 980.0,
-            "y": 0
+            "x": 370,
+            "y": 120
           }
         },
         {
@@ -1397,17 +1540,17 @@
           "action": {
             "type": "browser_execute_script",
             "timeout_ms": 60000,
-            "script": "(document.querySelector('a.cke_button__anexardocumentoesair') || document.getElementById('cke_16')).click() || 'ok'",
-            "variable": "AnexarSairClicado"
+            "variable": "AnexarSairClicado",
+            "script": "(document.querySelector(\u0027a.cke_button__anexardocumentoesair\u0027) || document.getElementById(\u0027cke_16\u0027)).click() || \u0027ok\u0027"
+          },
+          "ui": {
+            "x": 920,
+            "y": 120
           },
           "error_handling": {
             "retry_count": 4,
             "retry_delay_ms": 1000,
             "on_failure": "stop"
-          },
-          "ui": {
-            "x": 1220.0,
-            "y": 0
           }
         },
         {
@@ -1420,7 +1563,7 @@
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 1220.0,
+            "x": 1590,
             "y": 120
           }
         },
@@ -1431,13 +1574,13 @@
           "action": {
             "type": "browser_set_dropdown",
             "selector": "#JQueryUIselTipoArquivo",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "{PeticaoDocTipo}",
-            "timeout_ms": 60000
+            "dropdown_value": "{PeticaoDocTipo}"
           },
           "ui": {
-            "x": 1460.0,
-            "y": 0
+            "x": 2060,
+            "y": 120
           }
         },
         {
@@ -1447,13 +1590,13 @@
           "action": {
             "type": "browser_set_dropdown",
             "selector": "#JQueryUIselIdSigilo",
+            "timeout_ms": 60000,
             "dropdown_mode": "by_text",
-            "dropdown_value": "Sem Sigilo (Nível 0)",
-            "timeout_ms": 60000
+            "dropdown_value": "Sem Sigilo (N\u00EDvel 0)"
           },
           "ui": {
-            "x": 1700.0,
-            "y": 0
+            "x": 2310,
+            "y": 120
           }
         },
         {
@@ -1465,13 +1608,13 @@
             "selector": ".ui-dialog-buttonpane button.dialog-button",
             "timeout_ms": 60000
           },
+          "ui": {
+            "x": 2580,
+            "y": 120
+          },
           "error_handling": {
             "retry_count": 0,
             "on_failure": "continue"
-          },
-          "ui": {
-            "x": 1940.0,
-            "y": 0
           }
         },
         {
@@ -1480,12 +1623,12 @@
           "label": "33. Volta para a tela de peticionamento",
           "action": {
             "type": "browser_switch_page",
-            "url": "acao=processo_cadastrar_4&",
+            "url": "acao=processo_cadastrar_4\u0026",
             "timeout_ms": 60000
           },
           "ui": {
-            "x": 2180.0,
-            "y": 0
+            "x": 2910,
+            "y": 120
           }
         },
         {
@@ -1498,7 +1641,7 @@
             "timeout_ms": 45000
           },
           "ui": {
-            "x": 2180.0,
+            "x": 3250,
             "y": 120
           }
         },
@@ -1512,13 +1655,13 @@
             "timeout_ms": 60000,
             "dialog_action": "accept"
           },
+          "ui": {
+            "x": 3750,
+            "y": 120
+          },
           "error_handling": {
             "retry_count": 0,
             "on_failure": "continue"
-          },
-          "ui": {
-            "x": 2660.0,
-            "y": 0
           }
         },
         {
@@ -1528,31 +1671,31 @@
           "action": {
             "type": "browser_execute_script",
             "timeout_ms": 60000,
-            "script": "document.getElementById('ifrSubFrm').contentDocument.getElementById('sbmConfirmar').click() || 'ok'",
-            "variable": "AjuizamentoConfirmado"
+            "variable": "AjuizamentoConfirmado",
+            "script": "document.getElementById(\u0027ifrSubFrm\u0027).contentDocument.getElementById(\u0027sbmConfirmar\u0027).click() || \u0027ok\u0027"
+          },
+          "ui": {
+            "x": 4200,
+            "y": 120
           },
           "error_handling": {
             "retry_count": 10,
             "retry_delay_ms": 1500,
             "on_failure": "stop"
-          },
-          "ui": {
-            "x": 2660.0,
-            "y": 120
           }
         },
         {
           "id": "wait_distribuido",
           "kind": "action",
-          "label": "Aguarda a confirmacao 'Processo distribuido'",
+          "label": "Aguarda a confirmacao \u0027Processo distribuido\u0027",
           "action": {
             "type": "browser_wait_content",
-            "wait_content_mode": "contains_text",
-            "text": "Processo distribuído",
-            "timeout_ms": 90000
+            "timeout_ms": 90000,
+            "text": "Processo distribu\u00EDdo",
+            "wait_content_mode": "contains_text"
           },
           "ui": {
-            "x": 2900.0,
+            "x": 4660,
             "y": 120
           }
         },
@@ -1567,8 +1710,8 @@
             "variable": "PetitionNumber"
           },
           "ui": {
-            "x": 2660.0,
-            "y": 240
+            "x": 5050,
+            "y": 120
           }
         },
         {
@@ -1577,12 +1720,12 @@
           "label": "36. Captura a tela final",
           "action": {
             "type": "browser_get_page_details",
-            "detail": "all",
-            "variable": "EprocFinal"
+            "variable": "EprocFinal",
+            "detail": "all"
           },
           "ui": {
-            "x": 2900.0,
-            "y": 0
+            "x": 5350,
+            "y": 120
           }
         },
         {
@@ -1594,7 +1737,7 @@
             "path": "output/eproc-final.png"
           },
           "ui": {
-            "x": 2900.0,
+            "x": 5570,
             "y": 120
           }
         },
@@ -1603,7 +1746,7 @@
           "kind": "end",
           "label": "End",
           "ui": {
-            "x": 3120.0,
+            "x": 5790,
             "y": 120
           }
         }
@@ -1724,16 +1867,16 @@
     }
   },
   "variables": {
-    "ScreenText": "",
-    "EprocUrl": "",
-    "EprocUser": "",
-    "PetitionNumber": "",
     "AutorNome": "David de Souza Dichirico Pestilli",
-    "ReuNome": "Maya Sotero Dichirico Pestilli",
-    "PeticaoDocTipo": "PETIÇÃO INICIAL",
     "DocTextoLatim": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
     "DocTextoLen": "",
     "EditorResultado": "",
-    "EprocFinal": ""
+    "EprocFinal": "",
+    "EprocUrl": "",
+    "EprocUser": "",
+    "PeticaoDocTipo": "PETI\u00C7\u00C3O INICIAL",
+    "PetitionNumber": "",
+    "ReuNome": "Maya Sotero Dichirico Pestilli",
+    "ScreenText": ""
   }
 }

@@ -317,6 +317,74 @@
         "x": 580,
         "y": 600
       }
+    },
+    {
+      "id": "if_run_mode",
+      "kind": "if",
+      "label": "Rodando sozinho (individual)?",
+      "control": {
+        "type": "if",
+        "left": "{HoblioRunMode}",
+        "operator": "eq",
+        "right": "standalone",
+        "ignore_case": true
+      },
+      "ui": {
+        "x": 360,
+        "y": 830
+      }
+    },
+    {
+      "id": "get_final_h1",
+      "kind": "action",
+      "label": "Le o h1 da tela final",
+      "action": {
+        "type": "browser_get_text",
+        "selector": "#divInfraBarraLocalizacao \u003E div \u003E h1",
+        "timeout_ms": 5000,
+        "variable": "FinalH1"
+      },
+      "error_handling": {
+        "retry_count": 1,
+        "retry_delay_ms": 500,
+        "on_failure": "continue"
+      },
+      "ui": {
+        "x": 580,
+        "y": 830
+      }
+    },
+    {
+      "id": "get_final_url",
+      "kind": "action",
+      "label": "Le a URL final",
+      "action": {
+        "type": "browser_get_page_details",
+        "detail": "url",
+        "variable": "FinalUrl"
+      },
+      "error_handling": {
+        "retry_count": 0,
+        "on_failure": "continue"
+      },
+      "ui": {
+        "x": 800,
+        "y": 830
+      }
+    },
+    {
+      "id": "msg_standalone",
+      "kind": "action",
+      "label": "Caixa de mensagem: onde chegou (so no individual)",
+      "action": {
+        "type": "show_message",
+        "title": "Login eproc conclu\u00EDdo",
+        "text": "Execu\u00E7\u00E3o individual do fluxo login-eproc.\n\nP\u00E1gina final (h1): {FinalH1}\nURL: {FinalUrl}\nTela detectada: {ScreenText}\nUsu\u00E1rio: {EprocUser}\n\nClique em OK para encerrar."
+      },
+      "ui": {
+        "x": 1020,
+        "y": 830
+      }
     }
   ],
   "edges": [
@@ -445,7 +513,39 @@
     },
     {
       "from": "set_screen_panel",
+      "to": "if_run_mode",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "if_run_mode",
       "to": "action_mvsnv0r6",
+      "port": "else",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "if_run_mode",
+      "to": "get_final_h1",
+      "port": "then",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "get_final_h1",
+      "to": "get_final_url",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "get_final_url",
+      "to": "msg_standalone",
       "port": "main",
       "ui": {
         "targetHandle": "left"
@@ -511,6 +611,12 @@
     },
     {
       "from": "action_mvsnv0r6",
+      "to": "end",
+      "port": "main",
+      "ui": {}
+    },
+    {
+      "from": "msg_standalone",
       "to": "end",
       "port": "main",
       "ui": {}
@@ -1112,6 +1218,8 @@
   "variables": {
     "EprocUrl": "",
     "EprocUser": "",
+    "FinalH1": "",
+    "FinalUrl": "",
     "ScreenText": ""
   }
 }

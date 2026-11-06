@@ -6,6 +6,10 @@ public sealed partial class FlowEditorViewModel
 {
     public bool ShowActionWebAutomation => GetSelectedNode()?.Action is WebAutomationAction;
 
+    /// <summary>Só nas ações de anexar: ali faz sentido o atalho “abrir navegador CDP com esta porta”.</summary>
+    public bool ShowWebAttach =>
+        WebA()?.Type is WebAutomationActionTypes.AttachChrome or WebAutomationActionTypes.AttachEdge;
+
     WebAutomationAction? WebA() => A<WebAutomationAction>();
 
     void PatchWeb(Func<WebAutomationActionPatch> patch) =>

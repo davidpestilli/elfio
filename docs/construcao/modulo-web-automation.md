@@ -58,11 +58,23 @@ Grupo **Automação do navegador**, três secções como no PAD:
 
 Diferente do PAD (extensão + handle de janela), o Elfio liga-se ao browser via **depuração remota**:
 
-1. Feche todas as instâncias do Chrome/Edge (ou use um atalho dedicado à automação).
-2. Inicie com porta de depuração, por exemplo:
-   - `"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222`
-   - `"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222`
+1. Abra o navegador **com** porta de depuração — pelo Studio (**Navegador → Abrir CDP…**), pela CLI ou pelo helper:
+
+   ```powershell
+   # mesmo serviço, três portas de entrada:
+   dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url https://eproc-1g-sp-hml.tjsp.jus.br/
+   pwsh scripts/start-cdp-browser.ps1 -Url https://eproc-1g-sp-hml.tjsp.jus.br/
+   ```
+
+   No Studio o diálogo ainda pré-preenche motor e porta a partir do nó `browser_attach_*` selecionado (**Abrir navegador CDP com esta porta…** no inspector).
+2. Sem ajuda, chame o executável à mão — **sempre com `--user-data-dir`**:
+   - `"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir=%TEMP%\elfio-cdp-profile`
+   - `"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --user-data-dir=%TEMP%\elfio-cdp-profile`
 3. No fluxo, use **`browser_attach_chrome`** ou **`browser_attach_edge`** antes dos passos DOM.
+
+**Por que o perfil dedicado:** desde o Chrome/Edge **136** a flag `--remote-debugging-port` é ignorada no perfil padrão (proteção contra roubo de cookies). Além disso, se já existir um Chrome aberto com o perfil padrão, o novo processo apenas entrega a URL a ele — sem porta de debug.
+
+**Serviço:** [`CdpBrowser`](../../src/Hoblio.Runtime/CdpBrowser.cs) — `Launch` (abre + espera o CDP responder, reportando `ReusedRunningBrowser`, abas e PID), `IsListening`, `ListTabs`. É o que o botão do Studio, o verbo `browser` da CLI e o script usam.
 
 | `attach_mode` | Campo | Comportamento |
 |---------------|--------|----------------|
@@ -73,6 +85,8 @@ Diferente do PAD (extensão + handle de janela), o Elfio liga-se ao browser via 
 Variáveis de ambiente: **`HOBLIO_BROWSER_DEBUG_PORT`**, **`HOBLIO_BROWSER_DEBUG_URL`** (ex. `http://127.0.0.1:9222`).
 
 **Fim do run / `browser_close`:** sessão **anexada** só desliga o CDP — **não fecha** o browser do usuário. Sessão **lançada** pelo Elfio continua fechando a janela ao terminar.
+
+Quem usa isso hoje: `examples/eproc-peticionamento` no **modo individual** (`if {HoblioRunMode} eq standalone` → attach → caixa de confirmação → guarda de DOM). Ver [composicao-superfluxos.md §13](./composicao-superfluxos.md).
 
 ## Ordem típica no fluxo
 

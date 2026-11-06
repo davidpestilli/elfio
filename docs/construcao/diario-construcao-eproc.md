@@ -34,6 +34,7 @@ Três regras que se pagaram ao longo de todo o trabalho:
 |---|---|
 | `scripts/cdp-probe.ps1` | lê/interage com a aba por CDP: `-Js`, `-JsFile`, `-Shot`, `-Click` (gesto real), `-Type`, `-Match`, `-TargetId`, `-Method`/`-Params` (CDP cru) |
 | `scripts/cdp-dump-controls.js` | dump estruturado de inputs/selects/botões com seletores |
+| `scripts/start-cdp-browser.ps1` | abre Chrome/Edge **com** CDP num perfil dedicado (`%TEMP%\elfio-cdp-profile`) e espera o endpoint responder — é o pré-requisito do modo individual do peticionamento. Equivalentes: **Studio → Navegador → Abrir CDP…** e `dotnet run --project src/Hoblio.Cli -- browser --port 9222` |
 | Chrome + `--remote-debugging-port=9222` | navegador visível para o humano navegar/logar; o agente lê pela mesma sessão |
 | timestamps no CLI | `dotnet run ... \| ForEach-Object { "{0,6:N2}s {1}" -f $sw.Elapsed.TotalSeconds, $_ }` → tempo por ação |
 | `FormData` da página | para saber **o que o formulário realmente envia** (foi o que resolveu o caso do assunto) |

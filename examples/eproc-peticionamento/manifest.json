@@ -1,19 +1,31 @@
 {
   "name": "eproc-peticionamento",
   "version": "0.1.0",
-  "description": "Assume a tela logada do eproc (painel do advogado) e protocola. Espera rodar DEPOIS do login, na mesma sessao de navegador.",
+  "description": "Assume a tela logada do eproc (painel do advogado) e protocola. Dentro do superfluxo herda a sessao do login; sozinho (HoblioRunMode=standalone) anexa ao navegador ja aberto via CDP e pede confirmacao da tela.",
   "entry_flow": "flow.json",
   "engine_version": "0.1.0",
   "created_engine_version": "0.1.0",
   "module_references": [
     {
-      "name": "System",
+      "name": "Conditionals",
       "assembly_name": "Hoblio.Runtime",
       "version": "0.1.0",
       "type": 1
     },
     {
-      "name": "Variables",
+      "name": "Display",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "FlowControl",
+      "assembly_name": "Hoblio.Runtime",
+      "version": "0.1.0",
+      "type": 1
+    },
+    {
+      "name": "System",
       "assembly_name": "Hoblio.Runtime",
       "version": "0.1.0",
       "type": 1

@@ -25,7 +25,7 @@ Documento da composição (vínculos, `exports`/`requires`, semântica de heran�
 | Pasta | Papel | `manifest` relevante |
 |-------|-------|----------------------|
 | [`examples/eproc-superflow`](../../examples/eproc-superflow) | orquestrador, declara os dois vínculos | `linked_projects` |
-| [`examples/login-eproc`](../../examples/login-eproc) | chamado 1: login + perfil, termina no painel | `variables`: `ScreenText`, `EprocUrl`, `EprocUser` |
+| [`examples/login-eproc`](../../examples/login-eproc) | chamado 1: login + perfil, termina no painel | `variables`: `ScreenText`, `EprocUrl`, `EprocUser`, `FinalH1`, `FinalUrl` |
 | [`examples/eproc-peticionamento`](../../examples/eproc-peticionamento) | chamado 2: este fluxo | `entry_flow: flow.json` |
 
 ## Contrato entre os fluxos
@@ -57,7 +57,7 @@ O projeto é dividido por etapa. O `flow.json` principal só orquestra; cada eta
 | `etapa4_reu` | 11 | `wait_reu_form` | `wait_etapa5` | requerido: consulta, Qualificação=REQUERIDO, Principal=Sim, incluir, Próxima |
 | `etapa5_documentos` | 21 | `shot_tela5` | `shot_final` | editor CKEditor, tipo/sigilo, anexo, Finalizar, iframe de confirmação, protocolo |
 
-Fluxo principal (`flow.json`): `start → rf_abrir → rf_etapa1 → rf_etapa2 → rf_etapa3 → rf_etapa4 → rf_etapa5 → log_final → end` — 9 nós.
+Fluxo principal (`flow.json`): `start → if_run_mode → (individual: attach_browser → msg_manual → wait_menu_manual → read_screen_manual) → rf_abrir → rf_etapa1 → rf_etapa2 → rf_etapa3 → rf_etapa4 → rf_etapa5 → log_final → end` — 14 nós. No modo `superflow` o `if` vai direto para `rf_abrir` (sessão herdada).
 
 Como cada subfluxo começa com um `wait_for` da tela que ele espera (e termina com um `wait_content` que confirma a tela seguinte), rodar as etapas em sequência é a própria verificação: se uma etapa "passar" indevidamente, a seguinte falha imediatamente.
 
@@ -66,7 +66,7 @@ Como cada subfluxo começa com um `wait_for` da tela que ele espera (e termina c
 | # | Nó (`flow.json`) | Ação | Seletor / valor | Observação |
 |---|------------------|------|-----------------|------------|
 | — | `wait_menu` | `browser_wait_for` | `#main-menu a[href*="acao=processo_cadastrar"]`, `wait_visible`, 60 s | guarda do handoff: só existe no painel logado — é a guarda **observacional** real da cadeia (o link é "Petição Inicial") |
-| — | `log_handoff` | `log` | — | registra tela/usuário herdados |
+| — | `log_handoff` | `log` | — | registra a tela herdada e o **modo** do run (`standalone` / `superflow`) |
 | — | `click_menu` | `browser_click` | mesmo seletor, `wait_selector_after: #selLocalidadeJudicial`, 60 s | abre o peticionamento |
 
 ### Etapa 1 — Informações do processo (`processo_cadastrar`) — `etapa1_informacoes`
@@ -220,12 +220,26 @@ As listas de Rito/Área/Classe recarregam por AJAX. Os nós de dropdown mantêm 
 ```powershell
 # 1. validar contrato e grafo (sem rede)
 dotnet run --project src/Hoblio.Cli -- validate examples/eproc-superflow
+dotnet run --project src/Hoblio.Cli -- validate examples/eproc-peticionamento
 
 # 2. executar a cadeia (precisa de Chrome + credenciais do eproc)
 dotnet run --project src/Hoblio.Cli -- run examples/eproc-superflow
 ```
 
-Rodar `examples/eproc-peticionamento` **sozinho** falha de propósito em `wait_menu`: sem `browser_navigate`/attach não há sessão (`no browser session: run browser_navigate before other browser actions`). Este fluxo só existe dentro da cadeia.
+### Modo individual (sem superfluxo)
+
+Rodar `examples/eproc-peticionamento` **sozinho** agora tem caminho próprio: o fluxo pergunta `{HoblioRunMode}` e, quando é `standalone`, **anexa** ao navegador que já está aberto (CDP), pede confirmação da tela numa caixa e só então entra em `wait_menu`. No modo `superflow` nada muda: a sessão vem herdada do login.
+
+O pré-requisito é um navegador **com** porta de debug — aberto "normalmente" ele não expõe CDP. No Studio: ribbon → **Navegador → Abrir CDP…** (ou o atalho no inspector do nó de anexar). Pela CLI:
+
+```powershell
+dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url https://eproc-1g-sp-hml.tjsp.jus.br/
+
+# nessa janela: logar no eproc, deixar a aba no Painel do Advogado
+dotnet run --project src/Hoblio.Cli -- run examples/eproc-peticionamento
+```
+
+Sem CDP o run para no primeiro nó do ramo individual, com a mensagem de como abrir o navegador. O `login-eproc` tem o ramo espelhado: sozinho ele termina numa caixa com o `h1` + URL da tela final; dentro do superfluxo continua terminando em `log`. Detalhes: [composicao-superfluxos.md §13](composicao-superfluxos.md).
 
 ## Como capturar os seletores de uma tela nova
 
@@ -262,4 +276,4 @@ Capturado e conferido em sessão real (HML, perfil Advogado), etapa por etapa e 
 - **Etapas 3–4**: executadas de ponta a ponta na cadeia (autor e réu incluídos, `#tblPartes tbody tr` como sinal).
 - **Etapa 5**: executada e confirmada — petição **distribuída**, número devolvido em `#lblDesNumProcesso` (formato CNJ). Exigiu `browser_switch_page` (popup do editor), `browser_execute_script` no CKEditor e, na confirmação, um **iframe** (`#ifrSubFrm`) tratado por script — o motor não tem suporte a frame.
 - **Cadeia completa (login → distribuição)**: rodada de ponta a ponta em **~32,7 s** (exit 0), com protocolo capturado em `PetitionNumber`. Três petições distribuídas durante a construção: `4000922-41`, `4000924-11` e `4000925-93` (todas `2026.8.26.0008`).
-- **Números do fluxo**: 9 nós no principal + 6 subfluxos (79 nós) = **88 nós**, **zero `delay`**; timeouts de 45/60/90 s. Testes: 39 (modelo) + 55 (runtime) + 32 (Studio).
+- **Números do fluxo**: 14 nós no principal (5 deles são o ramo individual) + 6 subfluxos (79 nós) = **93 nós**, **zero `delay`**; timeouts de 45/60/90 s. Testes: 42 (modelo) + 63 (runtime) + 32 (Studio) = **137**.

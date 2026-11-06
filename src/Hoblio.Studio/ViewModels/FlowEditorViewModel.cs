@@ -481,6 +481,7 @@ public sealed partial class FlowEditorViewModel : INotifyPropertyChanged
         InitPropertiesPanelCommands();
         InitClipboardCommands();
         InitTemplateVariableCommands();
+        InitCdpBrowserCommands();
         RebuildFilteredPalette();
         LoadProject(_project, null, resetUndo: true);
     }

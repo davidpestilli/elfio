@@ -203,6 +203,7 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(IsStartNodeSelected));
         OnPropertyChanged(nameof(ShowLogFields));
         OnPropertyChanged(nameof(ShowLastRunValues));
+        OnPropertyChanged(nameof(ShowWebAttach));
         OnPropertyChanged(nameof(ShowOnErrorSection));
         OnPropertyChanged(nameof(ShowNextExitLoopHint));
         OnPropertyChanged(nameof(OnFailureMode));

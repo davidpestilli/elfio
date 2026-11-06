@@ -63,6 +63,14 @@ Abrir o **Elfio Studio**:
 dotnet run --project src/Hoblio.Studio
 ```
 
+Abrir um navegador **com depuração (CDP)** para um fluxo se anexar (`browser_attach_chrome` / `browser_attach_edge`):
+
+```powershell
+dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url https://eproc-1g-sp-hml.tjsp.jus.br/
+```
+
+No Studio é o botão **Navegador → Abrir CDP…** do ribbon (mesmo serviço, pré-preenchido a partir do nó de anexar). O navegador usa um perfil dedicado, `%TEMP%\elfio-cdp-profile`, e fica aberto depois do run — é nele que você faz o login.
+
 Atualizar capacidades no `manifest` após mudar ações no grafo (sem abrir o Studio):
 
 ```powershell

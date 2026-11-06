@@ -1,4 +1,4 @@
-﻿using System.CommandLine;
+using System.CommandLine;
 using System.Text;
 using Hoblio.Runtime;
 using Hoblio.Serde;
@@ -44,8 +44,28 @@ static class CliApp
             catch (Exception ex) { Fail(ex); }
         }, projectArg, updateManifestOpt);
 
+        var browserCmd = new Command(
+            "browser",
+            "Open Chrome/Edge with remote debugging (CDP) on a dedicated profile, so a flow can attach to it");
+        var engineOpt = new Option<string?>("--engine", "chrome (default) or edge");
+        var portOpt = new Option<int>("--port", () => CdpBrowser.DefaultPort, "CDP port (default 9222)");
+        var urlOpt = new Option<string?>("--url", "Page to open in the browser session");
+        var profileOpt = new Option<string?>("--profile", "Profile directory (default %TEMP%\\elfio-cdp-profile)");
+        browserCmd.AddOption(engineOpt);
+        browserCmd.AddOption(portOpt);
+        browserCmd.AddOption(urlOpt);
+        browserCmd.AddOption(profileOpt);
+        browserCmd.SetHandler(
+            (string? engine, int port, string? url, string? profile) =>
+            {
+                try { OpenBrowser(engine, port, url, profile); }
+                catch (Exception ex) { Fail(ex); }
+            },
+            engineOpt, portOpt, urlOpt, profileOpt);
+
         root.AddCommand(runCmd);
         root.AddCommand(validateCmd);
+        root.AddCommand(browserCmd);
         return root;
     }
 
@@ -82,6 +102,26 @@ static class CliApp
                 : $"manifest unchanged: {projectDir}");
         }
         Console.Error.WriteLine($"valid: {projectDir}");
+    }
+
+    /// <summary>
+    /// Abre o navegador com CDP e reporta a sessão — o mesmo serviço do botão do Studio
+    /// (<see cref="CdpBrowser"/>). O navegador fica aberto; o comando termina.
+    /// </summary>
+    static void OpenBrowser(string? engine, int port, string? url, string? profileDir)
+    {
+        var session = CdpBrowser.Launch(engine, port, url, profileDir);
+        var reused = session.ReusedRunningBrowser
+            ? " (sessão existente reaproveitada)"
+            : "";
+        Console.WriteLine(
+            $"cdp: {session.BrowserLabel ?? session.Engine} em http://127.0.0.1:{session.Port}{reused} (pid {session.ProcessId})");
+        Console.WriteLine($"perfil: {session.ProfileDir}");
+        foreach (var tab in session.Tabs)
+            Console.WriteLine($"aba: {tab.Title} [{tab.Url}]");
+        Console.Error.WriteLine(
+            $"deixe o navegador aberto, navegue/logue e rode o fluxo: "
+            + $"o browser_attach_* procura a porta {session.Port}");
     }
 }
 

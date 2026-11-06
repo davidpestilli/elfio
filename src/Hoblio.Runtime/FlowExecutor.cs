@@ -73,6 +73,7 @@ public static partial class FlowExecutor
         Emit(new RunEvent.RunStarted(project.Manifest.Name));
 
         var runVars = RunVariables.SeedFromProject(project.Variables);
+        using var runContext = RunContext.EnterRoot(runVars);
         var flowCache = new ChildFlowCache();
         var visits = 0;
         var telemetry = new RunTelemetry();
@@ -160,6 +161,10 @@ public static partial class FlowExecutor
                         // Label do resolvedor: `subflow:x`, `flow_id`, caminho, ou `projeto:fluxo` para projeto vinculado.
                         var childLabel = resolved.Label;
                         var scope = runFlow.VariableScope ?? RunFlowVariableScope.Inherit;
+                        // Atravessar a fronteira de um projeto vinculado é o que caracteriza o
+                        // superfluxo: é assim que o filho descobre que está rodando dentro de outro
+                        // fluxo (e não sozinho) — ver BuiltInVariables.RunMode.
+                        var crossesProjectBoundary = !string.IsNullOrWhiteSpace(runFlow.Project);
                         emit(new RunEvent.FlowStarted(childLabel, node.Id));
                         string endNode;
                         if (scope == RunFlowVariableScope.Isolated)
@@ -169,47 +174,53 @@ public static partial class FlowExecutor
                                 snapshot[kv.Key] = kv.Value;
                             var childVars = new RunVariables();
                             RunFlowSupport.ApplyIsolatedInputs(runFlow.Inputs, resolved.Variables, runVars, childVars);
-                            endNode = ExecuteGraph(
-                                resolved.Graph,
-                                resolved.Graph,
-                                childLabel,
-                                depth + 1,
-                                resolved.Manifest,
-                                resolved.ProjectRoot,
-                                browser,
-                                excel,
-                                word,
-                                pdf,
-                                childVars,
-                                [],
-                                flowCache,
-                                ref visits,
-                                telemetry,
-                                emit,
-                                cancellationToken);
+                            using (RunContext.EnterChild(childVars, crossesProjectBoundary))
+                            {
+                                endNode = ExecuteGraph(
+                                    resolved.Graph,
+                                    resolved.Graph,
+                                    childLabel,
+                                    depth + 1,
+                                    resolved.Manifest,
+                                    resolved.ProjectRoot,
+                                    browser,
+                                    excel,
+                                    word,
+                                    pdf,
+                                    childVars,
+                                    [],
+                                    flowCache,
+                                    ref visits,
+                                    telemetry,
+                                    emit,
+                                    cancellationToken);
+                            }
                             RunFlowSupport.MergeIsolatedOutputs(runVars, snapshot, childVars, runFlow.Outputs);
                         }
                         else
                         {
                             RunFlowSupport.ApplyInheritInputs(runFlow.Inputs, resolved.Variables, runVars);
-                            endNode = ExecuteGraph(
-                                resolved.Graph,
-                                resolved.Graph,
-                                childLabel,
-                                depth + 1,
-                                resolved.Manifest,
-                                resolved.ProjectRoot,
-                                browser,
-                                excel,
-                                word,
-                                pdf,
-                                runVars,
-                                [],
-                                flowCache,
-                                ref visits,
-                                telemetry,
-                                emit,
-                                cancellationToken);
+                            using (RunContext.EnterChild(runVars, crossesProjectBoundary))
+                            {
+                                endNode = ExecuteGraph(
+                                    resolved.Graph,
+                                    resolved.Graph,
+                                    childLabel,
+                                    depth + 1,
+                                    resolved.Manifest,
+                                    resolved.ProjectRoot,
+                                    browser,
+                                    excel,
+                                    word,
+                                    pdf,
+                                    runVars,
+                                    [],
+                                    flowCache,
+                                    ref visits,
+                                    telemetry,
+                                    emit,
+                                    cancellationToken);
+                            }
                         }
                         emit(new RunEvent.FlowFinished(childLabel, endNode));
                         summary = RunFlowSupport.Summary(childLabel, endNode, runFlow.Outputs, runVars);

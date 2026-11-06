@@ -122,6 +122,19 @@ Validação: `GraphValidator` exige Switch com `then`, Case com `then`+`else`, s
 
 Evolução desejada: **container de serviços por run** (browser, repositórios, emissor de log) alimentado na abertura do run — mesmo padrão de “registrar serviços por módulo” quando existirem assemblies de ação plugáveis. Hoje tudo está inlined em `ActionExecutor` e helpers estáticos.
 
+### Contexto do run
+
+`RunContext` escreve duas variáveis **antes do primeiro nó** e as restaura ao voltar de cada `run_flow`:
+
+| Variável | Valores | Muda quando |
+|----------|---------|-------------|
+| `HoblioRunMode` | `standalone` \| `superflow` | o fluxo é chamado por `run_flow` com `project` (outro projeto) |
+| `HoblioRunDepth` | `0`, `1`, `2`, … | cada vínculo de projeto atravessado |
+
+Subfluxo embutido e arquivo do **mesmo** projeto não mudam o modo: o run continua sendo daquele projeto. As duas são públicas para o grafo (`if`, `switch`, `log`) e **não** precisam constar em `variables` — `TemplateReferenceValidator` as conhece via `BuiltInVariables`, e o Studio as oferece no picker de `{variáveis}`.
+
+Para que serve: um fluxo que termina **bloqueando** (caixa de mensagem) ou que **assume uma tela já aberta** (attach por CDP) consegue ramificar com `if {HoblioRunMode} eq standalone` e continuar silencioso quando é etapa de um superfluxo. Casos concretos: [composicao-superfluxos.md §13](./composicao-superfluxos.md).
+
 ---
 
 ## Fronteiras de código (manter ao crescer)

@@ -6,8 +6,8 @@
       "kind": "start",
       "label": "Start",
       "ui": {
-        "x": -460,
-        "y": 0
+        "x": -290,
+        "y": -180
       }
     },
     {
@@ -17,10 +17,14 @@
       "action": {
         "type": "run_flow",
         "project": "login",
-        "outputs": ["ScreenText", "EprocUrl", "EprocUser"]
+        "outputs": [
+          "ScreenText",
+          "EprocUrl",
+          "EprocUser"
+        ]
       },
       "ui": {
-        "x": -240,
+        "x": -320,
         "y": 0
       }
     },
@@ -34,7 +38,7 @@
         "ignore_case": true
       },
       "ui": {
-        "x": -20,
+        "x": -50,
         "y": 0
       }
     },
@@ -61,7 +65,7 @@
       },
       "ui": {
         "x": 200,
-        "y": 200
+        "y": 230
       }
     },
     {
@@ -76,10 +80,12 @@
           "EprocUrl": "{EprocUrl}",
           "EprocUser": "{EprocUser}"
         },
-        "outputs": ["PetitionNumber"]
+        "outputs": [
+          "PetitionNumber"
+        ]
       },
       "ui": {
-        "x": 420,
+        "x": 590,
         "y": 0
       }
     },
@@ -89,10 +95,10 @@
       "label": "Log protocolo",
       "action": {
         "type": "log",
-        "message": "superfluxo eproc concluido: protocolo {PetitionNumber} na tela `{ScreenText}`"
+        "message": "superfluxo eproc concluido: protocolo {PetitionNumber} na tela \u0060{ScreenText}\u0060"
       },
       "ui": {
-        "x": 660,
+        "x": 880,
         "y": 0
       }
     },
@@ -102,11 +108,11 @@
       "label": "Aviso: tela inesperada (segue)",
       "action": {
         "type": "log",
-        "message": "superfluxo eproc: tela inesperada `{ScreenText}`; seguindo (a guarda do peticionamento decide)"
+        "message": "superfluxo eproc: tela inesperada \u0060{ScreenText}\u0060; seguindo (a guarda do peticionamento decide)"
       },
       "ui": {
         "x": 420,
-        "y": 200
+        "y": 230
       }
     },
     {
@@ -114,17 +120,12 @@
       "kind": "end",
       "label": "End",
       "ui": {
-        "x": 900,
-        "y": 0
+        "x": 880,
+        "y": 150
       }
     }
   ],
   "edges": [
-    {
-      "from": "start",
-      "to": "rf_login",
-      "port": "main"
-    },
     {
       "from": "rf_login",
       "to": "sw_tela",
@@ -141,11 +142,6 @@
       "port": "then"
     },
     {
-      "from": "case_painel",
-      "to": "def_tela",
-      "port": "else"
-    },
-    {
       "from": "def_tela",
       "to": "log_abort",
       "port": "main"
@@ -156,20 +152,44 @@
       "port": "main"
     },
     {
-      "from": "log_ok",
-      "to": "end",
-      "port": "main"
+      "from": "case_painel",
+      "to": "def_tela",
+      "port": "else",
+      "ui": {
+        "targetHandle": "top"
+      }
     },
     {
       "from": "log_abort",
       "to": "rf_peticao",
-      "port": "main"
+      "port": "main",
+      "ui": {
+        "sourceHandle": "top"
+      }
+    },
+    {
+      "from": "start",
+      "to": "rf_login",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
+    },
+    {
+      "from": "log_ok",
+      "to": "end",
+      "port": "main",
+      "ui": {
+        "sourceHandle": "bottom",
+        "targetHandle": "top"
+      }
     }
   ],
   "variables": {
-    "ScreenText": "",
     "EprocUrl": "",
     "EprocUser": "",
-    "PetitionNumber": ""
+    "PetitionNumber": "",
+    "ScreenText": ""
   }
 }

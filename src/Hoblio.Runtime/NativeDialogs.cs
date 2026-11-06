@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
 using Hoblio.Model;
 
 namespace Hoblio.Runtime;
@@ -9,43 +11,59 @@ public sealed record SelectFromListResult(string SelectedItem, string SelectedIn
 
 public static class NativeDialogs
 {
-    /// <summary>Blocks until the user closes the dialog or the optional timeout elapses (same as Hoblio <c>run_show_message</c>).</summary>
+    /// <summary>
+    /// Blocks until the user closes the dialog or the optional timeout elapses (same as Hoblio <c>run_show_message</c>).
+    /// A janela é <see cref="Window.Topmost"/> de propósito: o fluxo costuma terminar com o navegador em
+    /// primeiro plano, e uma caixa não-topmost pode nascer atrás dele — o run ficaria parado invisível.
+    /// </summary>
     public static void RunShowMessage(string title, string text, double? timeoutSeconds)
     {
         RunSta(() =>
         {
+            var message = new TextBlock
+            {
+                Text = text,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 560,
+            };
+            var ok = new Button
+            {
+                Content = "OK",
+                Width = 96,
+                Margin = new Thickness(0, 16, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                IsDefault = true,
+                IsCancel = true,
+            };
+            var panel = new StackPanel { Margin = new Thickness(16) };
+            panel.Children.Add(message);
+            panel.Children.Add(ok);
+
+            var win = new Window
+            {
+                Title = title,
+                Content = panel,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                ResizeMode = ResizeMode.NoResize,
+                Topmost = true,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            };
+            ok.Click += (_, _) => win.Close();
+
+            DispatcherTimer? timer = null;
             if (timeoutSeconds is > 0)
             {
-                var win = new Window
-                {
-                    Title = title,
-                    Width = 420,
-                    Height = 200,
-                    Topmost = true,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Content = new System.Windows.Controls.TextBlock
-                    {
-                        Text = text,
-                        TextWrapping = TextWrapping.Wrap,
-                        Margin = new Thickness(16),
-                    },
-                };
-                var timer = new System.Windows.Threading.DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(timeoutSeconds.Value),
-                };
+                timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timeoutSeconds.Value) };
                 timer.Tick += (_, _) =>
                 {
-                    timer.Stop();
+                    timer!.Stop();
                     win.Close();
                 };
                 timer.Start();
-                win.ShowDialog();
             }
-            else
-            {
-                MessageBox.Show(text, title, MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+
+            win.Closed += (_, _) => timer?.Stop();
+            win.ShowDialog();
         });
     }
 

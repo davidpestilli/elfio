@@ -122,7 +122,7 @@ Resumo do que entrou nesta rodada (paridade funcional com o Hoblio Rust/Tauri pa
 |------|---------|
 | **`browser_navigate`** | Interpolação de `{variáveis}` na URL antes de navegar. |
 | **`BrowserContext`** | Estabilidade pós-navegação, `WaitForSelector`, leituras via element handle, retries quando o contexto CDP é destruído. |
-| **`show_message`** | Diálogo **bloqueante** em thread STA (`RunShowMessage`) — browser permanece até OK (comportamento do Rust). |
+| **`show_message`** | Diálogo **bloqueante** em thread STA (`RunShowMessage`) — browser permanece até OK (comportamento do Rust). Desde a rodada “execução individual” a janela é **topmost** com botão OK (antes, sem `timeout_seconds`, era `MessageBox.Show` e podia nascer atrás do navegador). |
 | **`GraphValidator`** | Várias ações podem escrever na mesma variável de run; removida regra de produtor único. |
 | **Projeto novo** | `DefaultFlow.Create()` — `start: ""`, sem nós (Start/End pela paleta **Utilitários**). |
 | **Exemplo** | `examples/login-eproc/flow.json` sincronizado com o repo Rust (`pick_environment`, HML/PRD, probes com `continue`). |
@@ -200,7 +200,7 @@ Detalhe de interpretação Switch/Case: [construcao/runtime-e-execucao.md](const
 |------|---------|
 | **`examples/superflow-demo`** | Superfluxo que chama `superflow-login` e `superflow-petition` (fluxos principais separados), com `switch` sobre a tela herdada. |
 | **`examples/eproc-superflow` + `examples/eproc-peticionamento`** | Encadeamento real: `login-eproc` (chamado) → peticionamento (chamado). O peticionamento executa as etapas 1–2 de 4 (menu → localidade/rito/área/classe → "Não se aplica" → próxima → filtro de assunto + Enter → seleciona → Incluir → próxima) e para antes de protocolar. Ver [construcao/fluxo-eproc-peticionamento.md](construcao/fluxo-eproc-peticionamento.md). |
-| **`examples/login-eproc`** | Nó final `show_message` → `log`: modal bloqueava qualquer cadeia (ponto de handoff). |
+| **`examples/login-eproc`** | Nó final `show_message` → `log`: modal bloqueava qualquer cadeia (ponto de handoff). A caixa voltou **só no modo individual** — ver a rodada “execução individual” abaixo. |
 | **Testes** | `SuperflowTests` (herança, `isolated`, vínculo ausente, caminho inválido, ciclo, `exports`, JSON, `entry_flow`), `LinkedProjectManifestTests`, `LinkedProjectOpsTests` (caminho relativo, id único, scaffold). |
 
 ### Verificação
@@ -226,6 +226,53 @@ Notas de motor descobertas ao montar o fluxo eproc (valem para qualquer `browser
 | `browser_click` com `wait_for_navigation` | a espera precisa estar **armada antes** do clique — se o clique navegar rápido, escutar depois perde o evento e gasta o timeout inteiro (eram 10 s por clique; corrigido em `BrowserContext.Click`). Use sempre `wait_selector_after` como sinal real |
 | selects encadeados (AJAX) | `browser_set_dropdown` dispara `change`, mas o AJAX do próximo select pode chegar depois: esperar pelo elemento/opção seguinte (`browser_wait_for`) ou, quando a lista é reconstruída com as mesmas opções, `delay` curto |
 
+## Rodada nov/2026 — Execução individual dos fluxos do eproc
+
+Os dois fluxos reais (`login-eproc`, `eproc-peticionamento`) existem **encadeados**. Esta rodada deu a cada um um modo próprio quando rodam sozinhos, sem quebrar a cadeia.
+
+| Camada | Arquivo | Mudança |
+|--------|---------|---------|
+| Modelo | `BuiltInVariables.cs` | `HoblioRunMode` (`standalone` \| `superflow`) e `HoblioRunDepth` — publicadas pelo runtime, não declaradas no `flow.json` |
+| Modelo | `TemplateReferenceValidator.cs` | refs `{HoblioRunMode}` / `{HoblioRunDepth}` válidas sem `variables` |
+| Runtime | `RunContext.cs` | escreve as duas antes do primeiro nó e **restaura** ao voltar de cada `run_flow`; só travessia de projeto vinculado vira `superflow` (subfluxo embutido mantém o modo) |
+| Runtime | `FlowExecutor.cs` | `EnterRoot` no run e `EnterChild` em volta dos dois escopos (`inherit` / `isolated`) |
+| Runtime | `NativeDialogs.cs` | `show_message` sempre **topmost** com botão OK — a caixa não pode ficar atrás do navegador que o fluxo está usando |
+| Studio | `FlowEditorViewModel.TemplateVariables.cs` | as duas variáveis de contexto aparecem no picker de `{variáveis}` |
+| Exemplo | `examples/login-eproc` | `if {HoblioRunMode} eq standalone` → lê `h1` (`#divInfraBarraLocalizacao > div > h1`) + URL → **caixa de mensagem** → end; senão `log` de handoff (comportamento da cadeia) |
+| Exemplo | `examples/eproc-peticionamento` | `if {HoblioRunMode} eq standalone` → `browser_attach_chrome` (`by_url "eproc"`, porta 9222) → caixa de confirmação → guarda do painel (120 s) → `ScreenText` = `h1`; senão vai direto para `rf_abrir` com a sessão herdada |
+| Script | `scripts/start-cdp-browser.ps1` | abre Chrome/Edge com `--remote-debugging-port` **num perfil dedicado** e espera o CDP responder |
+| Runtime | `CdpBrowser.cs` | serviço `Launch` / `IsListening` / `ListTabs`: abre (ou reaproveita) a sessão CDP, reporta abas, PID e o perfil |
+| CLI | `Program.cs` | verbo `browser --engine --port --url --profile` |
+| Studio | `CdpBrowserWindow.xaml` + ribbon + inspector | botão **Navegador → Abrir CDP…**; no nó `browser_attach_*`, atalho **Abrir navegador CDP com esta porta…** já preenchido |
+| Testes | `RunContextTests`, `CdpBrowserTests`, `ExampleBranchingTests` | standalone / superflow / profundidade / restauração / subfluxo embutido; CDP fechado não mente e o launch real roda sob `HOBLIO_BROWSER_TEST=1`; topologia dos ramos dos dois exemplos (porta `then` = individual) |
+
+Regras que ficaram:
+
+1. **O filho decide, não o orquestrador.** Qualquer superfluxo roda o filho em `superflow` sem passar `inputs` de controle — nada de "lembrar de mandar a flag".
+2. **Modo é do projeto, não da profundidade do grafo.** Subfluxo embutido e arquivo do mesmo projeto continuam `standalone`.
+3. **Bloquear é privilégio do modo individual.** Caixa de mensagem no meio de uma cadeia é o defeito que esta rodada removeu de novo (agora protegida por `if`).
+4. **Attach exige CDP explícito.** Navegador aberto "normalmente" não expõe porta de debug, e desde o Chrome/Edge **136** a flag é ignorada no perfil padrão — daí o `CdpBrowser` (botão do Studio / verbo `browser` / script) com `--user-data-dir` próprio.
+5. **Porta de `if` trocada é defeito invisível.** Primeira montagem saiu com `then` → `log` e `else` → caixa (o inverso): o validador aprova, porque as duas portas existem e tudo é alcançável. Só a topologia fixada por teste pega isso — `ExampleBranchingTests` falha quando as portas são invertidas.
+6. **Grafo em memória ≠ arquivo.** Com o projeto aberto no Studio, o que executa/salva é o documento carregado: depois de editar o `flow.json` à mão, reabra o projeto antes de rodar.
+
+### Verificação
+
+```powershell
+dotnet build Hoblio.sln
+dotnet test
+dotnet run --project src/Hoblio.Cli -- validate examples/login-eproc
+dotnet run --project src/Hoblio.Cli -- validate examples/eproc-peticionamento
+dotnet run --project src/Hoblio.Cli -- validate examples/eproc-superflow
+
+# modo individual do peticionamento (sem CDP: falha no nó certo, com a instrução)
+dotnet run --project src/Hoblio.Cli -- run examples/eproc-peticionamento
+
+# abrir a sessão CDP que o modo individual usa
+dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url https://eproc-1g-sp-hml.tjsp.jus.br/
+```
+
+Detalhe de projeto e casos: [construcao/composicao-superfluxos.md §13](construcao/composicao-superfluxos.md).
+
 ## Projetos de fluxo
 
 Os demos ficam em `examples/` (mesmo JSON do [Hoblio Rust](https://github.com/davidpestilli/hoblio)). Variável opcional `HOBLIO_EXAMPLES_ROOT` para apontar outra pasta.
@@ -237,6 +284,7 @@ Padrões do login eproc (subfluxo de ambiente, `{EprocUrl}`, probes com `continu
 | Variável | Uso |
 |----------|-----|
 | `HOBLIO_CHROME_PATH` | Executável Chromium |
-| `HOBLIO_BROWSER_TEST=1` | Habilita teste de navegação local |
+| `HOBLIO_BROWSER_TEST=1` | Habilita os testes com navegador real (navegação local e launch CDP) |
+| `HOBLIO_BROWSER_DEBUG_PORT` / `HOBLIO_BROWSER_DEBUG_URL` | Endpoint CDP para `browser_attach_*` diferente do padrão 9222/9223/9333 |
 | `HOBLIO_DEBUG=1` | Stack trace completa na CLI |
 | `HOBLIO_EXAMPLES_ROOT` | Pasta base dos exemplos nos testes |

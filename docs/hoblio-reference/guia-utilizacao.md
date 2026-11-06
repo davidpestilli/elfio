@@ -110,7 +110,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\eval-flow-control.ps
 
 | Ação | Parâmetros |
 |------|------------|
-| `show_message` | `title`, `text`, `timeout_seconds` (opcional) |
+| `show_message` | `title`, `text`, `timeout_seconds` (opcional) — janela **topmost** que segura o run até o OK |
 | `show_get_user_input` | `title`, `message`, `default_value?`, `input_kind?`, `topmost?`, `user_input_variable`, `button_pressed_variable` |
 | `show_select_from_list` | `title`, `message`, `list`, `topmost?`, `limit_to_list?`, `allow_empty_selection?`, `allow_multiple_selections?`, `selected_item_variable`, `selected_index_variable`, `button_pressed_variable` |
 
@@ -130,11 +130,22 @@ Nós de ação podem ter **`error_handling`**: `retry_count`, `retry_delay_ms`, 
 
 **Variáveis:** objeto `variables` no `flow.json` ou painel do Studio; `{nome}` em `log`, `file_write`, `file_append`, `browser_fill`, `show_message`, `set_variable`, etc.
 
+**Variáveis publicadas pelo runtime** (não declaradas no `flow.json`, reescritas a cada `run_flow`):
+
+| Variável | Valores | Para quê |
+|----------|---------|----------|
+| `{HoblioRunMode}` | `standalone` \| `superflow` | o fluxo sabe se foi iniciado pelo usuário ou se é etapa de um superfluxo |
+| `{HoblioRunDepth}` | `0`, `1`, `2`… | quantos vínculos de projeto já foram atravessados |
+
+Uso típico: fechar um fluxo que só pode **bloquear** (caixa de mensagem) ou que **assume uma tela já aberta** (attach por CDP) apenas quando roda sozinho — dentro de um superfluxo o mesmo fluxo continua sem parar. Ver [composição de superfluxos §13](../construcao/composicao-superfluxos.md).
+
 Após **Run**, nós que **produzem** variáveis (`show_get_user_input`, `show_select_from_list`, `browser_get_text`, …) exibem **Last run values** no painel Properties (antes de *On error*).
 
 Detalhes do exemplo eproc (lista de ambiente, probes `detect_screen`): [notas-release-2026-11-05.md](../construcao/notas-release-2026-11-05.md).
 
 **Chrome / Edge:** detecção automática no Windows; `HOBLIO_CHROME_PATH`. Anexar: `HOBLIO_BROWSER_DEBUG_PORT` ou `HOBLIO_BROWSER_DEBUG_URL`.
+
+Para abrir o navegador já com CDP (perfil dedicado, porta 9222, espera o endpoint): **Studio → Navegador → Abrir CDP…** no ribbon, `dotnet run --project src/Hoblio.Cli -- browser --port 9222 --url <url>` na CLI, ou `pwsh scripts/start-cdp-browser.ps1 -Url <url>` sem build. É o pré-requisito do modo individual de um fluxo que assume uma tela aberta — ver [composição de superfluxos §13](../construcao/composicao-superfluxos.md).
 
 ---
 
