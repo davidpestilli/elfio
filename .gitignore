@@ -8,3 +8,6 @@ reports/
 examples/**/output/*
 !examples/**/output/.gitkeep
 !examples/**/output/.gitignore
+
+# rascunho de investigacao (sondas, dumps de DOM, capturas de tela)
+/output/
