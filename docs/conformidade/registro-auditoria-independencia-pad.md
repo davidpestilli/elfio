@@ -2,11 +2,19 @@
 
 Documento de **memória operacional** para análises futuras de plágio/cópia ilegal. Objetivo: registrar **o que já foi verificado** no repositório Elfio (implementação C# **Hoblio**) em relação ao estudo de engenharia reversa em `E:\Projetos\PAD-Engenharia-Reversa`.
 
-**Última rodada (completa + incremental):** 2026-11-05 (UTC-3)  
-**Commit Elfio de referência:** `6c999698271fc311cbb1da2f4983cc6fe38cc21e` — *Add PAD Variables module with demo, Studio panel, and gap docs.*  
-**Baseline anterior:** `b0c0a7da` (primeira rodada completa no mesmo dia).
+**Última auditoria incremental:** 2026-11-06 (UTC-3)  
+**Commit analisado (código):** `39eac80b2d6be84f3310c30da82e81f52f5add3a` — *Add HTTP REST, PDF, and LLM completion actions.*  
+*(Conteúdo desta página formaliza essa rodada: contagens, diff `a15bf99..39eac80`, mapeamento de módulos. O hash Git do commit que altera apenas este ficheiro consta em `git log -- docs/conformidade/registro-auditoria-independencia-pad.md`.)*
 
-**Remediação Word (este commit):** removida em `WordContext.cs` a regex de intervalo de páginas **byte-a-byte igual** ao `ldstr` de `WordOperationsFacade` (PAD); substituída por `ParsePageRangeSpec` (parser próprio, mesma gramática `1, 3-5`).
+**Baselines de diff úteis:**
+
+| Intervalo | O quê |
+|-----------|--------|
+| `b0c0a7da` → `6c99969` | Primeiro grande incremento (Variáveis, Word, WebAutomation modular, …) |
+| `a15bf99` → `39eac80` | **Última rodada formal** (HTTP/REST genérico, PDF PdfPig, LLM, composição de projetos) |
+| `a15bf99` | Remediação Word: regex de páginas substituída por `ParsePageRangeSpec` (não copiar literal IL PAD) |
+
+**Histórico breve:** 2026-11-05 — primeira varredura completa e módulos PAD-style; commit `a15bf99` removeu a única cópia literal confirmada (regex Word) e consolidou este registro.
 
 ---
 
@@ -14,19 +22,19 @@ Documento de **memória operacional** para análises futuras de plágio/cópia i
 
 ### 1.1 Incluído (código e dados do produto)
 
-| Área | Arquivos | Qtd. (2026-11-05 pós-módulos) |
-|------|----------|----------------------------------|
-| `src/Hoblio.Model` | `.cs` | 37 |
-| `src/Hoblio.Runtime` | `.cs`, `.xaml` | 32 |
-| `src/Hoblio.Serde` | `.cs` | 4 |
+| Área | Arquivos | Qtd. (HEAD `39eac80`, 2026-11-06) |
+|------|----------|-------------------------------------|
+| `src/Hoblio.Model` | `.cs` | 42 |
+| `src/Hoblio.Runtime` | `.cs`, `.xaml` | 33 |
+| `src/Hoblio.Serde` | `.cs` | 5 |
 | `src/Hoblio.Cli` | `.cs` | 1 |
-| `src/Hoblio.Studio` | `.cs`, `.xaml` (exceto `flow-canvas/`) | 70 |
+| `src/Hoblio.Studio` | `.cs`, `.xaml` (exceto `flow-canvas/`) | 75 |
 | `src/Hoblio.Studio/flow-canvas/src` | `.ts`, `.tsx`, `.css` | 14 |
-| `tests/**` | `.cs` | 31 |
+| `tests/**` | `.cs` | 37 |
 | `scripts/**` | `.ps1`, `.py` | 7 |
-| `examples/**` | `flow.json`, `manifest.json` | 30 |
+| `examples/**` | `flow.json`, `manifest.json` | 40 |
 
-**Total:** 226 artefatos de produto (sem `bin/`, `obj/`, `node_modules/`, `dist/`, `.hoblio/`).
+**Total:** 254 artefatos de produto; **207** ficheiros `.cs`/`.tsx`/`.ts`/`.xaml` na varredura anti-plágio (sem `bin/`, `obj/`, `node_modules/`, `dist/`, `.hoblio/`).
 
 ### 1.2 Excluído
 
@@ -38,7 +46,7 @@ Documento de **memória operacional** para análises futuras de plágio/cópia i
 - Repositório: `E:\Projetos\PAD-Engenharia-Reversa`
 - Metodologia: [GUIA-METODOLOGIA-E-FERRAMENTAS.md](file:///E:/Projetos/PAD-Engenharia-Reversa/docs/GUIA-METODOLOGIA-E-FERRAMENTAS.md)
 - Artefatos na comparação automatizada: **165** ficheiros (`*_decompiled*`, `*types-public*`, `*robin*symbols*`, `ActionFullNames*`)
-- Pastas cruzadas na rodada incremental: `01-Automacao-Navegador`, `03-Variaveis`, `07-Excel`, `26-Word`
+- Pastas cruzadas em auditorias anteriores: `01-Automacao-Navegador`, `03-Variaveis`, `07-Excel`, `26-Word`; rodada 2026-11-06 também considerou `17-PDF`, `20-HTTP-Web` e `18-Runtime-e-Modulos-SDK` (composição) pelo **tipo** de funcionalidade nova
 
 ---
 
@@ -66,6 +74,17 @@ Documento de **memória operacional** para análises futuras de plágio/cópia i
 
 **Diff incremental analisado:** 84 ficheiros `.cs` + 4 `.xaml` em `src/` e `tests/`; 0 strings longas PAD, 0 linhas normalizadas idênticas.
 
+### 3.1 Rodada 2026-11-06 (`a15bf99` → `39eac80`)
+
+| Sistema | Ficheiros principais | Baseline PAD (estudo) | Resultado |
+|---------|----------------------|------------------------|-----------|
+| **HTTP / REST** (`http_request`, extensão de `http_get`) | `ActionKind`, `ActionExecutor`, `ActionCatalog`, testes `HttpRequest*` | `20-HTTP-Web` | **Sem** `ldstr`/linhas IL coincidentes; `HttpClient` / JSON genérico |
+| **LLM (completion)** | `LlmCompletionAction`, executor, testes `LlmCompletion*` | *(não mapeado 1:1 em folder)* | **Sem** strings longas PAD; POST + corpo JSON (MIME `application/json` — literal também comum em qualquer cliente HTTP, **não** evidência de cópia) |
+| **PDF** | `PdfContext` (**UglyToad.PdfPig**), `PdfAction*`, paleta Studio, testes `Pdf*` | `17-PDF` | **Sem** cópia de IL; dependência NuGet OSS |
+| **Composição / superfluxos** | `LinkedProjectValidator`, `ChildFlowResolver`, `ProjectLoader`, `LinkedProjectOps`, testes | `02`, `18` (conceito fluxo/manifest) | Lógica **JSON/manifest** própria; 0 linhas vs `FlowGraphBuilder` IL |
+
+**Diff:** 44 paths em `src/` + `tests/` (`.cs`/`.xaml`); 25 paths em `docs/`, `examples/`, `scripts/` (sem impacto em copiar-colar de código PAD).
+
 ---
 
 ## 4. Resultados consolidados (estado atual)
@@ -74,12 +93,14 @@ Documento de **memória operacional** para análises futuras de plágio/cópia i
 |-------------|-----------|
 | Referências `Microsoft.Flow` / `Robin` / `PAD` / `PowerAutomate` no código | **1** — comentário XML em `RunVariables.cs` (“alinhado ao PAD”); **não** é código Microsoft |
 | Strings literais longas (≥24) do PAD no código | **0** (limitação: literais com `\` exigem varredura `ldstr`; ver abaixo) |
-| Literais `ldstr` PAD (Word/Excel/Variáveis/Navegador, len≥20, excl. nomes de ação) vs Elfio | **0** após remediação da regex de páginas |
-| Linhas normalizadas idênticas (C# vs IL) | **0** |
+| Literais `ldstr` PAD (dumps `_decompiled`, len≥20) vs Elfio completo | **0** (HEAD `39eac80`) |
+| Literais `ldstr` no diff `a15bf99..39eac80` (ficheiros `.cs` tocados, len≥16) vs PAD | **1** — `application/json` (MIME padrão; não específico de PAD) |
+| Literais `ldstr` PAD vs Elfio (incremento 2026-11-06, len≥20) | **0** |
+| Linhas normalizadas idênticas (C# vs IL) — repo completo e diff incremental | **0** |
 | Sobreposição de nome simples de **tipo** PAD vs tipos Elfio | **9** — apenas classes estáticas de enum/vocabulário em `VariablesEnums.cs` / `WordEnums.cs` (ex.: `MergeMode`, `InsertImageMode`), **não** classes de ação PAD |
-| Ficheiros Elfio escaneados | **189** (`.cs`/`.tsx`/`.ts`/`.xaml`) |
+| Ficheiros Elfio escaneados | **207** (`.cs`/`.tsx`/`.ts`/`.xaml`) |
 
-**Conclusão:** não há indício de copiar-colar sistemático de código PAD. O único trecho identificado como **cópia literal** (regex de páginas Word) foi **substituído** nesta sessão de auditoria.
+**Conclusão:** não há indício de copiar-colar sistemático de código PAD. O único trecho já identificado como **cópia literal** (regex de páginas Word) foi **removido** em `a15bf99`. O incremento HTTP/PDF/LLM/superfluxos **não** acrescentou novas correspondências com IL ou literais longos suspeitos.
 
 ---
 
@@ -91,14 +112,15 @@ Documento de **memória operacional** para análises futuras de plágio/cópia i
 | `*PaletteCatalog.cs` | Keywords de busca na paleta |
 | `VariablesEnums.cs` | Comentários referenciando nomes PAD (`MergeMode.AddExtraColumns`, …) |
 | `manifest.json` / `module_references` | Nomes de capacidade (`WebAutomation`, `Excel`, `Variables`, `Word`) |
+| `PdfActionTypes.cs` (`ModuleActionIds`) | Ex.: `ExtractTextFromPDF`, `MergePDFFiles` — rótulos alinhados ao grupo PDF PAD |
 
-Implementações distintas: PuppeteerSharp + CDP (browser); COM Excel/Word próprio; variáveis/datatable em JSON (`FlowTable`); **sem** Robin, `ModuleManager`, extensão CRX PAD.
+Implementações distintas: PuppeteerSharp + CDP (browser); COM Excel/Word próprio; variáveis/datatable em JSON (`FlowTable`); PDF via **PdfPig**; HTTP/LLM via **`HttpClient`**; **sem** Robin, `ModuleManager`, extensão CRX PAD.
 
 ---
 
 ## 6. Documentação (`docs/**`)
 
-- Novos: `modulo-variaveis.md`, `modulo-word.md`, `modulo-excel.md`, `modulo-web-automation.md`, `notas-release-2026-11-05.md`.
+- Novos (até `39eac80`): `modulo-variaveis.md`, `modulo-word.md`, `modulo-excel.md`, `modulo-web-automation.md`, `modulo-http.md`, `modulo-pdf.md`, `modulo-llm.md`, `composicao-superfluxos.md`, `fluxo-eproc-peticionamento.md`, `notas-release-2026-11-05.md`.
 - **Verificado:** sem linhas `IL_xxxx:`, sem anexos de decompilação PAD.
 - Menções a gaps/paridade PAD são **produto**, não código incorporado.
 
@@ -112,7 +134,10 @@ Implementações distintas: PuppeteerSharp + CDP (browser); COM Excel/Word próp
 | 03 Variaveis | `variables_*`, `FlowTable`, listas | Verificado |
 | 07 Excel | `excel_*`, `ExcelContext` | Verificado |
 | 26 Word | `word_*`, `WordContext` | Verificado + regex remediada |
-| 08–25, 27–38 (exc. 29 parcial) | Não implementado ou só subconjunto anterior | N/A ou já coberto |
+| 17 PDF | `pdf_*`, `PdfContext` (PdfPig) | Verificado (`39eac80`) |
+| 20 HTTP-Web | `http_get`, `http_request`, LLM POST | Verificado (`39eac80`) — não é o mesmo pipeline que módulos REST/SOAP PAD |
+| 18 Runtime/manifest | `linked_projects`, `ChildFlowResolver` | Verificado (`39eac80`) |
+| 08–16, 19–23, 25, 27–38 (exc. cobertos acima) | Parcial ou não | N/A ou já coberto em rodadas anteriores |
 
 Demais linhas da rodada `b0c0a7da` (condicionais, loops, ficheiros, runtime grafo, etc.) **permanecem verificadas**; código base não revertido.
 
@@ -120,9 +145,9 @@ Demais linhas da rodada `b0c0a7da` (condicionais, loops, ficheiros, runtime graf
 
 ## 8. Próximas auditorias (incremental)
 
-1. `git diff a15bf99..HEAD --name-only -- src/ tests/ scripts/ examples/`
-2. Reexecutar §9 (incluir bloco `ldstr` para módulos COM/regex).
-3. Próximo baseline incremental: commit que inclui remediação Word + este registro (HEAD após merge).
+1. `git diff 39eac80..HEAD --name-only -- src/ tests/ scripts/ examples/`
+2. Reexecutar §9 (incluir bloco `ldstr` para módulos COM/regex e novos módulos HTTP/PDF).
+3. Se o diff apenas adicionar vocabulário `action_id` / docs, revisão manual rápida basta; se houver parsing pesado (regex, protocolo binário), reforçar passo `ldstr`.
 
 ---
 
@@ -158,7 +183,7 @@ Write-Host "Microsoft.Flow/Robin/PAD refs: $($msHits.Count)"
 if ($ldstrHits) { $ldstrHits | Sort-Object -Unique }
 ```
 
-Resultado esperado **após remediação Word:** `ldstr` hits **0** (podem persistir hits curtos de nomes de ação em `*ActionTypes.cs` — vocabulário intencional).
+Resultado esperado no **repo completo:** `ldstr` hits len≥20 **0** (podem surgir literais curtos genéricos como `application/json` ao comparar só o diff — filtrar por contexto). Nomes de ação em `*ActionTypes.cs` são vocabulário intencional, não cópia de implementação.
 
 ---
 
@@ -169,6 +194,9 @@ Resultado esperado **após remediação Word:** `ldstr` hits **0** (podem persis
 | 2026-11-05 | `b0c0a7da` | Primeira varredura completa (178 artefatos) |
 | 2026-11-05 | `6c99969` | Incremental: Variáveis, Word, WebAutomation modular, Excel/Studio; revarredura total 226 artefatos |
 | 2026-11-05 | `a15bf99` | Remediação regex Word + atualização deste registro |
+| 2026-11-05 | `c1d2e1f` | Registo do hash `a15bf99` no histórico deste documento |
+| 2026-11-06 | `39eac80` | HTTP REST, PDF (PdfPig), LLM completion, composição de projetos; auditoria incremental `a15bf99..39eac80` sem cópia IL |
+| 2026-11-06 | *(doc)* | Commit seguinte: formalização deste registro para a rodada `39eac80` |
 
 ---
 
@@ -183,5 +211,13 @@ Resultado esperado **após remediação Word:** `ldstr` hits **0** (podem persis
 - **Tests:** `*CoverageTests.cs`, `VariablesBehaviorTests.cs`, `ChromiumPageSelectionTests.cs`, `PaletteCatalogStructureTests.cs`, …
 
 Gerar lista atualizada: `git diff b0c0a7da..6c99969 --name-only -- src/ tests/`
+
+</details>
+
+<details>
+<summary>Incremento <code>a15bf99</code> → <code>39eac80</code> (2026-11-06)</summary>
+
+- **Diff código:** `git diff a15bf99..39eac80 --name-only -- src/ tests/` → 44 paths (novos: `PdfContext`, `PdfAction*`, `LinkedProjectValidator`, `LinkedProjectOps`, testes HTTP/PDF/LLM/superflow, …).
+- **Diff docs/exemplos/scripts:** 25 paths (`modulo-http.md`, `modulo-pdf.md`, `modulo-llm.md`, `composicao-superfluxos.md`, exemplos `superflow-*`, `eproc-*`, …).
 
 </details>
