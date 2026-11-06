@@ -53,4 +53,11 @@ public static class WebAutomationEnums
         public const string ByTitle = "by_title";
         public const string Foreground = "foreground";
     }
+
+    /// <summary>Como reagir a um <c>confirm()</c>/<c>alert()</c> aberto pela página durante o clique.</summary>
+    public static class DialogAction
+    {
+        public const string Accept = "accept";
+        public const string Dismiss = "dismiss";
+    }
 }

@@ -18,6 +18,12 @@ public sealed class WebAutomationAction : ActionKind
     public string? WaitSelectorAfter { get; init; }
     public ulong? WaitAfterTimeoutMs { get; init; }
 
+    /// <summary>
+    /// <c>accept</c> ou <c>dismiss</c>: responde automaticamente ao <c>confirm()</c>/<c>alert()</c>
+    /// que a página abrir durante o clique. Sem isso o clique trava até alguém fechar o diálogo.
+    /// </summary>
+    public string? DialogAction { get; init; }
+
     public string? Text { get; init; }
     public string? PopulateMode { get; init; }
     public bool? WaitVisible { get; init; }

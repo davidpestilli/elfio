@@ -7,7 +7,7 @@ public sealed class WebAutomationActionCoverageTests
     [Fact]
     public void All_palette_types_have_module_action_id()
     {
-        Assert.Equal(29, WebAutomationActionTypes.All.Count);
+        Assert.Equal(31, WebAutomationActionTypes.All.Count);
         foreach (var type in WebAutomationActionTypes.All)
         {
             Assert.True(WebAutomationActionTypes.IsWebAutomationType(type));

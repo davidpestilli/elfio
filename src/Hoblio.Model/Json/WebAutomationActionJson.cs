@@ -21,6 +21,7 @@ static class WebAutomationActionJson
             WaitForNavigation = GetBool(root, "wait_for_navigation"),
             WaitSelectorAfter = GetString(root, "wait_selector_after"),
             WaitAfterTimeoutMs = GetUInt64(root, "wait_after_timeout_ms"),
+            DialogAction = GetString(root, "dialog_action"),
             Text = GetString(root, "text"),
             PopulateMode = GetString(root, "populate_mode"),
             WaitVisible = GetBool(root, "wait_visible"),
@@ -49,6 +50,7 @@ static class WebAutomationActionJson
         WriteOptionalBool(writer, "wait_for_navigation", a.WaitForNavigation);
         WriteOptionalString(writer, "wait_selector_after", a.WaitSelectorAfter);
         WriteOptionalUInt64(writer, "wait_after_timeout_ms", a.WaitAfterTimeoutMs);
+        WriteOptionalString(writer, "dialog_action", a.DialogAction);
         WriteOptionalString(writer, "text", a.Text);
         WriteOptionalString(writer, "populate_mode", a.PopulateMode);
         WriteOptionalBool(writer, "wait_visible", a.WaitVisible);

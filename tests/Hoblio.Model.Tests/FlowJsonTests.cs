@@ -56,4 +56,34 @@ public class FlowJsonTests
         var back = JsonSerializer.Serialize(action, HoblioJson.Options);
         Assert.Contains("browser_get_text", back);
     }
+
+    [Fact]
+    public void Action_roundtrip_browser_upload()
+    {
+        var json = """{"type":"browser_upload","selector":"input[type=file]","path":"docs/peticao.pdf","timeout_ms":20000}""";
+        var action = JsonSerializer.Deserialize<ActionKind>(json, HoblioJson.Options);
+        var web = Assert.IsType<WebAutomationAction>(action);
+        Assert.Equal(WebAutomationActionTypes.Upload, web.Operation);
+        Assert.Equal("input[type=file]", web.Selector);
+        Assert.Equal("docs/peticao.pdf", web.Path);
+        Assert.Equal(20000ul, web.TimeoutMs);
+        Assert.True(WebAutomationActionTypes.IsWebAutomationType(WebAutomationActionTypes.Upload));
+        var back = JsonSerializer.Serialize(action, HoblioJson.Options);
+        Assert.Contains("browser_upload", back);
+        Assert.Contains("docs/peticao.pdf", back);
+    }
+
+    [Fact]
+    public void Action_roundtrip_switch_page_and_dialog_action()
+    {
+        var json = """{"type":"browser_switch_page","url":"digitar_documento","timeout_ms":30000}""";
+        var switchPage = Assert.IsType<WebAutomationAction>(JsonSerializer.Deserialize<ActionKind>(json, HoblioJson.Options));
+        Assert.Equal(WebAutomationActionTypes.SwitchPage, switchPage.Operation);
+        Assert.Equal("digitar_documento", switchPage.Url);
+
+        var clickJson = """{"type":"browser_click","selector":"#btnSalvar","dialog_action":"accept"}""";
+        var click = Assert.IsType<WebAutomationAction>(JsonSerializer.Deserialize<ActionKind>(clickJson, HoblioJson.Options));
+        Assert.Equal(WebAutomationEnums.DialogAction.Accept, click.DialogAction);
+        Assert.Contains("dialog_action", JsonSerializer.Serialize(click, HoblioJson.Options));
+    }
 }

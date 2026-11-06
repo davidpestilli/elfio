@@ -52,7 +52,8 @@ public sealed partial class BrowserContext
                 action.TimeoutMs,
                 action.WaitForNavigation ?? false,
                 action.WaitSelectorAfter,
-                action.WaitAfterTimeoutMs),
+                action.WaitAfterTimeoutMs,
+                action.DialogAction),
             WebAutomationActionTypes.ClickDownload => ClickDownload(
                 RequireSelector(action, vars),
                 ResolvePath(OptionalTemplate(action.Path, vars) ?? "output/download", projectRoot),
@@ -107,6 +108,10 @@ public sealed partial class BrowserContext
                 RunVariables.Interpolate(action.DropdownValue ?? "", vars),
                 action.TimeoutMs),
             WebAutomationActionTypes.PressButton => PressButton(RequireSelector(action, vars), action.TimeoutMs),
+            WebAutomationActionTypes.Upload => UploadFile(
+                RequireSelector(action, vars),
+                ResolvePath(RequireTemplate(action.Path, vars, "path"), projectRoot),
+                action.TimeoutMs),
             WebAutomationActionTypes.Hover => Hover(RequireSelector(action, vars), action.TimeoutMs),
             WebAutomationActionTypes.ExecuteScript => ExecuteScript(
                 RunVariables.Interpolate(action.Script ?? "", vars),
@@ -118,6 +123,7 @@ public sealed partial class BrowserContext
             WebAutomationActionTypes.Reload => Reload(action.TimeoutMs),
             WebAutomationActionTypes.Back => HistoryNav(back: true, action.TimeoutMs),
             WebAutomationActionTypes.Forward => HistoryNav(back: false, action.TimeoutMs),
+            WebAutomationActionTypes.SwitchPage => SwitchPage(OptionalTemplate(action.Url, vars), action.TimeoutMs),
             _ => throw new NotImplementedException(
                 $"Web automation `{WebAutomationActionTypes.ModuleActionId(action.Type)}` não implementada."),
         };
@@ -262,22 +268,30 @@ public sealed partial class BrowserContext
 
     static bool EvaluateWaitContent(IPage page, string mode, string text, string? selector)
     {
-        return mode switch
+        try
         {
-            WebAutomationEnums.WaitContentMode.ContainsText =>
-                page.EvaluateFunctionAsync<bool>(
-                    "(t) => document.body && (document.body.innerText || '').includes(t)", text)
-                    .GetAwaiter().GetResult(),
-            WebAutomationEnums.WaitContentMode.NotContainsText =>
-                !page.EvaluateFunctionAsync<bool>(
-                    "(t) => document.body && (document.body.innerText || '').includes(t)", text)
-                    .GetAwaiter().GetResult(),
-            WebAutomationEnums.WaitContentMode.ContainsElement when !string.IsNullOrWhiteSpace(selector) =>
-                page.QuerySelectorAsync(selector).GetAwaiter().GetResult() is not null,
-            WebAutomationEnums.WaitContentMode.NotContainsElement when !string.IsNullOrWhiteSpace(selector) =>
-                page.QuerySelectorAsync(selector).GetAwaiter().GetResult() is null,
-            _ => throw new InvalidOperationException($"unknown wait_content_mode `{mode}`"),
-        };
+            return mode switch
+            {
+                WebAutomationEnums.WaitContentMode.ContainsText =>
+                    page.EvaluateFunctionAsync<bool>(
+                        "(t) => document.body && (document.body.innerText || '').includes(t)", text)
+                        .GetAwaiter().GetResult(),
+                WebAutomationEnums.WaitContentMode.NotContainsText =>
+                    !page.EvaluateFunctionAsync<bool>(
+                        "(t) => document.body && (document.body.innerText || '').includes(t)", text)
+                        .GetAwaiter().GetResult(),
+                WebAutomationEnums.WaitContentMode.ContainsElement when !string.IsNullOrWhiteSpace(selector) =>
+                    page.QuerySelectorAsync(selector).GetAwaiter().GetResult() is not null,
+                WebAutomationEnums.WaitContentMode.NotContainsElement when !string.IsNullOrWhiteSpace(selector) =>
+                    page.QuerySelectorAsync(selector).GetAwaiter().GetResult() is null,
+                _ => throw new InvalidOperationException($"unknown wait_content_mode `{mode}`"),
+            };
+        }
+        catch (Exception ex) when (IsTransientBrowserError(ex))
+        {
+            // página navegando/reavaliando: a condição ainda não está satisfeita; o poll tenta de novo.
+            return false;
+        }
     }
 
     public string GetPageDetails(string detail, string? variable, RunVariables vars)
@@ -381,6 +395,26 @@ public sealed partial class BrowserContext
         return $"browser_select_radio: {selector}";
     }
 
+    /// <summary>
+    /// Envia um arquivo local para um <c>input[type=file]</c> via CDP (DOM.setFileInputFiles).
+    /// Funciona com uploaders JS (FineUploader/qq-uploader, Dropzone, …) porque o navegador dispara
+    /// <c>input</c>/<c>change</c> como se o usuário tivesse escolhido o arquivo.
+    /// </summary>
+    public string UploadFile(string selector, string path, ulong? timeoutMs)
+    {
+        var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
+        var full = Path.GetFullPath(path);
+        if (!File.Exists(full))
+            throw new FileNotFoundException($"browser_upload: arquivo nao encontrado `{full}`");
+
+        RunWithTransientRetry(() =>
+        {
+            var handle = WaitForSelectorAsync(RequirePage(), selector, timeout).GetAwaiter().GetResult();
+            handle.UploadFileAsync(full).GetAwaiter().GetResult();
+        });
+        return $"browser_upload: {selector} <- {full}";
+    }
+
     public string SetDropdown(string selector, string mode, string value, ulong? timeoutMs)
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
@@ -409,7 +443,43 @@ public sealed partial class BrowserContext
         return $"browser_set_dropdown: {selector} ({mode}={value})";
     }
 
-    public string PressButton(string selector, ulong? timeoutMs) => Click(selector, timeoutMs, false, null, null);
+    public string PressButton(string selector, ulong? timeoutMs) => Click(selector, timeoutMs, false, null, null, null);
+
+    /// <summary>
+    /// Troca a página ativa para outra janela/aba do mesmo navegador (popup aberto por
+    /// <c>window.open</c>). Casa por trecho de URL; sem <paramref name="urlMatch"/> pega a
+    /// primeira página diferente da atual. Use de novo para voltar à página original.
+    /// </summary>
+    public string SwitchPage(string? urlMatch, ulong? timeoutMs)
+    {
+        var browser = _browser ?? RequirePage().Browser;
+        var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeout);
+        var vistas = new List<string>();
+        while (DateTime.UtcNow < deadline)
+        {
+            var pages = browser.PagesAsync().GetAwaiter().GetResult();
+            foreach (var page in pages)
+            {
+                if (ReferenceEquals(page, _page))
+                    continue;
+                string url;
+                try { url = page.Url ?? ""; }
+                catch { continue; } // alvo fechado no meio do caminho
+                if (url.Length == 0 || url == "about:blank")
+                    continue;
+                if (!vistas.Contains(url))
+                    vistas.Add(url);
+                if (urlMatch is not null && !url.Contains(urlMatch, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                _page = page;
+                return $"browser_switch_page: {url}";
+            }
+            Thread.Sleep(200);
+        }
+        var encontradas = vistas.Count == 0 ? "nenhuma outra pagina" : string.Join(" | ", vistas);
+        throw new TimeoutException($"browser_switch_page: nenhuma pagina casando `{urlMatch}` em {timeout}ms ({encontradas})");
+    }
 
     public string Hover(string selector, ulong? timeoutMs)
     {

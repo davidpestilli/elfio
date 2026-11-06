@@ -124,6 +124,19 @@ static class WebAutomationActionDefaults
                 Operation = type,
                 Path = "output/web-screenshot.png",
             },
+            WebAutomationActionTypes.Upload => new WebAutomationAction
+            {
+                Operation = type,
+                Selector = "input[type=file]",
+                Path = "",
+                TimeoutMs = 20_000,
+            },
+            WebAutomationActionTypes.SwitchPage => new WebAutomationAction
+            {
+                Operation = type,
+                Url = "",
+                TimeoutMs = 60_000,
+            },
             WebAutomationActionTypes.ExtractTable => new WebAutomationAction
             {
                 Operation = type,

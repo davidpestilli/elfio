@@ -1,3 +1,4 @@
+using Hoblio.Model;
 using PuppeteerSharp;
 
 namespace Hoblio.Runtime;
@@ -44,23 +45,79 @@ public sealed partial class BrowserContext : IDisposable
         return $"browser_navigate: {url} (title=\"{title}\")";
     }
 
-    public string Click(string selector, ulong? timeoutMs, bool waitForNavigation, string? waitSelectorAfter, ulong? waitAfterTimeoutMs)
+    public string Click(
+        string selector,
+        ulong? timeoutMs,
+        bool waitForNavigation,
+        string? waitSelectorAfter,
+        ulong? waitAfterTimeoutMs,
+        string? dialogAction = null)
     {
         var timeout = (int)(timeoutMs ?? DefaultTimeoutMs);
         var page = RequirePage();
-        RunWithTransientRetry(() =>
-        {
-            WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
-            page.ClickAsync(selector).GetAwaiter().GetResult();
-            if (waitForNavigation)
-            {
-                WaitForNavigationAsync(page, timeout).GetAwaiter().GetResult();
-                WaitForDomStableAsync(page, Math.Min(timeout, 8000)).GetAwaiter().GetResult();
-            }
 
-            if (waitSelectorAfter is not null)
-                WaitForSelectorAsync(page, waitSelectorAfter, (int)(waitAfterTimeoutMs ?? (ulong)timeout)).GetAwaiter().GetResult();
-        });
+        // resposta automática ao confirm()/alert() que o clique abrir (o renderer trava até isso).
+        EventHandler<DialogEventArgs>? onDialog = null;
+        if (!string.IsNullOrWhiteSpace(dialogAction))
+        {
+            var dismiss = string.Equals(dialogAction.Trim(), WebAutomationEnums.DialogAction.Dismiss, StringComparison.OrdinalIgnoreCase);
+            onDialog = (_, e) =>
+            {
+                // fire-and-forget: o handler roda no loop do CDP e precisa devolver o controle.
+                try
+                {
+                    if (dismiss) _ = e.Dialog.Dismiss();
+                    else _ = e.Dialog.Accept();
+                }
+                catch
+                {
+                    // diálogo já fechado/descartado
+                }
+            };
+            page.Dialog += onDialog;
+        }
+
+        try
+        {
+            RunWithTransientRetry(() =>
+            {
+                WaitForSelectorAsync(page, selector, timeout).GetAwaiter().GetResult();
+
+                // A espera pela navegação precisa estar ARMADA antes do clique: se o clique
+                // navegar rápido (é o caso do eproc), o evento chega antes de alguém escutar,
+                // e o `wait_for_navigation` gastaria o timeout inteiro esperando um evento
+                // que já passou.
+                Task? navTask = waitForNavigation ? WaitForNavigationAsync(page, timeout) : null;
+
+                try
+                {
+                    page.ClickAsync(selector).GetAwaiter().GetResult();
+                    if (navTask is not null)
+                        navTask.GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    // não deixa a task de navegação pendente virar exceção não observada
+                    if (navTask is not null && !navTask.IsCompleted)
+                        _ = navTask.ContinueWith(t => _ = t.Exception, TaskScheduler.Default);
+                    throw;
+                }
+
+                if (waitForNavigation)
+                    WaitForDomStableAsync(page, Math.Min(timeout, 8000)).GetAwaiter().GetResult();
+
+                if (waitSelectorAfter is not null)
+                    WaitForSelectorAsync(page, waitSelectorAfter, (int)(waitAfterTimeoutMs ?? (ulong)timeout)).GetAwaiter().GetResult();
+            });
+        }
+        finally
+        {
+            if (onDialog is not null)
+            {
+                try { page.Dialog -= onDialog; } catch { /* página pode ter fechado */ }
+            }
+        }
+
         var notes = (waitForNavigation, waitSelectorAfter is not null) switch
         {
             (true, true) => " (navigation + selector)",
@@ -68,6 +125,8 @@ public sealed partial class BrowserContext : IDisposable
             (false, true) => " (waited for selector)",
             _ => "",
         };
+        if (onDialog is not null)
+            notes += $" (dialog={dialogAction})";
         return $"browser_click: {selector}{notes}";
     }
 

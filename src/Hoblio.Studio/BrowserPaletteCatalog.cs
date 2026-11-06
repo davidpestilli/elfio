@@ -33,6 +33,7 @@ static class BrowserPaletteCatalog
                     Entry(WebAutomationActionTypes.SelectRadio, "Selecionar botão de opção", "SelectRadioButton radio"),
                     Entry(WebAutomationActionTypes.SetDropdown, "Definir lista suspensa", "SetDropDownListValue select"),
                     Entry(WebAutomationActionTypes.PressButton, "Pressionar botão", "PressButton submit"),
+                    Entry(WebAutomationActionTypes.Upload, "Enviar arquivo para upload", "UploadFile upload file input arquivo anexo"),
                 ],
             },
             new PaletteSection
@@ -48,6 +49,7 @@ static class BrowserPaletteCatalog
                     Entry(WebAutomationActionTypes.Navigate, "Abrir URL (iniciar + navegar)", "LaunchChrome GoToWebPage navigate"),
                     Entry(WebAutomationActionTypes.GoTo, "Acessar página da Web", "GoToWebPage url"),
                     Entry(WebAutomationActionTypes.NewTab, "Criar nova guia", "CreateNewTab tab"),
+                    Entry(WebAutomationActionTypes.SwitchPage, "Trocar de página (popup/aba)", "SwitchPage popup janela aba window.open"),
                     Entry(WebAutomationActionTypes.Click, "Clicar em link/elemento", "ClickBase click css"),
                     Entry(WebAutomationActionTypes.ClickDownload, "Clicar link de download", "ClickDownloadLink download"),
                     Entry(WebAutomationActionTypes.ExecuteScript, "Executar JavaScript", "ExecuteJavascript script"),

@@ -23,6 +23,7 @@ public static class WebAutomationActionTypes
     public const string SelectRadio = "browser_select_radio";
     public const string SetDropdown = "browser_set_dropdown";
     public const string PressButton = "browser_press_button";
+    public const string Upload = "browser_upload";
 
     // —— gerais ——
     public const string WaitContent = "browser_wait_content";
@@ -39,14 +40,15 @@ public static class WebAutomationActionTypes
     public const string Reload = "browser_reload";
     public const string Back = "browser_back";
     public const string Forward = "browser_forward";
+    public const string SwitchPage = "browser_switch_page";
 
     public static readonly IReadOnlyList<string> All =
     [
         Navigate, Click, WaitNavigation, Fill, WaitFor, GetText,
         GetPageDetails, GetElementDetails, Screenshot, ExtractTable,
-        Focus, SetCheckbox, SelectRadio, SetDropdown, PressButton,
+        Focus, SetCheckbox, SelectRadio, SetDropdown, PressButton, Upload,
         WaitContent, LaunchChrome, LaunchEdge, AttachChrome, AttachEdge, NewTab, GoTo,
-        ClickDownload, ExecuteScript, Hover, Close, Reload, Back, Forward,
+        ClickDownload, ExecuteScript, Hover, Close, Reload, Back, Forward, SwitchPage,
     ];
 
     public static readonly IReadOnlyDictionary<string, string> ModuleActionIds =
@@ -67,6 +69,7 @@ public static class WebAutomationActionTypes
             [SelectRadio] = "SelectRadioButtonBase",
             [SetDropdown] = "SetDropDownListValueBase",
             [PressButton] = "PressButtonBase",
+            [Upload] = "UploadFile",
             [WaitContent] = "WaitForWebPageContentAction",
             [LaunchChrome] = "LaunchChromeBase",
             [LaunchEdge] = "LaunchEdgeBase",
@@ -81,6 +84,7 @@ public static class WebAutomationActionTypes
             [Reload] = "ReloadWebPage",
             [Back] = "NavigateBack",
             [Forward] = "NavigateForward",
+            [SwitchPage] = "SwitchToPage",
         };
 
     public static bool IsWebAutomationType(string? type) =>

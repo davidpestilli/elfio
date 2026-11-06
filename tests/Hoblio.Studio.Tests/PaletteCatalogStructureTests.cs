@@ -74,6 +74,6 @@ public sealed class PaletteCatalogStructureTests
         var web = groups[0];
         Assert.Empty(web.Items);
         Assert.Equal(3, web.Sections.Count);
-        Assert.Equal(29, web.Sections.Sum(s => s.Items.Count));
+        Assert.Equal(31, web.Sections.Sum(s => s.Items.Count));
     }
 }
