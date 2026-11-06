@@ -99,10 +99,10 @@
     {
       "id": "log_abort",
       "kind": "action",
-      "label": "Log tela inesperada",
+      "label": "Aviso: tela inesperada (segue)",
       "action": {
         "type": "log",
-        "message": "superfluxo eproc abortado: tela inesperada `{ScreenText}`"
+        "message": "superfluxo eproc: tela inesperada `{ScreenText}`; seguindo (a guarda do peticionamento decide)"
       },
       "ui": {
         "x": 420,
@@ -162,7 +162,7 @@
     },
     {
       "from": "log_abort",
-      "to": "end",
+      "to": "rf_peticao",
       "port": "main"
     }
   ],

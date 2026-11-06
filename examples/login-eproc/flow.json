@@ -15,8 +15,8 @@
       "kind": "end",
       "label": "End",
       "ui": {
-        "x": 430,
-        "y": 400
+        "x": 800,
+        "y": 600
       }
     },
     {
@@ -115,6 +115,20 @@
       "ui": {
         "x": -40,
         "y": -400
+      }
+    },
+    {
+      "id": "wait_pos_login",
+      "kind": "action",
+      "label": "Aguarda a tela pos-login assentar (perfil OU painel)",
+      "action": {
+        "type": "browser_wait_for",
+        "selector": "#tr1, #main-menu",
+        "timeout_ms": 60000
+      },
+      "ui": {
+        "x": 140,
+        "y": -320
       }
     },
     {
@@ -249,8 +263,8 @@
       "action": {
         "type": "browser_click",
         "selector": "#tr1",
-        "wait_for_navigation": true,
-        "wait_selector_after": "#btn-home \u003E i"
+        "timeout_ms": 60000,
+        "wait_for_navigation": true
       },
       "ui": {
         "x": -70,
@@ -258,16 +272,50 @@
       }
     },
     {
-      "id": "action_mvsnv0r6",
+      "id": "wait_panel",
       "kind": "action",
-      "label": "Painel do Advogado (handoff)",
+      "label": "Confirma o painel (pos-condicao do handoff)",
       "action": {
-        "type": "log",
-        "message": "Painel do Advogado — tela pronta para o proximo fluxo"
+        "type": "browser_wait_for",
+        "selector": "#main-menu a[href*=\"acao=processo_cadastrar\"]",
+        "timeout_ms": 60000,
+        "wait_visible": true
+      },
+      "error_handling": {
+        "retry_count": 1,
+        "retry_delay_ms": 1500,
+        "on_failure": "stop"
       },
       "ui": {
         "x": 140,
-        "y": 400
+        "y": 600
+      }
+    },
+    {
+      "id": "set_screen_panel",
+      "kind": "action",
+      "label": "ScreenText = Painel do Advogado",
+      "action": {
+        "type": "set_variable",
+        "variable": "ScreenText",
+        "value": "Painel do Advogado"
+      },
+      "ui": {
+        "x": 360,
+        "y": 600
+      }
+    },
+    {
+      "id": "action_mvsnv0r6",
+      "kind": "action",
+      "label": "Handoff: painel verificado",
+      "action": {
+        "type": "log",
+        "message": "handoff: painel verificado, tela `{ScreenText}` pronta para o proximo fluxo (usuario {EprocUser})"
+      },
+      "ui": {
+        "x": 580,
+        "y": 600
       }
     }
   ],
@@ -315,6 +363,14 @@
     },
     {
       "from": "action_s2i6xjei",
+      "to": "wait_pos_login",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "wait_pos_login",
       "to": "action_detect_post_cred",
       "port": "main",
       "ui": {
@@ -357,7 +413,7 @@
     },
     {
       "from": "case_panel",
-      "to": "action_mvsnv0r6",
+      "to": "wait_panel",
       "port": "then",
       "ui": {
         "targetHandle": "left"
@@ -373,6 +429,22 @@
     },
     {
       "from": "action_mvqgy75i",
+      "to": "wait_panel",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "wait_panel",
+      "to": "set_screen_panel",
+      "port": "main",
+      "ui": {
+        "targetHandle": "left"
+      }
+    },
+    {
+      "from": "set_screen_panel",
       "to": "action_mvsnv0r6",
       "port": "main",
       "ui": {

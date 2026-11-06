@@ -6,31 +6,34 @@
       "kind": "start",
       "label": "Start (sessao herdada do login)",
       "ui": {
-        "x": -500,
+        "x": -460,
         "y": 0
       }
     },
     {
-      "id": "wait_menu",
+      "id": "rf_abrir",
       "kind": "action",
-      "label": "Assume a tela (menu do painel)",
+      "label": "1. Abre o peticionamento (painel -> etapa 1)",
       "action": {
-        "type": "browser_wait_for",
-        "selector": "#main-menu > li:nth-child(16) > a",
-        "timeout_ms": 20000
+        "type": "run_flow",
+        "flow_id": "abrir_peticionamento",
+        "share_browser": true,
+        "variable_scope": "inherit"
       },
       "ui": {
-        "x": -260,
+        "x": -240,
         "y": 0
       }
     },
     {
-      "id": "log_handoff",
+      "id": "rf_etapa1",
       "kind": "action",
-      "label": "Log handoff",
+      "label": "2. Etapa 1: Informacoes do processo",
       "action": {
-        "type": "log",
-        "message": "peticionamento: assumi a tela `{ScreenText}` (usuario {EprocUser})"
+        "type": "run_flow",
+        "flow_id": "etapa1_informacoes",
+        "share_browser": true,
+        "variable_scope": "inherit"
       },
       "ui": {
         "x": -20,
@@ -38,271 +41,75 @@
       }
     },
     {
-      "id": "click_menu",
+      "id": "rf_etapa2",
       "kind": "action",
-      "label": "1. Abre o peticionamento",
+      "label": "3. Etapa 2: Assuntos",
       "action": {
-        "type": "browser_click",
-        "selector": "#main-menu > li:nth-child(16) > a",
-        "timeout_ms": 20000,
-        "wait_for_navigation": true,
-        "wait_selector_after": "#selLocalidadeJudicial",
-        "wait_after_timeout_ms": 20000
+        "type": "run_flow",
+        "flow_id": "etapa2_assuntos",
+        "share_browser": true,
+        "variable_scope": "inherit"
       },
       "ui": {
-        "x": 220,
+        "x": 200,
         "y": 0
       }
     },
     {
-      "id": "sel_localidade",
+      "id": "rf_etapa3",
       "kind": "action",
-      "label": "2. Localidade: Sao Paulo - Regional VIII - Tatuape",
+      "label": "4. Etapa 3: Partes (requerentes)",
       "action": {
-        "type": "browser_set_dropdown",
-        "selector": "#selLocalidadeJudicial",
-        "dropdown_mode": "by_value",
-        "dropdown_value": "8",
-        "timeout_ms": 15000
+        "type": "run_flow",
+        "flow_id": "etapa3_autor",
+        "share_browser": true,
+        "variable_scope": "inherit"
       },
       "ui": {
-        "x": 460,
+        "x": 420,
         "y": 0
       }
     },
     {
-      "id": "sel_rito",
+      "id": "rf_etapa4",
       "kind": "action",
-      "label": "3. Rito (option 3)",
+      "label": "5. Etapa 4: Partes (requeridos)",
       "action": {
-        "type": "browser_set_dropdown",
-        "selector": "#selRitoProcesso",
-        "dropdown_mode": "by_index",
-        "dropdown_value": "2",
-        "timeout_ms": 15000
+        "type": "run_flow",
+        "flow_id": "etapa4_reu",
+        "share_browser": true,
+        "variable_scope": "inherit"
       },
       "ui": {
-        "x": 700,
-        "y": 0
-      },
-      "error_handling": {
-        "retry_count": 2,
-        "retry_delay_ms": 1200
-      }
-    },
-    {
-      "id": "sel_area",
-      "kind": "action",
-      "label": "4. Area: Civel (option 3)",
-      "action": {
-        "type": "browser_set_dropdown",
-        "selector": "#selIdGrupoCompetencia",
-        "dropdown_mode": "by_index",
-        "dropdown_value": "2",
-        "timeout_ms": 15000
-      },
-      "ui": {
-        "x": 940,
-        "y": 0
-      },
-      "error_handling": {
-        "retry_count": 2,
-        "retry_delay_ms": 1200
-      }
-    },
-    {
-      "id": "sel_classe",
-      "kind": "action",
-      "label": "5. Classe: Peticao Civel (option 56)",
-      "action": {
-        "type": "browser_set_dropdown",
-        "selector": "#selIdClasseJudicial",
-        "dropdown_mode": "by_index",
-        "dropdown_value": "55",
-        "timeout_ms": 15000
-      },
-      "ui": {
-        "x": 1180,
-        "y": 0
-      },
-      "error_handling": {
-        "retry_count": 4,
-        "retry_delay_ms": 1500
-      }
-    },
-    {
-      "id": "wait_load_classe",
-      "kind": "action",
-      "label": "Aguarda carga da classe",
-      "action": {
-        "type": "delay",
-        "milliseconds": 2500
-      },
-      "ui": {
-        "x": 1420,
+        "x": 640,
         "y": 0
       }
     },
     {
-      "id": "check_nao_aplica",
+      "id": "rf_etapa5",
       "kind": "action",
-      "label": "6. Marca Nao se aplica",
+      "label": "6. Etapa 5: Documentos e distribuicao",
       "action": {
-        "type": "browser_set_checkbox",
-        "selector": "#chkNaoAplicaValor",
-        "checked": true,
-        "timeout_ms": 15000
+        "type": "run_flow",
+        "flow_id": "etapa5_documentos",
+        "share_browser": true,
+        "variable_scope": "inherit"
       },
       "ui": {
-        "x": 1660,
-        "y": 0
-      },
-      "error_handling": {
-        "retry_count": 2,
-        "retry_delay_ms": 1000
-      }
-    },
-    {
-      "id": "click_proxima",
-      "kind": "action",
-      "label": "7. Proxima (btnSalvar)",
-      "action": {
-        "type": "browser_click",
-        "selector": "#btnSalvar",
-        "timeout_ms": 20000,
-        "wait_for_navigation": true,
-        "wait_selector_after": "#txtFiltroPesquisa",
-        "wait_after_timeout_ms": 20000
-      },
-      "ui": {
-        "x": 1900,
+        "x": 860,
         "y": 0
       }
     },
     {
-      "id": "fill_filtro",
+      "id": "log_final",
       "kind": "action",
-      "label": "8. Filtra assunto 02200307",
-      "action": {
-        "type": "browser_fill",
-        "selector": "#txtFiltroPesquisa",
-        "text": "02200307",
-        "timeout_ms": 15000
-      },
-      "ui": {
-        "x": 2140,
-        "y": 0
-      }
-    },
-    {
-      "id": "press_enter",
-      "kind": "action",
-      "label": "8b. Enter no filtro",
-      "action": {
-        "type": "browser_execute_script",
-        "timeout_ms": 15000,
-        "script": "(el => (el.focus(), ['keydown','keypress','keyup'].forEach(t => el.dispatchEvent(new KeyboardEvent(t, Object.fromEntries([['key','Enter'],['code','Enter'],['keyCode',13],['which',13],['bubbles',true],['cancelable',true]])))), 'enter enviado'))(document.querySelector('#txtFiltroPesquisa'))",
-        "variable": "FiltroAssuntoResultado"
-      },
-      "ui": {
-        "x": 2380,
-        "y": 0
-      }
-    },
-    {
-      "id": "wait_assunto",
-      "kind": "action",
-      "label": "8c. Aguarda assunto na arvore",
-      "action": {
-        "type": "browser_wait_for",
-        "selector": "[id='02200307_anchor'] > span > span",
-        "timeout_ms": 30000,
-        "wait_visible": true
-      },
-      "ui": {
-        "x": 2620,
-        "y": 0
-      }
-    },
-    {
-      "id": "click_assunto",
-      "kind": "action",
-      "label": "8d. Seleciona o assunto",
-      "action": {
-        "type": "browser_click",
-        "selector": "[id='02200307_anchor'] > span > span",
-        "timeout_ms": 15000
-      },
-      "ui": {
-        "x": 2860,
-        "y": 0
-      }
-    },
-    {
-      "id": "click_incluir",
-      "kind": "action",
-      "label": "9. Incluir assunto",
-      "action": {
-        "type": "browser_click",
-        "selector": "#btnIncluirAssunto",
-        "timeout_ms": 15000
-      },
-      "ui": {
-        "x": 3100,
-        "y": 0
-      }
-    },
-    {
-      "id": "wait_incluir",
-      "kind": "action",
-      "label": "Aguarda load do Incluir",
-      "action": {
-        "type": "delay",
-        "milliseconds": 1500
-      },
-      "ui": {
-        "x": 3340,
-        "y": 0
-      }
-    },
-    {
-      "id": "click_etapa2",
-      "kind": "action",
-      "label": "10. Proxima (sbmProcessoEtapa2)",
-      "action": {
-        "type": "browser_click",
-        "selector": "#sbmProcessoEtapa2",
-        "timeout_ms": 20000,
-        "wait_for_navigation": true
-      },
-      "ui": {
-        "x": 3580,
-        "y": 0
-      }
-    },
-    {
-      "id": "shot_etapa2",
-      "kind": "action",
-      "label": "Screenshot da fase 3 (debug)",
-      "action": {
-        "type": "browser_screenshot",
-        "path": "output/eproc-fase3.png"
-      },
-      "ui": {
-        "x": 3820,
-        "y": 0
-      }
-    },
-    {
-      "id": "log_parcial",
-      "kind": "action",
-      "label": "Log: fases 3-4 pendentes",
+      "label": "Log final (protocolo)",
       "action": {
         "type": "log",
-        "message": "eproc: etapas 1-2 concluidas — peticao NAO protocolada (fases 3 e 4 ainda nao mapeadas)"
+        "message": "eproc: peticao protocolada — processo {PetitionNumber} | autor `{AutorNome}` x reu `{ReuNome}` | documento `{PeticaoDocTipo}` ({DocTextoLen} chars) | tela: {EprocFinal}"
       },
       "ui": {
-        "x": 4060,
+        "x": 1080,
         "y": 0
       }
     },
@@ -311,7 +118,7 @@
       "kind": "end",
       "label": "End",
       "ui": {
-        "x": 4300,
+        "x": 1300,
         "y": 0
       }
     }
@@ -319,110 +126,1614 @@
   "edges": [
     {
       "from": "start",
-      "to": "wait_menu",
+      "to": "rf_abrir",
       "port": "main"
     },
     {
-      "from": "wait_menu",
-      "to": "log_handoff",
+      "from": "rf_abrir",
+      "to": "rf_etapa1",
       "port": "main"
     },
     {
-      "from": "log_handoff",
-      "to": "click_menu",
+      "from": "rf_etapa1",
+      "to": "rf_etapa2",
       "port": "main"
     },
     {
-      "from": "click_menu",
-      "to": "sel_localidade",
+      "from": "rf_etapa2",
+      "to": "rf_etapa3",
       "port": "main"
     },
     {
-      "from": "sel_localidade",
-      "to": "sel_rito",
+      "from": "rf_etapa3",
+      "to": "rf_etapa4",
       "port": "main"
     },
     {
-      "from": "sel_rito",
-      "to": "sel_area",
+      "from": "rf_etapa4",
+      "to": "rf_etapa5",
       "port": "main"
     },
     {
-      "from": "sel_area",
-      "to": "sel_classe",
+      "from": "rf_etapa5",
+      "to": "log_final",
       "port": "main"
     },
     {
-      "from": "sel_classe",
-      "to": "wait_load_classe",
-      "port": "main"
-    },
-    {
-      "from": "wait_load_classe",
-      "to": "check_nao_aplica",
-      "port": "main"
-    },
-    {
-      "from": "check_nao_aplica",
-      "to": "click_proxima",
-      "port": "main"
-    },
-    {
-      "from": "click_proxima",
-      "to": "fill_filtro",
-      "port": "main"
-    },
-    {
-      "from": "fill_filtro",
-      "to": "press_enter",
-      "port": "main"
-    },
-    {
-      "from": "press_enter",
-      "to": "wait_assunto",
-      "port": "main"
-    },
-    {
-      "from": "wait_assunto",
-      "to": "click_assunto",
-      "port": "main"
-    },
-    {
-      "from": "click_assunto",
-      "to": "click_incluir",
-      "port": "main"
-    },
-    {
-      "from": "click_incluir",
-      "to": "wait_incluir",
-      "port": "main"
-    },
-    {
-      "from": "wait_incluir",
-      "to": "click_etapa2",
-      "port": "main"
-    },
-    {
-      "from": "click_etapa2",
-      "to": "shot_etapa2",
-      "port": "main"
-    },
-    {
-      "from": "shot_etapa2",
-      "to": "log_parcial",
-      "port": "main"
-    },
-    {
-      "from": "log_parcial",
+      "from": "log_final",
       "to": "end",
       "port": "main"
     }
   ],
+  "subflows": {
+    "abrir_peticionamento": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -200.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_menu",
+          "kind": "action",
+          "label": "Assume a tela (menu do painel)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#main-menu a[href*=\"acao=processo_cadastrar\"]",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "log_handoff",
+          "kind": "action",
+          "label": "Log handoff",
+          "action": {
+            "type": "log",
+            "message": "peticionamento: assumi a tela `{ScreenText}` (usuario {EprocUser})"
+          },
+          "ui": {
+            "x": 260.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_menu",
+          "kind": "action",
+          "label": "1. Abre o peticionamento",
+          "action": {
+            "type": "browser_click",
+            "selector": "#main-menu a[href*=\"acao=processo_cadastrar\"]",
+            "timeout_ms": 60000,
+            "wait_for_navigation": true,
+            "wait_selector_after": "#selLocalidadeJudicial",
+            "wait_after_timeout_ms": 20000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 720.0,
+            "y": 0
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "wait_menu",
+          "port": "main"
+        },
+        {
+          "from": "wait_menu",
+          "to": "log_handoff",
+          "port": "main"
+        },
+        {
+          "from": "log_handoff",
+          "to": "click_menu",
+          "port": "main"
+        },
+        {
+          "from": "click_menu",
+          "to": "end",
+          "port": "main"
+        }
+      ],
+      "variables": {}
+    },
+    "etapa1_informacoes": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -200.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "wait_localidade_opcoes",
+          "kind": "action",
+          "label": "Aguarda as 368 localidades carregarem (tela lenta)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#selLocalidadeJudicial option[value=\"8\"]",
+            "timeout_ms": 90000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "sel_localidade",
+          "kind": "action",
+          "label": "2. Localidade: Sao Paulo - Regional VIII - Tatuape",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#selLocalidadeJudicial",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "São Paulo - Regional VIII - Tatuapé",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_rito_opcoes",
+          "kind": "action",
+          "label": "Aguarda o Rito repovoar (o change esvazia o select na hora)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#selRitoProcesso option[value=\"2\"]",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 140.0,
+            "y": 240
+          }
+        },
+        {
+          "id": "sel_rito",
+          "kind": "action",
+          "label": "3. Rito: RITO ORDINARIO (COMUM)",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#selRitoProcesso",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "RITO ORDINÁRIO (COMUM)",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 260.0,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 2,
+            "retry_delay_ms": 1200
+          }
+        },
+        {
+          "id": "wait_area_rebuild",
+          "kind": "action",
+          "label": "Aguarda o rebuild da Area (lista perde a 3a opcao: 6 -> 2)",
+          "action": {
+            "type": "browser_wait_content",
+            "wait_content_mode": "not_contains_element",
+            "selector": "#selIdGrupoCompetencia option:nth-child(3)",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 320.0,
+            "y": 240
+          }
+        },
+        {
+          "id": "wait_area_opcoes",
+          "kind": "action",
+          "label": "Garante a Area nao vazia",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#selIdGrupoCompetencia option[value=\"0\"]",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 380.0,
+            "y": 240
+          }
+        },
+        {
+          "id": "sel_area",
+          "kind": "action",
+          "label": "4. Area: Civel",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#selIdGrupoCompetencia",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "Cível",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 2,
+            "retry_delay_ms": 1200
+          }
+        },
+        {
+          "id": "wait_classe_ajax",
+          "kind": "action",
+          "label": "Aguarda a Classe carregar (so existe depois de localidade+rito+area)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#selIdClasseJudicial option:nth-child(2)",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "sel_classe",
+          "kind": "action",
+          "label": "5. Classe: PETICAO CIVEL",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#selIdClasseJudicial",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "PETIÇÃO CÍVEL",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 740.0,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 2,
+            "retry_delay_ms": 1500
+          }
+        },
+        {
+          "id": "wait_pos_classe",
+          "kind": "action",
+          "label": "Aguarda a tela pos-classe (Tipo Justica)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#selTipoJustica",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 740.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "check_nao_aplica",
+          "kind": "action",
+          "label": "6. Marca Nao se aplica",
+          "action": {
+            "type": "browser_set_checkbox",
+            "selector": "#chkNaoAplicaValor",
+            "checked": true,
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 0
+          },
+          "error_handling": {
+            "retry_count": 2,
+            "retry_delay_ms": 1000
+          }
+        },
+        {
+          "id": "click_proxima",
+          "kind": "action",
+          "label": "7. Proxima (btnSalvar)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnSalvar",
+            "timeout_ms": 60000,
+            "wait_for_navigation": true
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_etapa2",
+          "kind": "action",
+          "label": "Confirma a tela 2 de 5 (Assuntos)",
+          "action": {
+            "type": "browser_wait_content",
+            "wait_content_mode": "contains_text",
+            "text": "2 de 5",
+            "selector": "#divInfraBarraLocalizacao",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 1680.0,
+            "y": 120
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "wait_localidade_opcoes",
+          "port": "main"
+        },
+        {
+          "from": "wait_localidade_opcoes",
+          "to": "sel_localidade",
+          "port": "main"
+        },
+        {
+          "from": "sel_localidade",
+          "to": "wait_rito_opcoes",
+          "port": "main"
+        },
+        {
+          "from": "wait_rito_opcoes",
+          "to": "sel_rito",
+          "port": "main"
+        },
+        {
+          "from": "sel_rito",
+          "to": "wait_area_rebuild",
+          "port": "main"
+        },
+        {
+          "from": "wait_area_rebuild",
+          "to": "wait_area_opcoes",
+          "port": "main"
+        },
+        {
+          "from": "wait_area_opcoes",
+          "to": "sel_area",
+          "port": "main"
+        },
+        {
+          "from": "sel_area",
+          "to": "wait_classe_ajax",
+          "port": "main"
+        },
+        {
+          "from": "wait_classe_ajax",
+          "to": "sel_classe",
+          "port": "main"
+        },
+        {
+          "from": "sel_classe",
+          "to": "wait_pos_classe",
+          "port": "main"
+        },
+        {
+          "from": "wait_pos_classe",
+          "to": "check_nao_aplica",
+          "port": "main"
+        },
+        {
+          "from": "check_nao_aplica",
+          "to": "click_proxima",
+          "port": "main"
+        },
+        {
+          "from": "click_proxima",
+          "to": "wait_etapa2",
+          "port": "main"
+        },
+        {
+          "from": "wait_etapa2",
+          "to": "end",
+          "port": "main"
+        }
+      ],
+      "variables": {}
+    },
+    "etapa2_assuntos": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -200.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "fill_filtro",
+          "kind": "action",
+          "label": "8. Filtra assunto 02200307",
+          "action": {
+            "type": "browser_fill",
+            "selector": "#txtFiltroPesquisa",
+            "text": "02200307",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_filtrar",
+          "kind": "action",
+          "label": "8b. Filtrar a arvore pelo codigo",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnFiltrar",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 260.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_assunto",
+          "kind": "action",
+          "label": "8c. Aguarda o assunto visivel na arvore",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "[id='02200307_anchor']",
+            "timeout_ms": 60000,
+            "wait_visible": true
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "hover_assunto",
+          "kind": "action",
+          "label": "8d. Passa o mouse na linha (revela os icones)",
+          "action": {
+            "type": "browser_hover",
+            "selector": "[id='02200307_anchor']",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 680.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "click_assunto",
+          "kind": "action",
+          "label": "8e. Clique real no botao Incluir Assunto da linha",
+          "action": {
+            "type": "browser_click",
+            "selector": "#imgIncluir02200307",
+            "timeout_ms": 60000,
+            "dialog_action": "accept"
+          },
+          "ui": {
+            "x": 740.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_assunto_efetivado",
+          "kind": "action",
+          "label": "8f. Aguarda o assunto efetivado no formulario (hdnIdAssuntoPrincipal)",
+          "action": {
+            "type": "browser_execute_script",
+            "timeout_ms": 60000,
+            "script": "document.getElementById('hdnIdAssuntoPrincipal').value || (window.__assunto__nao__efetivado).x",
+            "variable": "AssuntoId"
+          },
+          "error_handling": {
+            "retry_count": 20,
+            "retry_delay_ms": 500,
+            "on_failure": "stop"
+          },
+          "ui": {
+            "x": 960.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_incluir",
+          "kind": "action",
+          "label": "Aguarda o assunto incluido (Competencia renderiza)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#selNumCodCompetencia",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_etapa2",
+          "kind": "action",
+          "label": "10. Proxima (sbmProcessoEtapa2)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#sbmProcessoEtapa2",
+            "timeout_ms": 60000,
+            "wait_for_navigation": true
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_etapa3",
+          "kind": "action",
+          "label": "Confirma a tela 3 de 5 (Partes)",
+          "action": {
+            "type": "browser_wait_content",
+            "wait_content_mode": "contains_text",
+            "text": "3 de 5",
+            "selector": "#divInfraBarraLocalizacao",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 1680.0,
+            "y": 120
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "fill_filtro",
+          "port": "main"
+        },
+        {
+          "from": "fill_filtro",
+          "to": "click_filtrar",
+          "port": "main"
+        },
+        {
+          "from": "click_filtrar",
+          "to": "wait_assunto",
+          "port": "main"
+        },
+        {
+          "from": "wait_assunto",
+          "to": "hover_assunto",
+          "port": "main"
+        },
+        {
+          "from": "hover_assunto",
+          "to": "click_assunto",
+          "port": "main"
+        },
+        {
+          "from": "click_assunto",
+          "to": "wait_assunto_efetivado",
+          "port": "main"
+        },
+        {
+          "from": "wait_assunto_efetivado",
+          "to": "wait_incluir",
+          "port": "main"
+        },
+        {
+          "from": "wait_incluir",
+          "to": "click_etapa2",
+          "port": "main"
+        },
+        {
+          "from": "click_etapa2",
+          "to": "wait_etapa3",
+          "port": "main"
+        },
+        {
+          "from": "wait_etapa3",
+          "to": "end",
+          "port": "main"
+        }
+      ],
+      "variables": {}
+    },
+    "etapa3_autor": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -200.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_autor_form",
+          "kind": "action",
+          "label": "11. Formulario de partes (autor)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#txtNome",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "fill_autor",
+          "kind": "action",
+          "label": "12. Pesquisa o autor pelo nome",
+          "action": {
+            "type": "browser_fill",
+            "selector": "#txtNome",
+            "text": "{AutorNome}",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 260.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_consultar_autor",
+          "kind": "action",
+          "label": "13. Consultar (nome)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnConsultarNome",
+            "timeout_ms": 60000,
+            "dialog_action": "accept"
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "shot_consulta_autor",
+          "kind": "action",
+          "label": "Retrato apos o Consultar (diagnostico)",
+          "action": {
+            "type": "browser_screenshot",
+            "path": "output/eproc-debug-consulta-autor.png"
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 240
+          }
+        },
+        {
+          "id": "wait_autor_resultado",
+          "kind": "action",
+          "label": "Aguarda a grade de resultados",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#tblResultadosBusca tr[id^='tr']",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "sel_autor_principal",
+          "kind": "action",
+          "label": "14. Autor como Principal = Sim",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#tblResultadosBusca select[id^='selPrincipal']",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "Sim",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 740.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_incluir_autor",
+          "kind": "action",
+          "label": "15. Inclui o autor",
+          "action": {
+            "type": "browser_click",
+            "selector": "#tblResultadosBusca button[id^='btnIncluir_']",
+            "timeout_ms": 60000,
+            "dialog_action": "accept"
+          },
+          "ui": {
+            "x": 980.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_autor_incluido",
+          "kind": "action",
+          "label": "Aguarda o autor na tabela de partes",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#tblPartes tbody tr",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 980.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "click_proxima_autor",
+          "kind": "action",
+          "label": "16. Proxima (autor -> reu)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnProxima",
+            "timeout_ms": 60000,
+            "wait_for_navigation": true
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_etapa4",
+          "kind": "action",
+          "label": "Confirma a tela 4 de 5 (Partes Res)",
+          "action": {
+            "type": "browser_wait_content",
+            "wait_content_mode": "contains_text",
+            "text": "4 de 5",
+            "selector": "#divInfraBarraLocalizacao",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 1440.0,
+            "y": 120
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "wait_autor_form",
+          "port": "main"
+        },
+        {
+          "from": "wait_autor_form",
+          "to": "fill_autor",
+          "port": "main"
+        },
+        {
+          "from": "fill_autor",
+          "to": "click_consultar_autor",
+          "port": "main"
+        },
+        {
+          "from": "click_consultar_autor",
+          "to": "shot_consulta_autor",
+          "port": "main"
+        },
+        {
+          "from": "shot_consulta_autor",
+          "to": "wait_autor_resultado",
+          "port": "main"
+        },
+        {
+          "from": "wait_autor_resultado",
+          "to": "sel_autor_principal",
+          "port": "main"
+        },
+        {
+          "from": "sel_autor_principal",
+          "to": "click_incluir_autor",
+          "port": "main"
+        },
+        {
+          "from": "click_incluir_autor",
+          "to": "wait_autor_incluido",
+          "port": "main"
+        },
+        {
+          "from": "wait_autor_incluido",
+          "to": "click_proxima_autor",
+          "port": "main"
+        },
+        {
+          "from": "click_proxima_autor",
+          "to": "wait_etapa4",
+          "port": "main"
+        },
+        {
+          "from": "wait_etapa4",
+          "to": "end",
+          "port": "main"
+        }
+      ],
+      "variables": {}
+    },
+    "etapa4_reu": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -200.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_reu_form",
+          "kind": "action",
+          "label": "17. Formulario de partes (reu)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#txtNome",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "fill_reu",
+          "kind": "action",
+          "label": "18. Pesquisa o reu pelo nome",
+          "action": {
+            "type": "browser_fill",
+            "selector": "#txtNome",
+            "text": "{ReuNome}",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 260.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_consultar_reu",
+          "kind": "action",
+          "label": "19. Consultar (nome)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnConsultarNome",
+            "timeout_ms": 60000,
+            "dialog_action": "accept"
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "shot_consulta_reu",
+          "kind": "action",
+          "label": "Retrato apos o Consultar (diagnostico)",
+          "action": {
+            "type": "browser_screenshot",
+            "path": "output/eproc-debug-consulta-reu.png"
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 240
+          }
+        },
+        {
+          "id": "wait_reu_resultado",
+          "kind": "action",
+          "label": "Aguarda a grade de resultados",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#tblResultadosBusca tr[id^='tr']",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "sel_reu_qualificacao",
+          "kind": "action",
+          "label": "20. Qualificacao = REQUERIDO",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#tblResultadosBusca select[id^='selQualificacaoReu']",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "REQUERIDO",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 740.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "sel_reu_principal",
+          "kind": "action",
+          "label": "21. Reu como Principal = Sim",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#tblResultadosBusca select[id^='selPrincipal']",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "Sim",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 980.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_incluir_reu",
+          "kind": "action",
+          "label": "22. Inclui o reu",
+          "action": {
+            "type": "browser_click",
+            "selector": "#tblResultadosBusca button[id^='btnIncluir_']",
+            "timeout_ms": 60000,
+            "dialog_action": "accept"
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_reu_incluido",
+          "kind": "action",
+          "label": "Aguarda o reu na tabela de partes",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#tblPartes tbody tr",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "click_proxima_reu",
+          "kind": "action",
+          "label": "23. Proxima (reu -> documentos)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnProxima",
+            "timeout_ms": 60000,
+            "wait_for_navigation": true
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_etapa5",
+          "kind": "action",
+          "label": "Confirma a tela 5 de 5 (Documentos)",
+          "action": {
+            "type": "browser_wait_content",
+            "wait_content_mode": "contains_text",
+            "text": "5 de 5",
+            "selector": "#divInfraBarraLocalizacao",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 1680.0,
+            "y": 120
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "wait_reu_form",
+          "port": "main"
+        },
+        {
+          "from": "wait_reu_form",
+          "to": "fill_reu",
+          "port": "main"
+        },
+        {
+          "from": "fill_reu",
+          "to": "click_consultar_reu",
+          "port": "main"
+        },
+        {
+          "from": "click_consultar_reu",
+          "to": "shot_consulta_reu",
+          "port": "main"
+        },
+        {
+          "from": "shot_consulta_reu",
+          "to": "wait_reu_resultado",
+          "port": "main"
+        },
+        {
+          "from": "wait_reu_resultado",
+          "to": "sel_reu_qualificacao",
+          "port": "main"
+        },
+        {
+          "from": "sel_reu_qualificacao",
+          "to": "sel_reu_principal",
+          "port": "main"
+        },
+        {
+          "from": "sel_reu_principal",
+          "to": "click_incluir_reu",
+          "port": "main"
+        },
+        {
+          "from": "click_incluir_reu",
+          "to": "wait_reu_incluido",
+          "port": "main"
+        },
+        {
+          "from": "wait_reu_incluido",
+          "to": "click_proxima_reu",
+          "port": "main"
+        },
+        {
+          "from": "click_proxima_reu",
+          "to": "wait_etapa5",
+          "port": "main"
+        },
+        {
+          "from": "wait_etapa5",
+          "to": "end",
+          "port": "main"
+        }
+      ],
+      "variables": {}
+    },
+    "etapa5_documentos": {
+      "start": "start",
+      "nodes": [
+        {
+          "id": "start",
+          "kind": "start",
+          "label": "Start",
+          "ui": {
+            "x": -200.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "shot_tela5",
+          "kind": "action",
+          "label": "24. Screenshot da tela de documentos",
+          "action": {
+            "type": "browser_screenshot",
+            "path": "output/eproc-tela5-documentos.png"
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_doc_form",
+          "kind": "action",
+          "label": "Aguarda a tela de documentos pronta",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#btnEnviarArquivos",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 20.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "click_digitar_doc",
+          "kind": "action",
+          "label": "25. Digitar Documento (abre o editor em popup)",
+          "action": {
+            "type": "browser_click",
+            "selector": "button[onclick*=AbreEditorVaraNaoPiloto]",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 260.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "switch_editor",
+          "kind": "action",
+          "label": "26. Entra no popup do editor",
+          "action": {
+            "type": "browser_switch_page",
+            "url": "digitar_documento",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_editor",
+          "kind": "action",
+          "label": "Aguarda o CKEditor montar",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "iframe.cke_wysiwyg_frame",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 500.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "wait_editor_pronto",
+          "kind": "action",
+          "label": "26b. Aguarda o CKEditor ficar ready (senao o setData se perde)",
+          "action": {
+            "type": "browser_execute_script",
+            "timeout_ms": 60000,
+            "script": "(CKEDITOR.instances.txt_fck && CKEDITOR.instances.txt_fck.status === 'ready') || (window.__editor__nao__pronto).x",
+            "variable": "EditorPronto"
+          },
+          "error_handling": {
+            "retry_count": 12,
+            "retry_delay_ms": 500,
+            "on_failure": "stop"
+          },
+          "ui": {
+            "x": 620.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "digitar_texto",
+          "kind": "action",
+          "label": "27. Digita o texto (Latim) e confere que colou",
+          "action": {
+            "type": "browser_execute_script",
+            "timeout_ms": 60000,
+            "script": "CKEDITOR.instances.txt_fck.setData('<p>{DocTextoLatim}</p>') || CKEDITOR.instances.txt_fck.getData().length || (window.__texto__vazio).x",
+            "variable": "EditorResultado"
+          },
+          "error_handling": {
+            "retry_count": 6,
+            "retry_delay_ms": 700,
+            "on_failure": "stop"
+          },
+          "ui": {
+            "x": 740.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "conferir_texto",
+          "kind": "action",
+          "label": "28. Confere o tamanho do texto no editor",
+          "action": {
+            "type": "browser_execute_script",
+            "timeout_ms": 60000,
+            "script": "CKEDITOR.instances.txt_fck.getData().length",
+            "variable": "DocTextoLen"
+          },
+          "ui": {
+            "x": 980.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_anexar_sair",
+          "kind": "action",
+          "label": "29. Anexar Documento e Sair (clique direto no botao do CKEditor)",
+          "action": {
+            "type": "browser_execute_script",
+            "timeout_ms": 60000,
+            "script": "(document.querySelector('a.cke_button__anexardocumentoesair') || document.getElementById('cke_16')).click() || 'ok'",
+            "variable": "AnexarSairClicado"
+          },
+          "error_handling": {
+            "retry_count": 4,
+            "retry_delay_ms": 1000,
+            "on_failure": "stop"
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_dialogo_tipo",
+          "kind": "action",
+          "label": "Aguarda o dialogo (o buttonpane so existe com ele aberto)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": ".ui-dialog-buttonpane button.dialog-button",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1220.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "sel_tipo_documento",
+          "kind": "action",
+          "label": "30. Tipo do documento",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#JQueryUIselTipoArquivo",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "{PeticaoDocTipo}",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1460.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "sel_sigilo_documento",
+          "kind": "action",
+          "label": "31. Sigilo do documento",
+          "action": {
+            "type": "browser_set_dropdown",
+            "selector": "#JQueryUIselIdSigilo",
+            "dropdown_mode": "by_text",
+            "dropdown_value": "Sem Sigilo (Nível 0)",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 1700.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_ok_tipo",
+          "kind": "action",
+          "label": "32. OK do dialogo (o popup se fecha)",
+          "action": {
+            "type": "browser_click",
+            "selector": ".ui-dialog-buttonpane button.dialog-button",
+            "timeout_ms": 60000
+          },
+          "error_handling": {
+            "retry_count": 0,
+            "on_failure": "continue"
+          },
+          "ui": {
+            "x": 1940.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "switch_principal",
+          "kind": "action",
+          "label": "33. Volta para a tela de peticionamento",
+          "action": {
+            "type": "browser_switch_page",
+            "url": "acao=processo_cadastrar_4&",
+            "timeout_ms": 60000
+          },
+          "ui": {
+            "x": 2180.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "wait_doc_anexado",
+          "kind": "action",
+          "label": "Aguarda o documento na tabela (tbody tr = linhas de dados)",
+          "action": {
+            "type": "browser_wait_for",
+            "selector": "#tbDocumentosCadastradas tbody tr",
+            "timeout_ms": 45000
+          },
+          "ui": {
+            "x": 2180.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "click_finalizar",
+          "kind": "action",
+          "label": "35. Finalizar (aceita o confirm da distribuicao)",
+          "action": {
+            "type": "browser_click",
+            "selector": "#btnSalvar",
+            "timeout_ms": 60000,
+            "dialog_action": "accept"
+          },
+          "error_handling": {
+            "retry_count": 0,
+            "on_failure": "continue"
+          },
+          "ui": {
+            "x": 2660.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "click_confirmar_ajuizamento",
+          "kind": "action",
+          "label": "36. Confirmar ajuizamento (botao dentro do iframe #ifrSubFrm)",
+          "action": {
+            "type": "browser_execute_script",
+            "timeout_ms": 60000,
+            "script": "document.getElementById('ifrSubFrm').contentDocument.getElementById('sbmConfirmar').click() || 'ok'",
+            "variable": "AjuizamentoConfirmado"
+          },
+          "error_handling": {
+            "retry_count": 10,
+            "retry_delay_ms": 1500,
+            "on_failure": "stop"
+          },
+          "ui": {
+            "x": 2660.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "wait_distribuido",
+          "kind": "action",
+          "label": "Aguarda a confirmacao 'Processo distribuido'",
+          "action": {
+            "type": "browser_wait_content",
+            "wait_content_mode": "contains_text",
+            "text": "Processo distribuído",
+            "timeout_ms": 90000
+          },
+          "ui": {
+            "x": 2900.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "capturar_protocolo",
+          "kind": "action",
+          "label": "37. Captura o numero do processo",
+          "action": {
+            "type": "browser_get_text",
+            "selector": "#lblDesNumProcesso",
+            "timeout_ms": 60000,
+            "variable": "PetitionNumber"
+          },
+          "ui": {
+            "x": 2660.0,
+            "y": 240
+          }
+        },
+        {
+          "id": "capturar_final",
+          "kind": "action",
+          "label": "36. Captura a tela final",
+          "action": {
+            "type": "browser_get_page_details",
+            "detail": "all",
+            "variable": "EprocFinal"
+          },
+          "ui": {
+            "x": 2900.0,
+            "y": 0
+          }
+        },
+        {
+          "id": "shot_final",
+          "kind": "action",
+          "label": "Screenshot final",
+          "action": {
+            "type": "browser_screenshot",
+            "path": "output/eproc-final.png"
+          },
+          "ui": {
+            "x": 2900.0,
+            "y": 120
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "End",
+          "ui": {
+            "x": 3120.0,
+            "y": 120
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "shot_tela5",
+          "port": "main"
+        },
+        {
+          "from": "shot_tela5",
+          "to": "wait_doc_form",
+          "port": "main"
+        },
+        {
+          "from": "wait_doc_form",
+          "to": "click_digitar_doc",
+          "port": "main"
+        },
+        {
+          "from": "click_digitar_doc",
+          "to": "switch_editor",
+          "port": "main"
+        },
+        {
+          "from": "switch_editor",
+          "to": "wait_editor",
+          "port": "main"
+        },
+        {
+          "from": "wait_editor",
+          "to": "wait_editor_pronto",
+          "port": "main"
+        },
+        {
+          "from": "wait_editor_pronto",
+          "to": "digitar_texto",
+          "port": "main"
+        },
+        {
+          "from": "digitar_texto",
+          "to": "conferir_texto",
+          "port": "main"
+        },
+        {
+          "from": "conferir_texto",
+          "to": "click_anexar_sair",
+          "port": "main"
+        },
+        {
+          "from": "click_anexar_sair",
+          "to": "wait_dialogo_tipo",
+          "port": "main"
+        },
+        {
+          "from": "wait_dialogo_tipo",
+          "to": "sel_tipo_documento",
+          "port": "main"
+        },
+        {
+          "from": "sel_tipo_documento",
+          "to": "sel_sigilo_documento",
+          "port": "main"
+        },
+        {
+          "from": "sel_sigilo_documento",
+          "to": "click_ok_tipo",
+          "port": "main"
+        },
+        {
+          "from": "click_ok_tipo",
+          "to": "switch_principal",
+          "port": "main"
+        },
+        {
+          "from": "switch_principal",
+          "to": "wait_doc_anexado",
+          "port": "main"
+        },
+        {
+          "from": "wait_doc_anexado",
+          "to": "click_finalizar",
+          "port": "main"
+        },
+        {
+          "from": "click_finalizar",
+          "to": "click_confirmar_ajuizamento",
+          "port": "main"
+        },
+        {
+          "from": "click_confirmar_ajuizamento",
+          "to": "wait_distribuido",
+          "port": "main"
+        },
+        {
+          "from": "wait_distribuido",
+          "to": "capturar_protocolo",
+          "port": "main"
+        },
+        {
+          "from": "capturar_protocolo",
+          "to": "capturar_final",
+          "port": "main"
+        },
+        {
+          "from": "capturar_final",
+          "to": "shot_final",
+          "port": "main"
+        },
+        {
+          "from": "shot_final",
+          "to": "end",
+          "port": "main"
+        }
+      ],
+      "variables": {}
+    }
+  },
   "variables": {
     "ScreenText": "",
     "EprocUrl": "",
     "EprocUser": "",
     "PetitionNumber": "",
-    "FiltroAssuntoResultado": ""
+    "AutorNome": "David de Souza Dichirico Pestilli",
+    "ReuNome": "Maya Sotero Dichirico Pestilli",
+    "PeticaoDocTipo": "PETIÇÃO INICIAL",
+    "DocTextoLatim": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "DocTextoLen": "",
+    "EditorResultado": "",
+    "EprocFinal": ""
   }
 }
