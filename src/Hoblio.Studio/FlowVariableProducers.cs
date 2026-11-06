@@ -14,10 +14,23 @@ public static class FlowVariableProducers
             var title = string.IsNullOrWhiteSpace(node.Label) ? node.Id : node.Label.Trim();
             if (node.Action is WebAutomationAction wa && !string.IsNullOrWhiteSpace(wa.Variable))
                 list.Add(new(wa.Variable.Trim(), node.Id, title, WebAutomationActionTypes.ModuleActionId(wa.Type)));
+            if (node.Action is HttpRequestAction hr)
+            {
+                if (!string.IsNullOrWhiteSpace(hr.ResponseBodyVariable))
+                    list.Add(new(hr.ResponseBodyVariable.Trim(), node.Id, title, "HttpRequest (body)"));
+                if (!string.IsNullOrWhiteSpace(hr.ResponseHeadersVariable))
+                    list.Add(new(hr.ResponseHeadersVariable.Trim(), node.Id, title, "HttpRequest (headers)"));
+                if (!string.IsNullOrWhiteSpace(hr.StatusCodeVariable))
+                    list.Add(new(hr.StatusCodeVariable.Trim(), node.Id, title, "HttpRequest (status)"));
+            }
+            if (node.Action is LlmCompletionAction llm && !string.IsNullOrWhiteSpace(llm.ResponseBodyVariable))
+                list.Add(new(llm.ResponseBodyVariable.Trim(), node.Id, title, "LLM completion"));
             if (node.Action is SetVariableAction sv && !string.IsNullOrWhiteSpace(sv.Variable))
                 list.Add(new(sv.Variable.Trim(), node.Id, title, "SetVariable"));
             if (node.Action is FileReadAction fr && !string.IsNullOrWhiteSpace(fr.Variable))
                 list.Add(new(fr.Variable.Trim(), node.Id, title, "FileRead"));
+            if (node.Action is PdfAction pdf && !string.IsNullOrWhiteSpace(pdf.OutputVariable))
+                list.Add(new(pdf.OutputVariable.Trim(), node.Id, title, PdfActionTypes.ModuleActionId(pdf.Type)));
             if (node.Action is ShowGetUserInputAction ui)
             {
                 if (!string.IsNullOrWhiteSpace(ui.UserInputVariable))

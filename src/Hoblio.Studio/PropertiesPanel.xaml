@@ -323,6 +323,71 @@
               <TextBlock Text="Variable (optional, stores response body)" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding HttpGetVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
             </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionHttpRequest, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="URL" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="HttpRequestUrl" DataContext="{Binding}"/>
+              <TextBlock Text="Método HTTP" Style="{StaticResource FieldLabel}"/>
+              <ComboBox SelectedValue="{Binding HttpRequestMethod}" SelectedValuePath="Content" Margin="0,0,0,10">
+                <ComboBoxItem Content="get"/>
+                <ComboBoxItem Content="post"/>
+                <ComboBoxItem Content="put"/>
+                <ComboBoxItem Content="patch"/>
+                <ComboBoxItem Content="delete"/>
+                <ComboBoxItem Content="head"/>
+                <ComboBoxItem Content="options"/>
+              </ComboBox>
+              <TextBlock Text="Accept (opcional)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestAccept, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Tipo de conteúdo / Content-Type (corpo)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestContentType, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Corpo (opcional; use {var} no JSON)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestBody, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="96" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="HttpRequestBody" DataContext="{Binding}"/>
+              <TextBlock Text="Cabeçalhos (opcional, uma linha: Nome: valor)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestCustomHeaders, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="HttpRequestCustomHeaders" DataContext="{Binding}"/>
+              <TextBlock Text="Variável — corpo da resposta" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestResponseBodyVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variável — cabeçalhos da resposta" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestResponseHeadersVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock Text="Variável — código HTTP" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding HttpRequestStatusCodeVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,8,0,0"
+                         Text="Equivale a Invocar serviço Web (PAD): método, Accept, cabeçalhos, corpo JSON e saídas. Omita corpo para GET; para PATCH/POST defina Content-Type (ex.: application/json)."/>
+            </StackPanel>
+            <StackPanel Visibility="{Binding ShowActionLlmCompletion, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="URL do endpoint" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionUrl" DataContext="{Binding}"/>
+              <TextBlock Text="Estilo da API" Style="{StaticResource FieldLabel}"/>
+              <ComboBox SelectedValue="{Binding LlmCompletionApiStyle}" SelectedValuePath="Content" Margin="0,0,0,10">
+                <ComboBoxItem Content="ollama_chat"/>
+                <ComboBoxItem Content="openai_chat"/>
+              </ComboBox>
+              <TextBlock Text="Modelo" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionModel, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionModel" DataContext="{Binding}"/>
+              <TextBlock Text="System (opcional)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionSystem, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="48" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionSystem" DataContext="{Binding}"/>
+              <TextBlock Text="User / instrução" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionUser, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionUser" DataContext="{Binding}"/>
+              <TextBlock Text="Documento / contexto longo (opcional)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionDocument, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionDocument" DataContext="{Binding}"/>
+              <TextBlock Text="JSON schema / formato (opcional)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionJsonSchema, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="56" TextWrapping="Wrap" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionJsonSchema" DataContext="{Binding}"/>
+              <TextBlock Text="Temperatura (opcional, número)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionTemperature, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="LlmCompletionTemperature" DataContext="{Binding}"/>
+              <TextBlock Text="Variável — corpo JSON da resposta" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding LlmCompletionResponseBodyVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,8,0,0"
+                         Text="Chamada HTTP POST com corpo gerado: ollama_chat → /api/chat (Ollama/LM Studio); openai_chat → chat/completions. Use json_object ou JSON em Esquema para saída estruturada."/>
+            </StackPanel>
             <StackPanel Visibility="{Binding ShowActionShowMessage, Converter={StaticResource BoolVis}}">
               <TextBlock Text="Title" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding ShowMessageTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
@@ -689,6 +754,53 @@
               <TextBox Text="{Binding WordImageSource, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
               <TextBlock Text="Texto para posicionar imagem" Style="{StaticResource FieldLabel}"/>
               <TextBox Text="{Binding WordTextToFind, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowActionPdf, Converter={StaticResource BoolVis}}">
+              <TextBlock Text="Ficheiro PDF" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding PdfPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="PdfPath" DataContext="{Binding}"/>
+              <TextBlock Text="Modo de extração" Style="{StaticResource FieldLabel}"/>
+              <ComboBox SelectedValue="{Binding PdfMode}" SelectedValuePath="Content" Margin="0,0,0,10">
+                <ComboBoxItem Content="all"/>
+                <ComboBoxItem Content="page"/>
+                <ComboBoxItem Content="range"/>
+              </ComboBox>
+              <TextBlock Text="Página (1-based, modo page)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding PdfPage, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="PdfPage" DataContext="{Binding}"/>
+              <TextBlock Text="Intervalo — primeira página (modo range)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding PdfStartPage, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="PdfStartPage" DataContext="{Binding}"/>
+              <TextBlock Text="Intervalo — última página (modo range)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding PdfEndPage, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <local:TemplateVariableChips FieldKey="PdfEndPage" DataContext="{Binding}"/>
+              <TextBlock Text="Palavra-passe (PDF encriptado, opcional)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding PdfPassword, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <StackPanel Visibility="{Binding PdfShowInputPathsField, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="PDFs de entrada (merge, um caminho por linha)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PdfInputPaths, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Style="{StaticResource FieldBox}" FontFamily="Consolas"/>
+                <local:TemplateVariableChips FieldKey="PdfInputPaths" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding PdfShowOutputPathField, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Destino (pasta imagens / ficheiro novo PDF)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PdfOutputPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="PdfOutputPath" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding PdfShowImageFormatField, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Formato de imagem (png ou jpg)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PdfImageFormat, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="PdfImageFormat" DataContext="{Binding}"/>
+              </StackPanel>
+              <StackPanel Visibility="{Binding PdfShowRowToleranceField, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Tolerância de linha (tabelas, pontos; vazio = 4)" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PdfRowTolerance, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+                <local:TemplateVariableChips FieldKey="PdfRowTolerance" DataContext="{Binding}"/>
+              </StackPanel>
+              <TextBlock Text="Variável de saída (texto ou JSON; opcional em merge/páginas)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding PdfOutputVariable, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"/>
+              <TextBlock TextWrapping="Wrap" Foreground="#64748B" FontSize="11" Margin="0,8,0,0"
+                         Text="PdfPig (sem Adobe). Tabelas: heurística (sem OCR). Imagens: extrai XObjects; merge/extract páginas escreve PDF novo."/>
             </StackPanel>
 
             <StackPanel Visibility="{Binding ShowRunFlowSection, Converter={StaticResource BoolVis}}">

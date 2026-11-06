@@ -49,7 +49,8 @@ public static partial class FlowExecutor
         using var browser = new BrowserContext();
         using var excel = new ExcelContext();
         using var word = new WordContext();
-        return RunInner(project, projectRoot, browser, excel, word, onEvent ?? (_ => { }), cancellationToken);
+        using var pdf = new PdfContext();
+        return RunInner(project, projectRoot, browser, excel, word, pdf, onEvent ?? (_ => { }), cancellationToken);
     }
 
     static RunOutcome RunInner(
@@ -58,6 +59,7 @@ public static partial class FlowExecutor
         BrowserContext browser,
         ExcelContext excel,
         WordContext word,
+        PdfContext pdf,
         Action<RunEvent> onEvent,
         CancellationToken cancellationToken)
     {
@@ -84,6 +86,7 @@ public static partial class FlowExecutor
             browser,
             excel,
             word,
+            pdf,
             runVars,
             [],
             flowCache,
@@ -105,6 +108,7 @@ public static partial class FlowExecutor
         BrowserContext browser,
         ExcelContext excel,
         WordContext word,
+        PdfContext pdf,
         RunVariables runVars,
         List<object> loopFrames,
         ChildFlowCache flowCache,
@@ -175,6 +179,7 @@ public static partial class FlowExecutor
                                 browser,
                                 excel,
                                 word,
+                                pdf,
                                 childVars,
                                 [],
                                 flowCache,
@@ -197,6 +202,7 @@ public static partial class FlowExecutor
                                 browser,
                                 excel,
                                 word,
+                                pdf,
                                 runVars,
                                 [],
                                 flowCache,
@@ -212,7 +218,8 @@ public static partial class FlowExecutor
                     {
                         var outcome = ExecuteWithPolicy(
                             node, flowRef, telemetry, emit,
-                            node.Action, node.ErrorHandling, browser, excel, word, runVars, projectRoot);
+                            node.Action, node.ErrorHandling, browser, excel, word, pdf, runVars, projectRoot,
+                            cancellationToken);
                         summary = outcome.Summary;
                         EmitActionExecuted(
                             emit, telemetry, node, flowRef, summary,
@@ -465,8 +472,10 @@ public static partial class FlowExecutor
         BrowserContext browser,
         ExcelContext excel,
         WordContext word,
+        PdfContext pdf,
         RunVariables vars,
-        string? projectRoot)
+        string? projectRoot,
+        CancellationToken cancellationToken)
     {
         policy ??= new ErrorHandling();
         var attempts = policy.Attempts();
@@ -476,7 +485,7 @@ public static partial class FlowExecutor
         {
             try
             {
-                var summary = ActionExecutor.Execute(action, browser, excel, word, vars, projectRoot);
+                var summary = ActionExecutor.Execute(action, browser, excel, word, pdf, vars, projectRoot, cancellationToken);
                 return new ActionRunOutcome(summary, "Succeeded", false, null);
             }
             catch (Exception ex) when (attempt < attempts)

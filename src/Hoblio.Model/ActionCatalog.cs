@@ -28,6 +28,8 @@ public static class ActionCatalog
         NoOpAction => new("System", "NoOp"),
         DelayAction => new("System", "Wait"),
         HttpGetAction => new("Web", "InvokeWebServiceBase"),
+        HttpRequestAction => new("Web", "InvokeWebServiceBase"),
+        LlmCompletionAction => new("Web", "InvokeLLM"),
         ShowMessageAction => new("Display", "ShowMessage"),
         ShowGetUserInputAction => new("Display", "DisplayInputDialog"),
         ShowSelectFromListAction => new("Display", "SelectFromList"),
@@ -43,6 +45,7 @@ public static class ActionCatalog
         RunFlowAction => new("FlowControl", "CallFunction"),
         ExcelAction e => new("Excel", ExcelActionTypes.ModuleActionId(e.Type)),
         WordAction w => new("Word", WordActionTypes.ModuleActionId(w.Type)),
+        PdfAction p => new("PDF", PdfActionTypes.ModuleActionId(p.Type)),
         VariablesAction v => new("Variables", VariablesActionTypes.ModuleActionId(v.Type)),
         _ => new("System", action.Type),
     };
@@ -69,6 +72,12 @@ public static class ActionCatalog
             FileWriteAction fw => ([nameof(fw.Path)], null),
             FileAppendAction fa => ([nameof(fa.Path)], null),
             HttpGetAction h when !string.IsNullOrWhiteSpace(h.Variable) => (null, [h.Variable.Trim()]),
+            HttpRequestAction h => (
+                null,
+                h.ProducedVariables().ToList() is { Count: > 0 } list ? list : null),
+            LlmCompletionAction llm => (
+                null,
+                string.IsNullOrWhiteSpace(llm.ResponseBodyVariable) ? null : [llm.ResponseBodyVariable.Trim()]),
             WebAutomationAction w when w.ProducedVariables().Any() => (null, w.ProducedVariables().ToList()),
             SetVariableAction sv => (null, [sv.Variable]),
             ListAppendAction la => ([la.ListVariable], [la.ListVariable]),
@@ -78,6 +87,8 @@ public static class ActionCatalog
             RunFlowAction rf => (rf.Inputs?.Keys.ToList(), rf.Outputs),
             ExcelAction ex => ExcelVariableIo(ex),
             WordAction w => WordVariableIo(w),
+            PdfAction pdf =>
+                PdfVariableIo(pdf),
             IncreaseVariableAction iv => ([iv.Variable], [iv.Variable]),
             DecreaseVariableAction dv => ([dv.Variable], [dv.Variable]),
             VariablesAction va => VariablesVariableIo(va),
@@ -138,5 +149,25 @@ public static class ActionCatalog
         var inputs = new List<string> { w.Instance };
         var outputs = w.ProducedVariables().ToList();
         return (inputs, outputs.Count == 0 ? null : outputs);
+    }
+
+    static (IReadOnlyList<string>? Inputs, IReadOnlyList<string>? Outputs) PdfVariableIo(PdfAction pdf)
+    {
+        var inputs = new List<string>();
+        if (!string.IsNullOrWhiteSpace(pdf.Path))
+            inputs.Add(nameof(pdf.Path));
+        if (pdf.Type == PdfActionTypes.Merge)
+        {
+            if (!string.IsNullOrWhiteSpace(pdf.InputPaths))
+                inputs.Add(nameof(pdf.InputPaths));
+        }
+        else if (pdf.Type == PdfActionTypes.ExtractImages || pdf.Type == PdfActionTypes.ExtractPages)
+        {
+            if (!string.IsNullOrWhiteSpace(pdf.OutputPath))
+                inputs.Add(nameof(pdf.OutputPath));
+        }
+
+        var outputs = pdf.ProducedVariables().ToList();
+        return (inputs.Count == 0 ? null : inputs, outputs.Count == 0 ? null : outputs);
     }
 }

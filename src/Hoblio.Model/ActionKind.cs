@@ -85,6 +85,96 @@ public sealed class HttpGetAction : ActionKind
     }
 }
 
+/// <summary>
+/// REST/HTTP request (PAD "Invocar serviço Web"): method, headers, optional body, response variables.
+/// </summary>
+public sealed class HttpRequestAction : ActionKind
+{
+    public override string Type => "http_request";
+
+    public required string Url { get; init; }
+
+    /// <summary>HTTP method: get, post, put, patch, delete, head, options (case-insensitive).</summary>
+    public string Method { get; init; } = "get";
+
+    /// <summary>Optional Accept header value (e.g. application/json).</summary>
+    public string? Accept { get; init; }
+
+    /// <summary>
+    /// Optional request body; templates <c>{var}</c> are interpolated. Omitted or empty for GET/HEAD if not needed.
+    /// </summary>
+    public string? Body { get; init; }
+
+    /// <summary>Content-Type for the body (e.g. application/json). Used when <see cref="Body"/> is non-empty.</summary>
+    public string? ContentType { get; init; }
+
+    /// <summary>
+    /// Extra headers, one per line: <c>Name: Value</c>. Lines support <c>{var}</c> interpolation.
+    /// </summary>
+    public string? CustomHeaders { get; init; }
+
+    /// <summary>Variable to store the response body (optional).</summary>
+    public string? ResponseBodyVariable { get; init; }
+
+    /// <summary>Variable to store response headers as text (optional).</summary>
+    public string? ResponseHeadersVariable { get; init; }
+
+    /// <summary>Variable to store HTTP status code as string (optional).</summary>
+    public string? StatusCodeVariable { get; init; }
+
+    public override IEnumerable<string> ProducedVariables()
+    {
+        foreach (var v in new[] { ResponseBodyVariable, ResponseHeadersVariable, StatusCodeVariable })
+        {
+            if (!string.IsNullOrWhiteSpace(v))
+                yield return v.Trim();
+        }
+    }
+}
+
+/// <summary>
+/// Chama um LLM local ou compatível (Ollama <c>/api/chat</c>, OpenAI-style <c>/v1/chat/completions</c>): prompt, texto opcional do documento e esquema JSON opcional.
+/// </summary>
+public sealed class LlmCompletionAction : ActionKind
+{
+    public override string Type => "llm_completion";
+
+    /// <summary>URL completa (ex.: <c>http://127.0.0.1:11434/api/chat</c> ou <c>https://api.openai.com/v1/chat/completions</c>).</summary>
+    public required string Url { get; init; }
+
+    /// <summary><c>ollama_chat</c> (predefinição) ou <c>openai_chat</c>.</summary>
+    public string ApiStyle { get; init; } = "ollama_chat";
+
+    public required string Model { get; init; }
+
+    /// <summary>Mensagem de sistema (opcional).</summary>
+    public string? System { get; init; }
+
+    /// <summary>Mensagem do utilizador / instruções principais.</summary>
+    public string? User { get; init; }
+
+    /// <summary>Texto do documento ou contexto longo (opcional; interpolado).</summary>
+    public string? Document { get; init; }
+
+    /// <summary>
+    /// Esquema ou restrição de formato JSON (opcional). Para Ollama é enviado como <c>format</c>;
+    /// para OpenAI, se não estiver vazio, usa-se <c>response_format</c> com <c>type: json_object</c> quando o valor for o literal <c>json_object</c>, caso contrário tenta-se interpretar como JSON.
+    /// </summary>
+    public string? JsonSchema { get; init; }
+
+    /// <summary>Temperatura (opcional, texto numérico).</summary>
+    public string? Temperature { get; init; }
+
+    /// <summary>Armazena o corpo JSON da resposta (obrigatório para produzir variável).</summary>
+    public required string ResponseBodyVariable { get; init; }
+
+    public override IEnumerable<string> ProducedVariables()
+    {
+        if (!string.IsNullOrWhiteSpace(ResponseBodyVariable))
+            yield return ResponseBodyVariable.Trim();
+    }
+}
+
 public sealed class ShowMessageAction : ActionKind
 {
     public override string Type => "show_message";

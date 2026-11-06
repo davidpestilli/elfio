@@ -515,6 +515,9 @@ public sealed partial class FlowEditorViewModel
         FileReadAction => ("path", "variable", ""),
         DelayAction => ("milliseconds", "", ""),
         HttpGetAction => ("url", "", ""),
+        HttpRequestAction => ("url", "method", "body"),
+        LlmCompletionAction => ("url", "model", "user"),
+        PdfAction => ("path", "mode", "output_variable"),
         ShowMessageAction => ("title", "text", "timeout_seconds"),
         _ => ("campo 1", "campo 2", "campo 3"),
     };
@@ -540,6 +543,27 @@ public sealed partial class FlowEditorViewModel
         FileReadAction a => index switch { 1 => a.Path, 2 => a.Variable, _ => "" },
         DelayAction a => index switch { 1 => a.Milliseconds.ToString(), _ => "" },
         HttpGetAction a => index switch { 1 => a.Url, _ => "" },
+        HttpRequestAction a => index switch
+        {
+            1 => a.Url,
+            2 => a.Method,
+            3 => a.Body ?? "",
+            _ => "",
+        },
+        LlmCompletionAction a => index switch
+        {
+            1 => a.Url,
+            2 => a.Model,
+            3 => a.User ?? "",
+            _ => "",
+        },
+        PdfAction a => index switch
+        {
+            1 => a.Path,
+            2 => a.Mode ?? PdfEnums.ModeAll,
+            3 => a.OutputVariable ?? "",
+            _ => "",
+        },
         ShowMessageAction a => index switch { 1 => a.Title, 2 => a.Text, 3 => a.TimeoutSeconds?.ToString() ?? "", _ => "" },
         _ => "",
     };
@@ -593,6 +617,45 @@ public sealed partial class FlowEditorViewModel
             DelayAction a => a,
             HttpGetAction a when index == 1 => new HttpGetAction { Url = value },
             HttpGetAction a => a,
+            HttpRequestAction a => new HttpRequestAction
+            {
+                Url = index == 1 ? value : a.Url,
+                Method = index == 2 ? (string.IsNullOrWhiteSpace(value) ? "get" : value) : a.Method,
+                Accept = a.Accept,
+                Body = index == 3 ? (string.IsNullOrWhiteSpace(value) ? null : value) : a.Body,
+                ContentType = a.ContentType,
+                CustomHeaders = a.CustomHeaders,
+                ResponseBodyVariable = a.ResponseBodyVariable,
+                ResponseHeadersVariable = a.ResponseHeadersVariable,
+                StatusCodeVariable = a.StatusCodeVariable,
+            },
+            LlmCompletionAction a => new LlmCompletionAction
+            {
+                Url = index == 1 ? value : a.Url,
+                ApiStyle = a.ApiStyle,
+                Model = index == 2 ? value : a.Model,
+                System = a.System,
+                User = index == 3 ? (string.IsNullOrWhiteSpace(value) ? null : value) : a.User,
+                Document = a.Document,
+                JsonSchema = a.JsonSchema,
+                Temperature = a.Temperature,
+                ResponseBodyVariable = a.ResponseBodyVariable,
+            },
+            PdfAction a => new PdfAction
+            {
+                Operation = a.Operation,
+                Path = index == 1 ? value : a.Path,
+                Mode = index == 2 ? (string.IsNullOrWhiteSpace(value) ? PdfEnums.ModeAll : value) : a.Mode,
+                Page = a.Page,
+                StartPage = a.StartPage,
+                EndPage = a.EndPage,
+                Password = a.Password,
+                OutputPath = a.OutputPath,
+                InputPaths = a.InputPaths,
+                ImageFormat = a.ImageFormat,
+                RowTolerance = a.RowTolerance,
+                OutputVariable = index == 3 ? value : a.OutputVariable,
+            },
             ShowMessageAction a => new ShowMessageAction
             {
                 Title = index == 1 ? value : a.Title,

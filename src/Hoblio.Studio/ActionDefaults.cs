@@ -12,9 +12,10 @@ public static class ActionDefaults
         "increase_variable", "decrease_variable", "file_write", "file_append", "file_read",
         "list_append", "list_clear",
         ..VariablesActionTypes.All,
-        "delay", "http_get",
+        "delay", "http_get", "http_request", "llm_completion",
         ..ExcelActionTypes.All,
         ..WordActionTypes.All,
+        ..PdfActionTypes.All,
         "show_message", "show_get_user_input", "show_select_from_list", "run_flow",
     ];
 
@@ -25,6 +26,8 @@ public static class ActionDefaults
             return excel;
         if (WordActionDefaults.TryCreate(type, takenNames) is { } word)
             return word;
+        if (PdfActionDefaults.TryCreate(type, takenNames) is { } pdf)
+            return pdf;
         if (WebAutomationActionDefaults.TryCreate(type, takenNames) is { } web)
             return web;
         if (VariablesActionDefaults.TryCreate(type, takenNames) is { } variables)
@@ -51,6 +54,22 @@ public static class ActionDefaults
             "list_clear" => new ListClearAction { ListVariable = "items" },
             "delay" => new DelayAction { Milliseconds = 1000 },
             "http_get" => new HttpGetAction { Url = "https://example.com" },
+            "http_request" => new HttpRequestAction
+            {
+                Url = "https://example.com",
+                Method = "get",
+                Accept = "application/json",
+                ResponseBodyVariable = NextName("WebResponse", takenNames) ?? "WebResponse1",
+                StatusCodeVariable = NextName("HttpStatus", takenNames) ?? "HttpStatus1",
+            },
+            "llm_completion" => new LlmCompletionAction
+            {
+                Url = "http://127.0.0.1:11434/api/chat",
+                ApiStyle = "ollama_chat",
+                Model = "llama3.2",
+                User = "Resuma o texto em três linhas.",
+                ResponseBodyVariable = NextName("LlmOut", takenNames) ?? "LlmOut1",
+            },
             "show_message" => new ShowMessageAction
             {
                 Title = "Hoblio",

@@ -24,6 +24,9 @@ Atualize este arquivo quando fechar gaps. Verificação automática: `scripts/ve
 | List append/clear | ✓ | ✓ | files-lists-demo |
 | Variáveis PAD (`variables_*`, 31 + escalares/listas legadas) | — | ✓ | `VariablesBehaviorTests`, `VariablesActionCoverageTests`, `variables-demo-flow` |
 | HTTP GET | ✓ | ✓ | web-demo-flow (manual); C# opcional `variable` no JSON |
+| HTTP REST (`http_request`: método, Accept, cabeçalhos, corpo, status + corpo + cabeçalhos resposta) | — | ✓ | `HttpRequestRuntimeTests` + paridade PAD Web/InvokeWebService |
+| LLM (`llm_completion`: Ollama `/api/chat`, OpenAI-style chat, prompt + documento + JSON opcional) | — | ✓ | `LlmCompletionRuntimeTests`; doc [modulo-llm.md](construcao/modulo-llm.md) |
+| PDF (`pdf_*`: texto, tabelas heurísticas, imagens, extract páginas, merge; PdfPig) | — | ✓ | `PdfRuntimeTests`; doc [modulo-pdf.md](construcao/modulo-pdf.md) |
 | If / ForEach / While / Repeat | ✓ | ✓ | DemoFlowTests |
 | Next loop / Exit loop | ✓ | ✓ | flow-control (se usado no demo) |
 | Browser CDP (`browser_*`, 29 ações PAD + attach) | ✓ | ✓ | browser-demo-flow (manual + Chrome); attach manual + `--remote-debugging-port` |
@@ -95,7 +98,7 @@ Legenda: ✓ implementado · ○ pendente / simplificado
 | `action.rs` (5 JSON roundtrips) | `ActionKindTests` (5 facts) |
 | `expr` / `variables` / `lists` / `adjust_var` unit | `UnitBehaviorTests` (+3) |
 
-Contagem atual: **93** testes automatizados (`dotnet test` na solution; nov/2026).
+Contagem atual: **124** testes automatizados (`dotnet test` na solution; nov/2026).
 
 Verificação local: `.\scripts\verify-parity.ps1` (Release build + testes + validate nos demos incl. `variables-demo-flow` + probe browser).
 

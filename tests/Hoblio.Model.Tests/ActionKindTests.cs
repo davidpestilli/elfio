@@ -155,6 +155,75 @@ public class ActionKindTests
     }
 
     [Fact]
+    public void Pdf_extract_text_roundtrip_and_produced()
+    {
+        var a = new PdfAction
+        {
+            Operation = PdfActionTypes.ExtractText,
+            Path = "doc.pdf",
+            Mode = PdfEnums.ModeRange,
+            StartPage = "1",
+            EndPage = "{last}",
+            OutputVariable = "PdfText",
+        };
+        Roundtrip(a);
+        Assert.Equal(["PdfText"], a.ProducedVariables().ToArray());
+        var desc = ActionCatalog.Describe(a);
+        Assert.Equal("PDF", desc.Module);
+        Assert.Equal("ExtractTextFromPDF", desc.ActionId);
+    }
+
+    [Fact]
+    public void Http_request_roundtrip_optional_fields_and_produced_vars()
+    {
+        var minimal = new HttpRequestAction { Url = "https://api.example.com/v1", Method = "get" };
+        Roundtrip(minimal);
+        Assert.Empty(minimal.ProducedVariables());
+
+        var full = new HttpRequestAction
+        {
+            Url = "https://x.supabase.co/rest/v1/t",
+            Method = "patch",
+            Accept = "application/json",
+            Body = """{"x": "{id}"}""",
+            ContentType = "application/json",
+            CustomHeaders = "apikey: {key}\nPrefer: return=minimal",
+            ResponseBodyVariable = "WebServiceResponse",
+            ResponseHeadersVariable = "WebServiceResponseHeaders",
+            StatusCodeVariable = "StatusCode",
+        };
+        Roundtrip(full);
+        Assert.Equal(
+            ["WebServiceResponse", "WebServiceResponseHeaders", "StatusCode"],
+            full.ProducedVariables().ToArray());
+        var desc = ActionCatalog.Describe(full);
+        Assert.Equal("Web", desc.Module);
+        Assert.Equal("InvokeWebServiceBase", desc.ActionId);
+    }
+
+    [Fact]
+    public void Llm_completion_roundtrip_and_catalog()
+    {
+        var a = new LlmCompletionAction
+        {
+            Url = "http://127.0.0.1:11434/api/chat",
+            ApiStyle = "ollama_chat",
+            Model = "m",
+            System = "sys",
+            User = "u",
+            Document = "d",
+            JsonSchema = """{"type":"object"}""",
+            Temperature = "0.2",
+            ResponseBodyVariable = "LlmOut",
+        };
+        Roundtrip(a);
+        Assert.Equal(["LlmOut"], a.ProducedVariables().ToArray());
+        var desc = ActionCatalog.Describe(a);
+        Assert.Equal("Web", desc.Module);
+        Assert.Equal("InvokeLLM", desc.ActionId);
+    }
+
+    [Fact]
     public void Excel_actions_roundtrip_and_catalog_id()
     {
         var launch = new ExcelAction

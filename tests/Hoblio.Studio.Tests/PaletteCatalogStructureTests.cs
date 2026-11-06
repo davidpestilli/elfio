@@ -30,6 +30,16 @@ public sealed class PaletteCatalogStructureTests
     }
 
     [Fact]
+    public void Pdf_is_single_group_with_five_actions()
+    {
+        var pdfGroups = ActionPaletteCatalog.Groups.Where(g => g.Name == "PDF").ToList();
+        Assert.Single(pdfGroups);
+        var pdf = pdfGroups[0];
+        Assert.Empty(pdf.Sections);
+        Assert.Equal(5, pdf.Items.Count);
+    }
+
+    [Fact]
     public void All_palette_groups_and_sections_start_collapsed()
     {
         foreach (var group in ActionPaletteCatalog.Groups)

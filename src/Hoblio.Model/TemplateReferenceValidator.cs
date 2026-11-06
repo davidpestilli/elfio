@@ -123,6 +123,10 @@ public static class TemplateReferenceValidator
         FileReadAction a => [a.Path],
         ListAppendAction a => [a.Item],
         HttpGetAction a => [a.Url],
+        HttpRequestAction h => Yield(
+            h.Url, h.Accept, h.Body, h.ContentType, h.CustomHeaders),
+        LlmCompletionAction l => Yield(
+            l.Url, l.Model, l.System, l.User, l.Document, l.JsonSchema, l.Temperature),
         ShowMessageAction a => [a.Title, a.Text],
         ShowGetUserInputAction a => [a.Title, a.Message, a.DefaultValue],
         ShowSelectFromListAction a => [a.Title, a.Message, a.List],
@@ -136,6 +140,8 @@ public static class TemplateReferenceValidator
             e.SourceWorksheetName, e.TargetWorksheetName, e.FilterValue1, e.FilterValue2, e.SortColumn2),
         WordAction w => Yield(
             w.Path, w.DocumentName, w.Mode, w.Pages, w.Bookmark, w.Value, w.FindText, w.ReplaceText, w.ImageSource, w.TextToFind),
+        PdfAction p => Yield(
+            p.Path, p.Mode, p.Page, p.StartPage, p.EndPage, p.Password, p.OutputPath, p.InputPaths, p.ImageFormat, p.RowTolerance),
         VariablesAction v => Yield(
             v.Value, v.Values, v.Items, v.FindText, v.ReplaceText, v.FilterValue, v.FilterValue2, v.FilterConditions, v.JoinColumn, v.JoinColumn2,
             v.Path, v.MinValue, v.MaxValue, v.DecimalPlaces, v.Count, v.ItemIndex, v.JsonText),

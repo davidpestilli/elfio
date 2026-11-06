@@ -132,12 +132,40 @@ public static class FlowVariableRename
             Url = ReplaceTemplates(a.Url, oldName, newName),
             Variable = ReplaceVarName(a.Variable, oldName, newName),
         },
+        HttpRequestAction a => new HttpRequestAction
+        {
+            Url = ReplaceTemplates(a.Url, oldName, newName),
+            Method = a.Method,
+            Accept = a.Accept is null ? null : ReplaceTemplates(a.Accept, oldName, newName),
+            Body = a.Body is null ? null : ReplaceTemplates(a.Body, oldName, newName),
+            ContentType = a.ContentType is null ? null : ReplaceTemplates(a.ContentType, oldName, newName),
+            CustomHeaders = a.CustomHeaders is null ? null : ReplaceTemplates(a.CustomHeaders, oldName, newName),
+            ResponseBodyVariable = ReplaceVarName(a.ResponseBodyVariable, oldName, newName),
+            ResponseHeadersVariable = ReplaceVarName(a.ResponseHeadersVariable, oldName, newName),
+            StatusCodeVariable = ReplaceVarName(a.StatusCodeVariable, oldName, newName),
+        },
+        LlmCompletionAction a => new LlmCompletionAction
+        {
+            Url = ReplaceTemplates(a.Url, oldName, newName),
+            ApiStyle = a.ApiStyle,
+            Model = ReplaceTemplates(a.Model, oldName, newName),
+            System = a.System is null ? null : ReplaceTemplates(a.System, oldName, newName),
+            User = a.User is null ? null : ReplaceTemplates(a.User, oldName, newName),
+            Document = a.Document is null ? null : ReplaceTemplates(a.Document, oldName, newName),
+            JsonSchema = a.JsonSchema is null ? null : ReplaceTemplates(a.JsonSchema, oldName, newName),
+            Temperature = a.Temperature is null ? null : ReplaceTemplates(a.Temperature, oldName, newName),
+            ResponseBodyVariable = ReplaceVarName(a.ResponseBodyVariable, oldName, newName),
+        },
         ExcelAction e => ExcelActionMutator.RenameReferences(
             e,
             text => ReplaceTemplates(text, oldName, newName),
             value => ReplaceVarName(value, oldName, newName)),
         WordAction w => WordActionMutator.RenameReferences(
             w,
+            text => ReplaceTemplates(text, oldName, newName),
+            value => ReplaceVarName(value, oldName, newName)),
+        PdfAction p => PdfActionMutator.RenameReferences(
+            p,
             text => ReplaceTemplates(text, oldName, newName),
             value => ReplaceVarName(value, oldName, newName)),
         VariablesAction v => VariablesActionMutator.RenameReferences(

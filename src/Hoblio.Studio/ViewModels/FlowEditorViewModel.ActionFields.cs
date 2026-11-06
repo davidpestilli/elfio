@@ -21,7 +21,10 @@ public sealed partial class FlowEditorViewModel
                 ShowSelectFromListAction a => $"Lista: {Truncate(a.Title, 30)}",
                 ExcelAction a => $"Excel: {ExcelActionTypes.ModuleActionId(a.Type)}",
                 WordAction a => $"Word: {WordActionTypes.ModuleActionId(a.Type)}",
+                PdfAction a => $"PDF: {PdfActionTypes.ModuleActionId(a.Type)}",
                 VariablesAction a => $"Variáveis: {VariablesActionTypes.ModuleActionId(a.Type)}",
+                HttpRequestAction a => $"HTTP {a.Method}: {Truncate(a.Url, 36)}",
+                LlmCompletionAction l => $"LLM ({l.ApiStyle}) {Truncate(l.Model, 28)}",
                 _ => node.Action.Type,
             };
         }
@@ -44,6 +47,7 @@ public sealed partial class FlowEditorViewModel
     public bool ShowActionListClear => GetSelectedNode()?.Action is ListClearAction;
     public bool ShowActionListAppend => GetSelectedNode()?.Action is ListAppendAction;
     public bool ShowActionHttpGet => GetSelectedNode()?.Action is HttpGetAction;
+    public bool ShowActionHttpRequest => GetSelectedNode()?.Action is HttpRequestAction;
     public bool ShowActionShowMessage => GetSelectedNode()?.Action is ShowMessageAction;
     public bool ShowActionShowGetUserInput => GetSelectedNode()?.Action is ShowGetUserInputAction;
     public bool ShowActionShowSelectFromList => GetSelectedNode()?.Action is ShowSelectFromListAction;
@@ -85,6 +89,138 @@ public sealed partial class FlowEditorViewModel
             if (GetSelectedNode() is not { } node || A<HttpGetAction>() is not { } a)
                 return;
             ApplyProducerRenameOr(node, () => node.Action = new HttpGetAction { Url = a.Url, Variable = value }, a.Variable, value);
+        }
+    }
+
+    HttpRequestAction PatchHttpRequest(HttpRequestAction a,
+        string? url = null,
+        string? method = null,
+        string? accept = null,
+        string? body = null,
+        string? contentType = null,
+        string? customHeaders = null,
+        string? responseBodyVariable = null,
+        string? responseHeadersVariable = null,
+        string? statusCodeVariable = null) =>
+        new()
+        {
+            Url = url ?? a.Url,
+            Method = method ?? a.Method,
+            Accept = accept ?? a.Accept,
+            Body = body ?? a.Body,
+            ContentType = contentType ?? a.ContentType,
+            CustomHeaders = customHeaders ?? a.CustomHeaders,
+            ResponseBodyVariable = responseBodyVariable ?? a.ResponseBodyVariable,
+            ResponseHeadersVariable = responseHeadersVariable ?? a.ResponseHeadersVariable,
+            StatusCodeVariable = statusCodeVariable ?? a.StatusCodeVariable,
+        };
+
+    public string HttpRequestUrl
+    {
+        get => A<HttpRequestAction>()?.Url ?? "";
+        set
+        {
+            if (A<HttpRequestAction>() is { } a)
+                SetAction(PatchHttpRequest(a, url: value));
+            else
+                SetAction(new HttpRequestAction { Url = value, Method = "get" });
+        }
+    }
+
+    public string HttpRequestMethod
+    {
+        get => A<HttpRequestAction>()?.Method ?? "get";
+        set
+        {
+            if (A<HttpRequestAction>() is not { } a)
+                return;
+            SetAction(PatchHttpRequest(a, method: string.IsNullOrWhiteSpace(value) ? "get" : value.Trim()));
+        }
+    }
+
+    public string HttpRequestAccept
+    {
+        get => A<HttpRequestAction>()?.Accept ?? "";
+        set
+        {
+            if (A<HttpRequestAction>() is not { } a)
+                return;
+            SetAction(PatchHttpRequest(a, accept: string.IsNullOrWhiteSpace(value) ? null : value));
+        }
+    }
+
+    public string HttpRequestBody
+    {
+        get => A<HttpRequestAction>()?.Body ?? "";
+        set
+        {
+            if (A<HttpRequestAction>() is not { } a)
+                return;
+            SetAction(PatchHttpRequest(a, body: string.IsNullOrWhiteSpace(value) ? null : value));
+        }
+    }
+
+    public string HttpRequestContentType
+    {
+        get => A<HttpRequestAction>()?.ContentType ?? "";
+        set
+        {
+            if (A<HttpRequestAction>() is not { } a)
+                return;
+            SetAction(PatchHttpRequest(a, contentType: string.IsNullOrWhiteSpace(value) ? null : value));
+        }
+    }
+
+    public string HttpRequestCustomHeaders
+    {
+        get => A<HttpRequestAction>()?.CustomHeaders ?? "";
+        set
+        {
+            if (A<HttpRequestAction>() is not { } a)
+                return;
+            SetAction(PatchHttpRequest(a, customHeaders: string.IsNullOrWhiteSpace(value) ? null : value));
+        }
+    }
+
+    public string HttpRequestResponseBodyVariable
+    {
+        get => A<HttpRequestAction>()?.ResponseBodyVariable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<HttpRequestAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node,
+                () => node.Action = PatchHttpRequest(a, responseBodyVariable: string.IsNullOrWhiteSpace(value) ? null : value),
+                a.ResponseBodyVariable,
+                value);
+        }
+    }
+
+    public string HttpRequestResponseHeadersVariable
+    {
+        get => A<HttpRequestAction>()?.ResponseHeadersVariable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<HttpRequestAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node,
+                () => node.Action = PatchHttpRequest(a, responseHeadersVariable: string.IsNullOrWhiteSpace(value) ? null : value),
+                a.ResponseHeadersVariable,
+                value);
+        }
+    }
+
+    public string HttpRequestStatusCodeVariable
+    {
+        get => A<HttpRequestAction>()?.StatusCodeVariable ?? "";
+        set
+        {
+            if (GetSelectedNode() is not { } node || A<HttpRequestAction>() is not { } a)
+                return;
+            ApplyProducerRenameOr(node,
+                () => node.Action = PatchHttpRequest(a, statusCodeVariable: string.IsNullOrWhiteSpace(value) ? null : value),
+                a.StatusCodeVariable,
+                value);
         }
     }
 
@@ -310,6 +446,8 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionListClear));
         OnPropertyChanged(nameof(ShowActionListAppend));
         OnPropertyChanged(nameof(ShowActionHttpGet));
+        OnPropertyChanged(nameof(ShowActionHttpRequest));
+        OnPropertyChanged(nameof(ShowActionLlmCompletion));
         OnPropertyChanged(nameof(ShowActionShowMessage));
         OnPropertyChanged(nameof(ShowActionShowGetUserInput));
         OnPropertyChanged(nameof(ShowActionShowSelectFromList));
@@ -318,6 +456,8 @@ public sealed partial class FlowEditorViewModel
         OnPropertyChanged(nameof(ShowActionSetVariable));
         RefreshExcelInspector();
         RefreshWordInspector();
+        RefreshPdfInspector();
+        RefreshLlmCompletionInspector();
         RefreshVariablesInspector();
         RefreshWebAutomationInspector();
         NotifyAllActionFieldProperties();
@@ -329,7 +469,16 @@ public sealed partial class FlowEditorViewModel
         {
             nameof(FileWritePath), nameof(FileWriteContent), nameof(FileAppendPath), nameof(FileAppendContent),
             nameof(FileReadPath), nameof(FileReadVariable), nameof(ListClearVariable), nameof(ListAppendVariable),
-            nameof(ListAppendItem), nameof(HttpGetUrl), nameof(HttpGetVariable), nameof(ShowMessageTitle), nameof(ShowMessageText),
+            nameof(ListAppendItem), nameof(HttpGetUrl), nameof(HttpGetVariable),
+            nameof(HttpRequestUrl), nameof(HttpRequestMethod), nameof(HttpRequestAccept), nameof(HttpRequestBody),
+            nameof(HttpRequestContentType), nameof(HttpRequestCustomHeaders),
+            nameof(HttpRequestResponseBodyVariable), nameof(HttpRequestResponseHeadersVariable), nameof(HttpRequestStatusCodeVariable),
+            nameof(LlmCompletionUrl), nameof(LlmCompletionApiStyle), nameof(LlmCompletionModel), nameof(LlmCompletionSystem),
+            nameof(LlmCompletionUser), nameof(LlmCompletionDocument), nameof(LlmCompletionJsonSchema), nameof(LlmCompletionTemperature),
+            nameof(LlmCompletionResponseBodyVariable),
+            nameof(PdfPath), nameof(PdfMode), nameof(PdfPage), nameof(PdfStartPage), nameof(PdfEndPage), nameof(PdfPassword),
+            nameof(PdfOutputPath), nameof(PdfInputPaths), nameof(PdfImageFormat), nameof(PdfRowTolerance), nameof(PdfOutputVariable),
+            nameof(ShowMessageTitle), nameof(ShowMessageText),
             nameof(ShowMessageTimeoutText), nameof(UserInputTitle), nameof(UserInputMessage), nameof(UserInputDefault),
             nameof(UserInputKindMode), nameof(UserInputTopmost), nameof(UserInputVariable), nameof(ButtonPressedVariable),
             nameof(SelectFromListTitle), nameof(SelectFromListMessage), nameof(SelectFromListItems),

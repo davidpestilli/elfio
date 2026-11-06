@@ -34,6 +34,10 @@ public static class ActionPaletteCatalog
                 new("action:no_op", "No-op", "Não faz nada (placeholder)", "NoOp noop"),
                 new("action:delay", "Aguardar", "Aguarda milissegundos", "Delay wait sleep"),
                 new("action:http_get", "HTTP GET", "Requisição HTTP GET", "HttpGet http rede web"),
+                new("action:http_request", "HTTP / REST", "Invocar serviço web (método, cabeçalhos, corpo)",
+                    "HttpRequest POST PATCH PUT InvokeWebService REST API supabase"),
+                new("action:llm_completion", "LLM (Ollama / OpenAI)", "Prompt + documento + JSON opcional via POST",
+                    "Ollama LM Studio InvokeLLM chat completions local"),
             ],
         },
         new PaletteGroup
@@ -62,6 +66,7 @@ public static class ActionPaletteCatalog
         },
         ExcelPaletteCatalog.Group,
         WordPaletteCatalog.Group,
+        PdfPaletteCatalog.Group,
         BrowserPaletteCatalog.Group,
         VariablesPaletteCatalog.Group,
         new PaletteGroup

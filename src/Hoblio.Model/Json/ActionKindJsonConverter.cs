@@ -51,6 +51,30 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 Url = root.GetProperty("url").GetString() ?? "",
                 Variable = GetString(root, "variable"),
             },
+            "http_request" => new HttpRequestAction
+            {
+                Url = root.GetProperty("url").GetString() ?? "",
+                Method = GetString(root, "method") ?? "get",
+                Accept = GetString(root, "accept"),
+                Body = GetString(root, "body"),
+                ContentType = GetString(root, "content_type"),
+                CustomHeaders = GetString(root, "custom_headers"),
+                ResponseBodyVariable = GetString(root, "response_body_variable"),
+                ResponseHeadersVariable = GetString(root, "response_headers_variable"),
+                StatusCodeVariable = GetString(root, "status_code_variable"),
+            },
+            "llm_completion" => new LlmCompletionAction
+            {
+                Url = root.GetProperty("url").GetString() ?? "",
+                ApiStyle = GetString(root, "api_style") ?? "ollama_chat",
+                Model = root.GetProperty("model").GetString() ?? "",
+                System = GetString(root, "system"),
+                User = GetString(root, "user"),
+                Document = GetString(root, "document"),
+                JsonSchema = GetString(root, "json_schema"),
+                Temperature = GetString(root, "temperature"),
+                ResponseBodyVariable = root.GetProperty("response_body_variable").GetString() ?? "",
+            },
             "show_message" => new ShowMessageAction
             {
                 Title = root.GetProperty("title").GetString() ?? "",
@@ -100,6 +124,7 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
             "run_flow" => ReadRunFlow(root),
             _ when ExcelActionTypes.IsExcelType(type) => ExcelActionJson.Read(root, type),
             _ when WordActionTypes.IsWordType(type) => WordActionJson.Read(root, type),
+            _ when PdfActionTypes.IsPdfType(type) => PdfActionJson.Read(root, type),
             _ when VariablesActionTypes.IsVariablesType(type) => VariablesActionJson.Read(root, type),
             _ => throw new JsonException($"unknown action type `{type}`"),
         };
@@ -144,6 +169,28 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
             case HttpGetAction a:
                 writer.WriteString("url", a.Url);
                 WriteOptionalString(writer, "variable", a.Variable);
+                break;
+            case HttpRequestAction a:
+                writer.WriteString("url", a.Url);
+                writer.WriteString("method", string.IsNullOrWhiteSpace(a.Method) ? "get" : a.Method);
+                WriteOptionalString(writer, "accept", a.Accept);
+                WriteOptionalString(writer, "body", a.Body);
+                WriteOptionalString(writer, "content_type", a.ContentType);
+                WriteOptionalString(writer, "custom_headers", a.CustomHeaders);
+                WriteOptionalString(writer, "response_body_variable", a.ResponseBodyVariable);
+                WriteOptionalString(writer, "response_headers_variable", a.ResponseHeadersVariable);
+                WriteOptionalString(writer, "status_code_variable", a.StatusCodeVariable);
+                break;
+            case LlmCompletionAction a:
+                writer.WriteString("url", a.Url);
+                writer.WriteString("api_style", string.IsNullOrWhiteSpace(a.ApiStyle) ? "ollama_chat" : a.ApiStyle);
+                writer.WriteString("model", a.Model);
+                WriteOptionalString(writer, "system", a.System);
+                WriteOptionalString(writer, "user", a.User);
+                WriteOptionalString(writer, "document", a.Document);
+                WriteOptionalString(writer, "json_schema", a.JsonSchema);
+                WriteOptionalString(writer, "temperature", a.Temperature);
+                writer.WriteString("response_body_variable", a.ResponseBodyVariable);
                 break;
             case ShowMessageAction a:
                 writer.WriteString("title", a.Title);
@@ -193,6 +240,9 @@ public sealed class ActionKindJsonConverter : JsonConverter<ActionKind>
                 break;
             case WordAction a:
                 WordActionJson.Write(writer, a);
+                break;
+            case PdfAction a:
+                PdfActionJson.Write(writer, a);
                 break;
             case VariablesAction a:
                 VariablesActionJson.Write(writer, a);

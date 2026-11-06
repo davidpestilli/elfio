@@ -27,6 +27,8 @@ Convenções:
 | `no_op` | Utilitários | `System` | `NoOp` | — |
 | `delay` | Utilitários | `System` | `Wait` | — |
 | `http_get` | Utilitários | `Web` | `InvokeWebServiceBase` | `variable` (opcional) |
+| `http_request` | Utilitários | `Web` | `InvokeWebServiceBase` | `response_body_variable`, `response_headers_variable`, `status_code_variable` (opcionais) |
+| `llm_completion` | Utilitários | `Web` | `InvokeLLM` | `response_body_variable` |
 | `show_message` | Caixa de mensagens | `Display` | `ShowMessage` | — |
 | `show_get_user_input` | Caixa de mensagens | `Display` | `DisplayInputDialog` | `user_input_variable`, `button_pressed_variable` |
 | `show_select_from_list` | Caixa de mensagens | `Display` | `SelectFromList` | `selected_item_variable`, `selected_index_variable`, `button_pressed_variable` |
@@ -43,10 +45,11 @@ Convenções:
 | `run_flow` | Fluxos | `FlowControl` | `CallFunction` | `outputs[]` |
 | `excel_*` (41 tipos) | Excel → Básico / Avançado | `Excel` | `LaunchExcel`, `ReadFromExcel`, … | ver `ExcelActionTypes` |
 | `word_*` (8 tipos) | Word | `Word` | `LaunchWord`, `ReadFromWord`, … | ver `WordActionTypes` |
+| `pdf_*` (5 tipos) | PDF | `PDF` | `ExtractTextFromPDF`, `ExtractTablesFromPDF`, `ExtractImagesFromPDF`, `ExtractPagesToNewPDF`, `MergePDFFiles` | ver [modulo-pdf.md](./modulo-pdf.md) e `PdfActionTypes` |
 
 Notas:
 
-- **`Web` vs `WebAutomation`**: `http_get` é requisição HTTP genérica; ações `browser_*` compartilham sessão CDP (`BrowserContext`).
+- **`Web` vs `WebAutomation`**: `http_get` e `http_request` são HTTP sem browser (paridade com PAD *Invocar serviço Web* para REST); ações `browser_*` compartilham sessão CDP (`BrowserContext`).
 - **`Variables` / `Assign`**: atribuição é ação no grafo; listas vivem em `RunVariables` como JSON array serializado.
 - **`run_flow`**: `action_id` `CallFunction`; `flow_ref` no log é `flow_id`, caminho relativo, rótulo do subfluxo embutido ou `projeto:fluxo` quando a chamada atravessa projeto (`project`). Ver [composicao-superfluxos.md](./composicao-superfluxos.md).
 

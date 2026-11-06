@@ -138,6 +138,60 @@ public sealed partial class FlowEditorViewModel
             case "WebUrl":
                 WebUrl = WebUrl + token;
                 break;
+            case "HttpRequestUrl":
+                HttpRequestUrl = HttpRequestUrl + token;
+                break;
+            case "HttpRequestBody":
+                HttpRequestBody = HttpRequestBody + token;
+                break;
+            case "HttpRequestCustomHeaders":
+                HttpRequestCustomHeaders = HttpRequestCustomHeaders + token;
+                break;
+            case "PdfPath":
+                PdfPath = PdfPath + token;
+                break;
+            case "PdfPage":
+                PdfPage = PdfPage + token;
+                break;
+            case "PdfStartPage":
+                PdfStartPage = PdfStartPage + token;
+                break;
+            case "PdfEndPage":
+                PdfEndPage = PdfEndPage + token;
+                break;
+            case "PdfOutputPath":
+                PdfOutputPath = PdfOutputPath + token;
+                break;
+            case "PdfInputPaths":
+                PdfInputPaths = PdfInputPaths + token;
+                break;
+            case "PdfImageFormat":
+                PdfImageFormat = PdfImageFormat + token;
+                break;
+            case "PdfRowTolerance":
+                PdfRowTolerance = PdfRowTolerance + token;
+                break;
+            case "LlmCompletionUrl":
+                LlmCompletionUrl = LlmCompletionUrl + token;
+                break;
+            case "LlmCompletionModel":
+                LlmCompletionModel = LlmCompletionModel + token;
+                break;
+            case "LlmCompletionSystem":
+                LlmCompletionSystem = LlmCompletionSystem + token;
+                break;
+            case "LlmCompletionUser":
+                LlmCompletionUser = LlmCompletionUser + token;
+                break;
+            case "LlmCompletionDocument":
+                LlmCompletionDocument = LlmCompletionDocument + token;
+                break;
+            case "LlmCompletionJsonSchema":
+                LlmCompletionJsonSchema = LlmCompletionJsonSchema + token;
+                break;
+            case "LlmCompletionTemperature":
+                LlmCompletionTemperature = LlmCompletionTemperature + token;
+                break;
             case "RunFlowInputsText":
                 RunFlowInputsText = RunFlowInputsText + token;
                 break;
