@@ -218,10 +218,13 @@ Notas de motor descobertas ao montar o fluxo eproc (valem para qualquer `browser
 | Armadilha | Regra |
 |-----------|-------|
 | `browser_execute_script` + interpolador `{var}` | o script **não pode conter `{` nem `}`** — usar arrays/`Object.fromEntries` no lugar de object literals |
-| `dropdown_mode: by_index` | índice **0-based**: `option:nth-child(N)` → `N-1`; preferir `by_value`/`by_text` quando o valor é conhecido |
+| `dropdown_mode: by_index` | índice **0-based**: `option:nth-child(N)` → `N-1`; lança `index out of range` se a lista ainda não carregou. Preferir `by_text` (falha alto); `by_value` **falha em silêncio** (valor inexistente deixa o select em `-1`) |
 | tecla (Enter, Tab) | **não existe ação de teclado**; `browser_press_button` é clique. Alternativa: `browser_execute_script` com `KeyboardEvent` |
-| `browser_click` com `wait_for_navigation` | retorna cedo se a página já está estável — usar sempre `wait_selector_after` como sinal real |
-| selects encadeados (AJAX) | `browser_set_dropdown` dispara `change`; ainda assim usar `error_handling.retry_*` para listas que populam depois |
+| upload de arquivo | precisa de `browser_upload` (`DOM.setFileInputFiles`): JS não consegue preencher `input[type=file]` por segurança. Funciona com uploaders JS (FineUploader, Dropzone) |
+| `browser_attach_chrome` + `timeout_ms` | **não é timeout de conexão**: é um `Thread.Sleep` **depois** de anexar. Passar 20000 adiciona 20 s ao run |
+| `confirm()`/`alert()` na página | o motor **não trata diálogos**; um clique que abre `confirm()` trava a página — verificar antes de rodar |
+| `browser_click` com `wait_for_navigation` | a espera precisa estar **armada antes** do clique — se o clique navegar rápido, escutar depois perde o evento e gasta o timeout inteiro (eram 10 s por clique; corrigido em `BrowserContext.Click`). Use sempre `wait_selector_after` como sinal real |
+| selects encadeados (AJAX) | `browser_set_dropdown` dispara `change`, mas o AJAX do próximo select pode chegar depois: esperar pelo elemento/opção seguinte (`browser_wait_for`) ou, quando a lista é reconstruída com as mesmas opções, `delay` curto |
 
 ## Projetos de fluxo
 

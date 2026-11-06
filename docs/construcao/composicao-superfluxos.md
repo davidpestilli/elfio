@@ -261,7 +261,7 @@ examples/
   eproc-superflow/             # orquestrador: declara os dois vínculos
 ```
 
-Fluxo: `start → run_flow(login) → switch {ScreenText} → run_flow(peticionar) → log → end`, com ramo `case_default` que aborta quando a tela não é o painel.
+Fluxo: `start → run_flow(login) → switch {ScreenText} → run_flow(peticionar) → log → end`, com ramo `case_default` que **só avisa** (não aborta): a decisão real fica na guarda do `peticionar` (`wait_menu`), que observa o DOM — ver §9.4.
 
 `examples/eproc-superflow/manifest.json`:
 
@@ -288,7 +288,7 @@ O que foi ajustado para a cadeia funcionar:
 
 | Onde | Ajuste |
 |------|--------|
-| `login-eproc` | o nó final `action_mvsnv0r6` era `show_message` ("Painel do Advogado") — **modal, bloqueava a cadeia**. Virou `log` com o mesmo texto. É o ponto de handoff. |
+| `login-eproc` | o nó final `action_mvsnv0r6` era `show_message` ("Painel do Advogado") — **modal, bloqueava a cadeia**. Virou `log`. Antes dele, o handoff passou a ser uma **pós-condição verificada**: `wait_panel` (`browser_wait_for "#main-menu > li:nth-child(16) > a"`, 20 s) e só então `set_screen_panel` (`set_variable ScreenText = "Painel do Advogado"`). O `log` imprime `{ScreenText}`, então não pode mentir — ver §9.4. |
 | `eproc-peticionamento` | primeira ação é `browser_wait_for "#main-menu > li:nth-child(16) > a"` — assume a tela, **não navega**. Depois executa as etapas 1–10 do peticionamento (menu → localidade/rito/área/classe → "Não se aplica" → próxima → filtro de assunto + Enter → seleciona assunto → Incluir → próxima) e encerra registrando que as fases 3–4 ainda não estão mapeadas. `dropdown_mode: by_index` é **0-based** (`option:nth-child(N)` → `N-1`); a localidade usa `by_value "8"` porque o valor é conhecido. |
 
 Detalhe nó a nó, decisões (Enter via script, seletor do assunto, retentativas) e o que falta: [fluxo-eproc-peticionamento.md](./fluxo-eproc-peticionamento.md).
@@ -313,10 +313,27 @@ Os dois nós que fazem o elo (`examples/eproc-superflow/flow.json`):
 E a primeira ação do fluxo chamado (assumir, não navegar):
 
 ```json
-{ "type": "browser_wait_for", "selector": "#btn-home > i", "timeout_ms": 5000 }
+{ "type": "browser_wait_for", "selector": "#main-menu > li:nth-child(16) > a", "timeout_ms": 20000, "wait_visible": true }
 ```
 
-Se a tela não for a esperada, o `switch`/`if` do superfluxo decide (abortar, relogar, pedir intervenção) — a decisão fica no orquestrador, não escondida no filho.
+Se a tela não for a esperada, o `switch`/`if` do superfluxo **registra** a divergência e segue; quem barra de verdade é a guarda do fluxo chamado, que espera no DOM. A decisão fica no orquestrador, a constatação fica no filho — e uma variável herdada nunca substitui a constatação (§9.4).
+
+### 9.4 O handoff eproc: pós-condição verificada, não cache de probe
+
+Sintoma observado em run real: o `login-eproc` chegava ao Painel do Advogado, o log dizia "painel pronto", e o superfluxo abortava com `tela inesperada "Seleção de perfil"`.
+
+Causa: `ScreenText` é o **cache do último probe** do subfluxo `detect_screen`, não um retrato da tela atual. No `login-eproc`, o último `detect_screen` roda *antes* do clique em `#tr1`; depois do clique havia apenas um `log` com texto fixo. O `run_flow` com escopo `inherit` (padrão) compartilha o mesmo dicionário de variáveis, então o superfluxo leu exatamente o valor velho — e o resumo `run_flow login:entry finished at end (ScreenText=Seleção de perfil, …)` já imprimia o defeito.
+
+Agravante: o terceiro probe (`#divInfraBarraLocalizacao > div > h1`) não é "probe do painel" — é o título de **qualquer** página eproc autenticada, e é o último da série (`notas-release-2026-11-05.md` §2). Como catch-all ele sempre deixa `ScreenText` com um título plausível, nunca com erro: o handoff parecia funcionar.
+
+Regras que ficaram:
+
+1. **A variável de handoff é escrita depois da última navegação do fluxo**, senão ela descreve a tela anterior à ação final.
+2. **Escrever só depois de uma prova.** `browser_wait_for` num seletor exclusivo da tela-alvo → `set_variable` com o rótulo. O caminho até o `set_variable` é a prova; se a espera falhar, o erro aparece no filho, no ponto certo, nomeando o seletor.
+3. **Log de handoff interpola a variável** (`{ScreenText}`), nunca repete um texto fixo — log constante não é evidência e esconde justamente esse tipo de bug.
+4. **Variável herdada não veta cadeia.** Portão preditivo (confia em variável) não substitui portão observacional (espera no DOM): por isso o `case_default` do superfluxo virou aviso.
+
+A alternativa de "só mais um `detect_screen` depois do clique" não fecha sozinha: dependeria de o `h1` do painel conter "Painel", o que não foi conferido contra a página real ([fluxo-eproc-peticionamento.md](./fluxo-eproc-peticionamento.md) §Verificação pendente).
 
 ---
 
@@ -344,6 +361,7 @@ Riscos conhecidos: caminhos relativos são resolvidos por `Path.GetFullPath` (se
 3. **Manifest como fronteira de confiança.** Nenhum caminho arbitrário: só o que está em `linked_projects`.
 4. **Contrato declarado, não inferido.** `exports`/`requires` permitem validar `{vars}` antes de rodar e documentam o handoff.
 5. **Herança por padrão (`inherit`).** É exatamente o que o caso de uso pede; `isolated` fica para reuso sem contaminação.
+6. **Handoff é pós-condição, não cache de probe.** A variável que atravessa a fronteira do `run_flow` só vale se foi escrita depois da última navegação e depois de uma prova no DOM (§9.4). Portão preditivo avisa; portão observacional barra.
 
 ---
 

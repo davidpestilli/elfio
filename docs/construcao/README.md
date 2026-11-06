@@ -7,6 +7,7 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 | [runtime-e-execucao.md](./runtime-e-execucao.md) | Camadas, pipeline de run, separação grafo × ações × serviços |
 | [composicao-superfluxos.md](./composicao-superfluxos.md) | Composição: subfluxo × fluxo principal vinculado (`run_flow.project`, `linked_projects`), superfluxo |
 | [fluxo-eproc-peticionamento.md](./fluxo-eproc-peticionamento.md) | Exemplo eproc: fluxo principal chamado (etapas 1–2), herança da tela, `by_index` 0-based, Enter via script |
+| [diario-construcao-eproc.md](./diario-construcao-eproc.md) | **Diário de construção do peticionamento eproc**: método de investigação, hipóteses × medições, defeitos de motor encontrados, catálogo de armadilhas, runbook da sonda |
 | [catalogo-acoes-e-modulos.md](./catalogo-acoes-e-modulos.md) | Identificadores estáveis (`module`, `action_id`), paleta e mapeamento JSON |
 | [modulo-excel.md](./modulo-excel.md) | Módulo Excel COM: paleta, JSON, runtime, exemplo, testes |
 | [modulo-word.md](./modulo-word.md) | Módulo Word COM: 8 ações PAD, JSON, runtime |
@@ -24,3 +25,5 @@ Documentação de **decisões de arquitetura** e **contratos** que orientam evol
 **Nov/2026:** Switch/Case no runtime e Studio; correção de stack overflow no save com subfluxos embutidos; registro completo em [guia-construcao.md](../guia-construcao.md) § *Rodada nov/2026 — Switch/Case, save e shell*.
 
 **Nov/2026 (composição):** `run_flow` pode chamar o fluxo principal de outro projeto (`project` + `manifest.linked_projects`), com contrato (`requires`/`exports`), validação de ciclo e herança de sessão/variáveis no mesmo run. Ver [composicao-superfluxos.md](./composicao-superfluxos.md).
+
+**Nov/2026 (peticionamento eproc):** a cadeia `login-eproc → eproc-peticionamento → eproc-superflow` distribui petição de ponta a ponta em HML (~32 s, protocolo capturado em `PetitionNumber`). O peticionamento foi dividido em **6 subfluxos** (uma etapa cada). O caminho, os números e as armadilhas estão em [diario-construcao-eproc.md](./diario-construcao-eproc.md); a referência de seletores em [fluxo-eproc-peticionamento.md](./fluxo-eproc-peticionamento.md). Defeitos de motor corrigidos no caminho: espera de navegação armada depois do clique (~10 s por clique), `wait_content` durante navegação, e as ações novas `browser_switch_page`, `browser_upload` e `dialog_action`.
